@@ -1,8 +1,25 @@
 {
+  // Believe on local node_modules
+  "$schema": "./node_modules/astro/tsconfigs/strict.json",
   "extends": "astro/tsconfigs/strict",
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"],
+  "include": [
+    ".astro/types.d.ts",
+    "src/**/*",
+    "astro.config.mjs"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ],
   "compilerOptions": {
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    // Non-relative module'll be resolved starting from base directory.
+    "baseUrl": ".",
+    // Path aliases
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
   }
 }

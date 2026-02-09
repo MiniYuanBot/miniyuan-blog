@@ -1,7 +1,9 @@
 ---
+// The <HeaderLink /> component is employed to create consistent html <a>.
+
 import type { HTMLAttributes } from 'astro/types';
 
-type Props = HTMLAttributes<'a'>;
+type Props = HTMLAttributes<'a'>; // attributes belong to <a> components 
 
 const { href, class: className, ...props } = Astro.props;
 const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, '');
@@ -10,6 +12,7 @@ const isActive = href === pathname || href === '/' + (subpath?.[0] || '');
 ---
 
 <a href={href} class:list={[className, { active: isActive }]} {...props}>
+	<!-- Slot content will be inserted here -->
 	<slot />
 </a>
 <style>
