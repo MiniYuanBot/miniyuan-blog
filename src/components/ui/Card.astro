@@ -1,0 +1,49 @@
+---
+import type { HTMLAttributes } from "astro/types";
+
+interface Props extends HTMLAttributes<"article"> {
+    padding?: "small" | "middle" | "large";
+    hover?: boolean;
+}
+
+const { padding = "middle", hover = true, ...props } = Astro.props;
+
+const paddingClass = {
+    small: "card-padding-small",
+    middle: "card-padding-middle",
+    large: "card-padding-large",
+}[padding];
+---
+
+<article
+    class:list={["card", paddingClass, { "card-hover": hover }]}
+    {...props}
+>
+    <slot />
+</article>
+
+<style>
+    .card {
+        position: relative;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .card-padding-small {
+        padding: 1rem;
+    }
+    
+    .card-padding-middle {
+        padding: 1.5rem;
+    }
+    
+    .card-padding-large {
+        padding: 2rem;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+</style>

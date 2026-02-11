@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "miniyuan-blog",
   "type": "module",
   "version": "0.0.1",
@@ -14,5 +15,9 @@
     "@astrojs/sitemap": "^3.7.0",
     "astro": "^5.17.1",
     "sharp": "^0.34.3"
+  },
+  "devDependencies": {
+    "@lucide/astro": "^0.563.0",
+    "esbuild": "^0.27.3"
   }
 }

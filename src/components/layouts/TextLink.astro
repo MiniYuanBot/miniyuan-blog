@@ -1,0 +1,47 @@
+---
+// The <TextLink /> component is employed to create consistent html text link.
+
+import type { HTMLAttributes } from "astro/types";
+
+type Props = HTMLAttributes<"a">; // attributes belong to <a> components
+
+const { href, class: className, ...props } = Astro.props;
+const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, "");
+const subpath = pathname.match(/[^\/]+/g);
+const isActive = href === pathname || href === "/" + (subpath?.[0] || "");
+---
+
+<a
+    href={href}
+    class:list={[className, "text-link", { active: isActive }]}
+    {...props}
+>
+    <!-- Slot content will be inserted here -->
+    <slot />
+</a>
+<style>
+    .text-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: inherit;
+
+        padding: 0.5em 0.75em;
+        min-width: 44px;
+        min-height: 44px;
+
+        border-radius: 4px;
+        border-bottom: 4px solid transparent;
+        transition: border-color 0.2s ease;
+    }
+
+    .text-link.active {
+        border-bottom-color: var(--accent, #000);
+        font-weight: bold;
+    }
+
+    .text-link:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+</style>
