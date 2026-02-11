@@ -1,13 +1,10 @@
 ---
-import BaseHead from "../components/layouts/BaseHead.astro";
-import Header from "../components/layouts/Header.astro";
-import Footer from "../components/layouts/Footer.astro";
-import Hero from "../components/sections/Hero.astro";
-import Education from "../components/sections/Education.astro";
+import { BaseHead, Header, Footer } from "../components/basic";
+import { Hero, Education } from "../components/advanced";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 
 const heroConfig = {
-	avatarSrc: "/images/miniyuan.jpg", // 或使用 import 导入
+	avatarSrc: "/images/miniyuan.jpg", // may use import
 	avatarAlt: "the selfie of miniyuan",
 	name: "miniyuan",
 	tagline: "curious ",

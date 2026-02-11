@@ -12,9 +12,20 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<'blog'>;
 
 const post = Astro.props;
-const { Content } = await render(post);
+
+// convert string to Data object
+const postWithDates = {
+	...post,
+	data: {
+		...post.data,
+		pubDate: new Date(post.data.pubDate),
+		updatedDate: post.data.updatedDate ? new Date(post.data.updatedDate) : undefined,
+	}
+};
+
+const { Content } = await render(postWithDates);
 ---
 
-<BlogPost {...post.data}>
+<BlogPost {...postWithDates.data}>
 	<Content />
 </BlogPost>

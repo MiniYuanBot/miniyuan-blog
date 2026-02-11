@@ -21,7 +21,7 @@ const { items } = Astro.props;
             items.map((item, index) => (
                 <div class="education-item">
                     <article class="education-card">
-                        <!-- 卡片背景 -->
+                        {/* 卡片背景 */}
                         {item.logo && (
                             <div class="card-bg">
                                 <img
@@ -33,14 +33,14 @@ const { items } = Astro.props;
                             </div>
                         )}
                         
-                        <!-- 卡片内容 -->
+                        {/* 卡片内容 */}
                         <div class="card-content">
-                            <!-- 顶部：只保留学校名称 -->
+                            {/* 顶部：只保留学校名称 */}
                             <div class="education-top">
                                 <h3 class="school-name">{item.school}</h3>
                             </div>
                             
-                            <!-- 中部：时间和地点 -->
+                            {/* 中部：时间和地点 */}
                             <div class="education-middle">
                                 <div class="time-location-info">
                                     <div class="period-info">
@@ -54,7 +54,7 @@ const { items } = Astro.props;
                                 </div>
                             </div>
                             
-                            <!-- 底部：描述 -->
+                            {/* 底部：描述 */}
                             <div class="education-bottom">
                                 <div class="education-description">
                                     <p class="description-text">{item.description}</p>
@@ -69,7 +69,6 @@ const { items } = Astro.props;
 </section>
 
 <style>
-    /* 基础样式 - 最小化间距 */
     .education-section {
         max-width: 1000px;
         margin: 0 auto;
@@ -98,14 +97,12 @@ const { items } = Astro.props;
         border-radius: 2px;
     }
 
-    /* 列表布局 - 最小间距 */
     .education-list {
         display: flex;
         flex-direction: column;
         gap: 1rem;
     }
 
-    /* 卡片样式 - 紧凑布局 */
     .education-card {
         position: relative;
         padding: 1rem;
@@ -117,7 +114,6 @@ const { items } = Astro.props;
         border: 1px solid rgba(0, 0, 0, 0.04);
     }
 
-    /* 悬停效果 */
     .education-card:hover {
         transform: translateY(-3px) !important;
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
@@ -125,7 +121,7 @@ const { items } = Astro.props;
         cursor: pointer;
     }
 
-    /* 背景logo - 最大化尺寸 */
+    /* school logo */
     .card-bg {
         position: absolute;
         top: 0;
@@ -154,13 +150,12 @@ const { items } = Astro.props;
         mix-blend-mode: multiply;
     }
 
-    /* 悬停时 logo 更明显 */
+    /* less opacity when hover */
     .education-card:hover .school-logo {
         opacity: 0.7;
         transform: translateY(-50%) scale(1.05);
     }
 
-    /* 卡片内容层 */
     .card-content {
         position: relative;
         height: 100%;
@@ -169,7 +164,6 @@ const { items } = Astro.props;
         justify-content: space-between;
     }
 
-    /* 顶部区域 - 零间距 */
     .education-top {
         margin-bottom: 0;
         padding-bottom: 0.5rem;
@@ -184,7 +178,6 @@ const { items } = Astro.props;
         line-height: 1.2;
     }
 
-    /* 中部信息 - 最小间距 */
     .education-middle {
         margin-bottom: 0.5rem;
         padding: 0;
@@ -237,7 +230,6 @@ const { items } = Astro.props;
         transform: scale(1.02);
     }
 
-    /* 底部区域 */
     .education-bottom {
         margin-top: 0.25rem;
     }
@@ -255,7 +247,7 @@ const { items } = Astro.props;
         font-weight: 400;
     }
 
-    /* 响应式设计 */
+    /* TODO: simplify */
     @media (min-width: 768px) {
         .education-section {
             padding: 2rem 1rem;
@@ -395,7 +387,6 @@ const { items } = Astro.props;
         }
     }
 
-    /* 小屏幕优化 */
     @media (max-width: 480px) {
         .education-section {
             padding: 1rem 0.5rem;
