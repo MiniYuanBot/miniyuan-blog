@@ -11,6 +11,7 @@
 	--accent: #2337ff;
 	--accent-dark: #000d8a;
 	--black: 15, 18, 25;
+	--white: 255, 255, 255;
 	--gray: 96, 115, 159;
 	--gray-light: 229, 233, 240;
 	--gray-dark: 34, 41, 57;
@@ -38,6 +39,7 @@
 .dark {
 	/* Bear Blog dark overrides */
 	--black: 255, 255, 255;
+	--white: 15, 18, 25;
 	--gray-dark: 229, 233, 240;
 	--gray: 156, 163, 175;
 	--gray-light: 31, 41, 55;

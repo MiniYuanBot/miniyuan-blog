@@ -5,9 +5,9 @@ import { siteConfig } from "@/config";
 import TextLink from "./TextLink.astro";
 import IconLink from "./IconLink.astro";
 
-const HomeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
-const SearchIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
-const MenuIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
+const HomeIcon = `<svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
+const SearchIcon = `<svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
+const MenuIcon = `<svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
 
 const navLeft = { path: "/", label: siteConfig.title };
 const navCenter = [
@@ -30,10 +30,10 @@ const navRight = [
 	>
 		<!-- Left: site title -->
 		<div class="flex-1">
-			<h2 class="m-0 text-xl font-semibold">
+			<h2 class="m-0 text-[1.2rem] font-semibold">
 				<a
 					href={navLeft.path}
-					class="text-[rgb(var(--black))] no-underline transition-colors duration-200 ease-out hover:text-[rgb(var(--gray-dark))] dark:hover:text-white"
+					class="text-[rgb(var(--black))] no-underline transition-colors duration-200 hover:text-[rgb(var(--gray-dark))] dark:hover:text-white"
 				>
 					{siteConfig.title}
 				</a>
@@ -63,7 +63,7 @@ const navRight = [
 			<button
 				id="toggleMenu"
 				aria-label="Menu"
-				class="flex p-2 text-[rgb(var(--black))] bg-transparent border-none rounded-md transition-colors duration-200 ease-out hover:bg-[hsl(var(--muted-hsl))] dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white"
+				class="flex p-2 text-[rgb(var(--black))] bg-transparent border-none rounded-md transition-colors duration-200 hover:bg-[rgba(var(--gray-light),1)] dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white"
 			>
 				<span set:html={MenuIcon} class="w-6 h-6" />
 			</button>
@@ -75,40 +75,46 @@ const navRight = [
 <template id="mobileMenuTemplate">
 	<div
 		id="mobileMenuPortal"
-		class="md:hidden fixed left-4 right-4 flex-col gap-1 p-2 rounded-xl border-none shadow-xl transition-all duration-300 opacity-0 invisible pointer-events-none"
-		style="top: 4.5rem; z-index: 40;"
+		class="md:hidden fixed left-4 right-4 flex-col rounded-xl shadow-xl transition-all duration-500 overflow-hidden"
+		style="top: 4.5rem; z-index: 40; max-height: 0; opacity: 0; visibility: hidden; pointer-events: none; padding: 0;"
 	>
-		<div class="flex flex-col">
-			{
-				navCenter.map((item, index) => (
-					<TextLink
-						href={item.path}
-						isMobile
-						style={`animation-delay: ${index * 50}ms`}
-					>
-						{item.label}
-					</TextLink>
-				))
-			}
-		</div>
+		<div class="p-2">
+			<div class="flex flex-col">
+				{
+					navCenter.map((item, index) => (
+						<TextLink
+							href={item.path}
+							isMobile
+							mobileBackground="transparent"
+							mobileHoverBackground="rgb(var(--gray-light))"
+							delay={index * 50}
+						>
+							{item.label}
+						</TextLink>
+					))
+				}
+			</div>
 
-		<div
-			class="mobile-menu-divider h-px bg-[hsl(var(--border-hsl)/0.4)] dark:bg-[hsl(var(--border-hsl)/0.2)] mx-2 my-1"
-		>
-		</div>
+			<div
+				class="h-px bg-[hsl(var(--border-hsl)/0.4)] dark:bg-[hsl(var(--border-hsl)/0.2)] mx-2 my-1"
+			>
+			</div>
 
-		<div class="flex gap-2 px-1 pb-1">
-			{
-				navRight.map(({ path, label, svg }, index) => (
-					<IconLink
-						href={path}
-						label={label}
-						svg={svg}
-						isMobile
-						style={`animation-delay: ${(index + navCenter.length) * 50}ms`}
-					/>
-				))
-			}
+			<div class="flex gap-2 px-1 pb-1">
+				{
+					navRight.map(({ path, label, svg }, index) => (
+						<IconLink
+							href={path}
+							label={label}
+							svg={svg}
+							isMobile
+							mobileBackground="transparent"
+							mobileHoverBackground="rgb(var(--gray-light))"
+							delay={(index + navCenter.length) * 50}
+						/>
+					))
+				}
+			</div>
 		</div>
 	</div>
 </template>
@@ -128,9 +134,8 @@ const navRight = [
 				const clone = template.content.cloneNode(
 					true,
 				) as DocumentFragment;
-				this.mobileMenuPortal = clone.querySelector(
-					"#mobileMenuPortal",
-				) as HTMLElement;
+				this.mobileMenuPortal =
+					clone.getElementById("mobileMenuPortal");
 				if (this.mobileMenuPortal)
 					document.body.appendChild(this.mobileMenuPortal);
 			}
@@ -159,7 +164,6 @@ const navRight = [
 				this._toggleMenu();
 			});
 
-			// 点击链接关闭菜单 - 使用更通用的选择器
 			this.mobileMenuPortal
 				?.querySelectorAll("a")
 				.forEach((link) =>
@@ -191,18 +195,22 @@ const navRight = [
 
 			if (!this.mobileMenuPortal) return;
 
-			const [add, remove] = this.isMenuOpen
-				? [
-						["opacity-100", "visible", "pointer-events-auto"],
-						["opacity-0", "invisible", "pointer-events-none"],
-					]
-				: [
-						["opacity-0", "invisible", "pointer-events-none"],
-						["opacity-100", "visible", "pointer-events-auto"],
-					];
+			if (this.isMenuOpen) {
+				this.mobileMenuPortal.style.visibility = "visible";
+				this.mobileMenuPortal.style.pointerEvents = "auto";
 
-			this.mobileMenuPortal.classList.remove(...remove);
-			this.mobileMenuPortal.classList.add(...add);
+				const height = this.mobileMenuPortal.scrollHeight;
+
+				this.mobileMenuPortal.style.maxHeight = `${height}px`;
+				this.mobileMenuPortal.style.opacity = "1";
+				this.mobileMenuPortal.style.padding = "";
+			} else {
+				this.mobileMenuPortal.style.maxHeight = "0";
+				this.mobileMenuPortal.style.opacity = "0";
+				this.mobileMenuPortal.style.visibility = "hidden";
+				this.mobileMenuPortal.style.pointerEvents = "none";
+				this.mobileMenuPortal.style.padding = "0";
+			}
 
 			if (this.isMenuOpen) this._updateMenuPosition();
 		}
@@ -228,27 +236,23 @@ const navRight = [
 </script>
 
 <style>
-	/* ===== Header ===== */
 	header-component {
 		background-color: hsl(var(--card-hsl));
-		border-color: transparent;
-		transition:
-			transform 0.3s ease,
-			background-color 0.3s ease,
-			border-color 0.3s ease,
-			box-shadow 0.3s ease;
+		border-color: hsla(var(--border-hsl), 0.5);
 	}
 
 	header-component.is-scrolled {
-		background-color: hsl(var(--card-hsl) / 0.8);
-		backdrop-filter: blur(4px);
+		background-color: hsla(var(--card-hsl), 0.92);
 		border-color: hsl(var(--border-hsl));
 		box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 	}
 
+	.dark header-component {
+		border-color: hsla(var(--border-hsl), 0.3);
+	}
+
 	.dark header-component.is-scrolled {
-		background-color: hsl(var(--card-hsl) / 0.85);
-		border-color: hsl(var(--border-hsl) / 0.2);
+		border-color: hsla(var(--border-hsl), 0.5);
 	}
 
 	header-component[data-show="false"]:not(.expanded) {
@@ -259,39 +263,30 @@ const navRight = [
 		transform: translateY(0) !important;
 	}
 
-	/* ===== Mobile Menu Portal ===== */
 	#mobileMenuPortal {
-		background-color: hsl(var(--card-hsl) / 0.88);
-		backdrop-filter: blur(12px) saturate(180%);
-		border-color: hsl(var(--border-hsl) / 0.6);
-		box-shadow:
-			0 20px 25px -5px rgb(0 0 0 / 0.1),
-			0 8px 10px -6px rgb(0 0 0 / 0.1);
-		max-height: calc(100vh - 6rem);
-		overflow-y: auto;
+		background-color: hsl(var(--card-hsl));
+		border: 1px solid hsla(var(--border-hsl), 0.5);
 		transition:
+			max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
 			opacity 0.3s ease,
-			visibility 0.3s ease,
-			top 0.1s ease;
+			padding 0.3s ease,
+			visibility 0.3s ease;
+		will-change: max-height, opacity;
 	}
 
 	#mobileMenuPortal.is-scrolled {
-		background-color: hsl(var(--card-hsl) / 0.82);
-		backdrop-filter: blur(16px) saturate(200%);
+		background-color: hsla(var(--card-hsl), 0.92);
 		border-color: hsl(var(--border-hsl));
 	}
 
 	.dark #mobileMenuPortal {
-		background-color: hsl(var(--card-hsl) / 0.85);
-		border-color: hsl(var(--border-hsl) / 0.2);
+		background-color: hsl(var(--card-hsl));
+		border-color: hsla(var(--border-hsl), 0.3);
 	}
 
 	.dark #mobileMenuPortal.is-scrolled {
-		background-color: hsl(var(--card-hsl) / 0.82);
-	}
-
-	.mobile-menu-divider {
-		transition: background-color 0.2s ease;
+		background-color: hsla(var(--card-hsl), 0.98);
+		border-color: hsla(var(--border-hsl), 0.5);
 	}
 
 	@media (min-width: 768px) {

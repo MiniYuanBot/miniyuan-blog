@@ -1,13 +1,18 @@
 ---
-// The <IconLink /> component is employed to create consistent html icon link.
+// The <IconLink /> component creates consistent HTML icon links with customizable backgrounds
 
 import type { HTMLAttributes } from "astro/types";
 
 type Props = HTMLAttributes<"a"> & {
     isExternal?: boolean;
-    label: string; // aria-label
+    label: string;
     svg?: string;
     isMobile?: boolean;
+    background?: string;
+    hoverBackground?: string;
+    mobileBackground?: string;
+    mobileHoverBackground?: string;
+    delay?: string | number;
 };
 
 const {
@@ -17,14 +22,17 @@ const {
     label,
     svg,
     isMobile = false,
+    background = "transparent",
+    hoverBackground = "hsl(var(--muted-hsl))",
+    mobileBackground = "transparent",
+    mobileHoverBackground = "transparent",
+    delay,
     ...props
 } = Astro.props;
 
-// whether an external link(start with http) or not
 const hrefString = String(href);
 const isExternalLink = isExternal || hrefString.startsWith("http");
 
-// internal links need to check active status
 let isActive = false;
 if (!isExternalLink) {
     const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, "");
@@ -32,13 +40,26 @@ if (!isExternalLink) {
     isActive = href === pathname || href === "/" + (subpath?.[0] || "");
 }
 
-// external links need to add extra attributes
 const externalProps = isExternalLink
-    ? {
-          target: "_blank",
-          rel: "noopener noreferrer",
-      }
+    ? { target: "_blank", rel: "noopener noreferrer" }
     : {};
+
+const currentBg = isMobile ? mobileBackground : background;
+const currentHoverBg = isMobile ? mobileHoverBackground : hoverBackground;
+
+// Build style object for initial state
+const styleObj: Record<string, string> = {
+    "background-color": currentBg,
+};
+
+if (delay !== undefined) {
+    styleObj["animation-delay"] =
+        typeof delay === "number" ? `${delay}ms` : delay;
+}
+
+// Generate hover handlers as strings for inline use
+const onMouseEnter = `this.style.backgroundColor='${currentHoverBg}'`;
+const onMouseLeave = `this.style.backgroundColor='${currentBg}'`;
 ---
 
 <a
@@ -46,57 +67,49 @@ const externalProps = isExternalLink
     class:list={[
         className,
         "icon-link",
-        // Desktop styles
         !isMobile && [
             "flex p-2",
             "text-[rgb(var(--gray))]",
             "rounded-md",
             "transition-colors duration-200 ease-out",
-            "hover:bg-[hsl(var(--muted-hsl))] hover:text-[rgb(var(--black))]",
-            "dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white",
+            "hover:text-[rgb(var(--black))]",
+            "dark:hover:text-[rgb(var(--gray-light))]",
         ],
-        // Mobile styles
         isMobile && [
             "mobile-menu-icon-item flex flex-1 items-center justify-center gap-2 p-3",
             "text-[rgb(var(--black))] dark:text-[rgb(var(--gray-light))]",
-            "text-sm font-medium no-underline",
-            "bg-transparent rounded-[0.625rem]",
+            "rounded-[0.625rem]",
             "border border-transparent",
             "transition-all duration-200 ease-out",
-            "hover:scale-105 hover:text-[rgb(var(--black))] dark:hover:text-white",
+            "hover:translate-x-1",
+            "hover:text-[rgb(var(--black))] dark:hover:text-[rgb(var(--gray-light))]",
             "dark:hover:border-[hsl(var(--border-hsl)/0.3)]",
         ],
         { active: isActive, external: isExternalLink },
     ]}
+    style={styleObj}
+    onmouseenter={onMouseEnter}
+    onmouseleave={onMouseLeave}
     aria-label={label}
     {...externalProps}
     {...props}
 >
     {svg && <span class="flex w-5 h-5" set:html={svg} />}
-    {isMobile && <span class="text-sm font-medium">{label}</span>}
+    {isMobile && <span class="text-base font-medium">{label}</span>}
     {!isMobile && <span class="sr-only">{label}</span>}
     <slot />
 </a>
 
 <style>
-    .icon-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.2s ease;
-    }
-
+    /* Only non-background styles remain */
     .icon-link.active {
-        color: var(--accent, #000);
+        color: var(--accent);
     }
 
     .dark .icon-link.active {
-        color: var(--accent-dark, #fff);
+        color: var(--accent-dark);
     }
 
-    /* external link tag */
     .icon-link.external::after {
         content: "↗";
         font-size: 0.75em;
@@ -104,17 +117,12 @@ const externalProps = isExternalLink
         opacity: 0.6;
     }
 
-    /* Mobile menu item styles */
     .mobile-menu-icon-item {
         text-shadow: 0 1px 2px hsl(var(--card-hsl) / 0.8);
     }
 
     .dark .mobile-menu-icon-item {
-        text-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
-    }
-
-    .dark .mobile-menu-icon-item:hover {
-        border-color: hsl(var(--border-hsl) / 0.3);
+        text-shadow: 0 1px 3px rgb(var(--black) / 0.4);
     }
 
     .sr-only {

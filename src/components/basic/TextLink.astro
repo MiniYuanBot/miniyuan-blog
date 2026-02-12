@@ -1,60 +1,99 @@
 ---
-// The <TextLink /> component is employed to create consistent html text link.
+// The <TextLink /> component creates consistent HTML text links with customizable backgrounds
 
 import type { HTMLAttributes } from "astro/types";
 
 type Props = HTMLAttributes<"a"> & {
     isMobile?: boolean;
+    background?: string;
+    hoverBackground?: string;
+    mobileBackground?: string;
+    mobileHoverBackground?: string;
+    delay?: string | number;
 };
 
-const { href, class: className, isMobile = false, ...props } = Astro.props;
+const {
+    href,
+    class: className,
+    isMobile = false,
+    background = "transparent",
+    hoverBackground = "hsl(var(--muted-hsl))",
+    mobileBackground = "transparent",
+    mobileHoverBackground = "transparent",
+    delay,
+    ...props
+} = Astro.props;
+
 const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, "");
 const subpath = pathname.match(/[^\/]+/g);
 const isActive = href === pathname || href === "/" + (subpath?.[0] || "");
+
+const currentBg = isMobile ? mobileBackground : background;
+const currentHoverBg = isMobile ? mobileHoverBackground : hoverBackground;
+
+// Build style object for initial state
+const styleObj: Record<string, string> = {
+    "background-color": currentBg,
+};
+
+if (delay !== undefined) {
+    styleObj["animation-delay"] =
+        typeof delay === "number" ? `${delay}ms` : delay;
+}
+
+// Generate hover handlers as strings for inline use
+const onMouseEnter = `this.style.backgroundColor='${currentHoverBg}'`;
+const onMouseLeave = `this.style.backgroundColor='${currentBg}'`;
 ---
 
 <a
     href={href}
     class:list={[
         className,
-        // Desktop styles
+        "text-link",
         !isMobile && [
             "inline-flex items-center justify-center no-underline",
-            "text-[rgb(var(--gray))] text-sm font-medium",
+            "text-[rgb(var(--gray))] text-base font-medium",
             "px-3 py-2 min-w-11 min-h-11",
             "rounded-md border-b-4 border-b-transparent",
             "transition-colors duration-200 ease-out",
-            "hover:bg-[hsl(var(--muted-hsl))] hover:text-[rgb(var(--black))]",
-            "dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white",
+            "hover:text-[rgb(var(--black))]",
+            "dark:hover:text-white",
             isActive && [
-                "font-bold",
-                "border-b-[var(--accent)]",
-                "dark:border-b-[var(--accent-dark)]",
+                "relative font-semibold",
+                "text-[var(--accent)] dark:text-[var(--accent-dark)]",
+                "after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2",
+                "after:content-['']",
+                "after:w-1 after:h-1 after:rounded-full",
+                "after:bg-[var(--accent)] dark:after:bg-[var(--accent-dark)]",
             ],
         ],
-        // Mobile styles
         isMobile && [
             "mobile-menu-item block no-underline",
             "px-4 py-3.5 my-0.5",
             "flex items-center justify-center",
             "text-[rgb(var(--black))] dark:text-[rgb(var(--gray-light))]",
             "text-[0.9375rem] font-medium",
-            "bg-transparent rounded-[0.625rem]",
+            "rounded-[0.625rem]",
             "transition-all duration-200 ease-out",
             "hover:translate-x-1",
             "hover:text-[rgb(var(--black))] dark:hover:text-white",
             "dark:hover:shadow-lg",
             isActive && [
-                "font-semibold",
-                "border-l-3 border-l-[var(--accent)]",
-                "pl-[calc(1rem-3px)]",
-                "bg-[hsl(var(--muted-hsl)/0.3)]",
-                "dark:border-l-[var(--accent-dark)]",
-                "dark:bg-[rgb(var(--gray-dark)/0.2)]",
-                "dark:text-white",
+                "relative font-semibold",
+                "text-[var(--accent)] dark:text-[var(--accent-dark)]",
+                "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
+                "before:content-['']",
+                "before:w-1 before:h-5",
+                "before:rounded-r-md",
+                "before:bg-[var(--accent)] dark:before:bg-[var(--accent-dark)]",
+                "pl-4",
             ],
         ],
     ]}
+    style={styleObj}
+    onmouseenter={onMouseEnter}
+    onmouseleave={onMouseLeave}
     aria-current={isActive ? "page" : undefined}
     {...props}
 >
@@ -62,25 +101,20 @@ const isActive = href === pathname || href === "/" + (subpath?.[0] || "");
 </a>
 
 <style>
-    /* Mobile menu item text shadow */
+    /* Only text shadows and border utility remain */
     .mobile-menu-item {
-        text-shadow: 0 1px 2px hsl(var(--card-hsl) / 0.8);
+        text-shadow: 0 1px 2px hsla(var(--card-hsl), 0.8);
     }
 
     .mobile-menu-item:hover {
-        text-shadow: 0 2px 4px hsl(var(--card-hsl) / 0.9);
+        text-shadow: 0 2px 4px hsla(var(--card-hsl, 0.9));
     }
 
-    .dark .mobile-menu-item {
+    :global(.dark) .mobile-menu-item {
         text-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
     }
 
-    .dark .mobile-menu-item:hover {
+    :global(.dark) .mobile-menu-item:hover {
         text-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
-    }
-
-    /* Border left width utility */
-    .border-l-3 {
-        border-left-width: 3px;
     }
 </style>
