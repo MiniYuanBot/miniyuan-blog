@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import { BaseHead, Footer, FormattedDate, Header } from '@/components/basic';
-import { SITE_DESCRIPTION, SITE_TITLE } from '@/consts';
+import { siteConfig } from '@/config';
 
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
@@ -12,7 +12,7 @@ const posts = (await getCollection('blog')).sort(
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={siteConfig.title} description={siteConfig.description} />
 		<style>
 			main {
 				width: 960px;

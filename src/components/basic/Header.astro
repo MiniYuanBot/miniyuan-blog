@@ -1,7 +1,7 @@
 ---
 // The <Header /> component is employed to create consistent html header.
 
-import { SITE_TITLE } from "@/consts";
+import { siteConfig } from "@/config";
 import TextLink from "./TextLink.astro";
 import IconLink from "./IconLink.astro";
 
@@ -9,7 +9,7 @@ const HomeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
 const SearchIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
 const MenuIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
 
-const navLeft = { path: "/", label: SITE_TITLE };
+const navLeft = { path: "/", label: siteConfig.title };
 const navCenter = [
 	{ path: "/blog", label: "Blog" },
 	{ path: "/tags", label: "Tags" },
@@ -27,7 +27,7 @@ const navRight = [
 		<!-- Left: site title -->
 		<div class="nav-left">
 			<h2>
-				<a href={navLeft.path}>{SITE_TITLE}</a>
+				<a href={navLeft.path}>{siteConfig.title}</a>
 			</h2>
 		</div>
 

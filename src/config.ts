@@ -1,0 +1,1 @@
+export { siteConfig, blogConfig, heroConfig, educationConfig } from './types';

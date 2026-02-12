@@ -1,56 +1,19 @@
 ---
 import { BaseHead, Header, Footer } from "../components/basic";
 import { Hero, Education } from "../components/advanced";
-import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
-
-const heroConfig = {
-	avatarSrc: "/images/miniyuan.jpg", // may use import
-	avatarAlt: "the selfie of miniyuan",
-	name: "miniyuan",
-	tagline: "curious ",
-	introduction: [
-		"我是来自北京大学工学院的大二学生，同时修读计算机科学技术双专业。",
-		"我喜欢一切有挑战的任务，也喜欢摆烂（bushi）",
-		"Miniyuan is getting stronger!",
-	],
-	skills: [
-		{ label: "JavaScript/TypeScript", icon: "⚡" },
-		{ label: "React/Vue", icon: "🎨" },
-		{ label: "Node.js", icon: "🚀" },
-		{ label: "UI/UX 设计", icon: "✨" },
-		{ label: "性能优化", icon: "⚙️" },
-		{ label: "系统架构", icon: "🏗️" },
-	],
-};
-
-const educationData = [
-	{
-		school: "北京大学",
-		period: "August 2024 - Present",
-		location: "Beijing",
-		description: "College of Engineering",
-		logo: "images/PKU-logo.png",
-	},
-	{
-		school: "余杭高级中学",
-		period: "April 2021 - July 2024",
-		location: "Hangzhou",
-		description: "High School",
-		logo: "images/yugao-logo.png",
-	},
-];
+import { siteConfig, heroConfig, educationConfig } from "../config";
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+		<BaseHead title={siteConfig.title} description={siteConfig.description} />
 	</head>
 	<body>
 		<Header />
 		<main>
 			<Hero {...heroConfig} />
-			<Education items={educationData} />
+			<Education items={educationConfig} />
 		</main>
 		<Footer />
 	</body>
