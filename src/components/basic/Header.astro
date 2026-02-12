@@ -1,5 +1,5 @@
 ---
-// The <Header /> component is employed to create consistent html header.
+// The <Header /> component creates a consistent HTML header.
 
 import { siteConfig } from "@/config";
 import TextLink from "./TextLink.astro";
@@ -22,97 +22,205 @@ const navRight = [
 ];
 ---
 
-<header-component>
-	<nav>
+<header-component
+	class="sticky top-0 z-50 block border-b transition-all duration-300"
+>
+	<nav
+		class="flex items-center justify-between h-16 mx-auto px-6 md:px-8 max-w-7xl"
+	>
 		<!-- Left: site title -->
-		<div class="nav-left">
-			<h2>
-				<a href={navLeft.path}>{siteConfig.title}</a>
+		<div class="flex-1">
+			<h2 class="m-0 text-xl font-semibold">
+				<a
+					href={navLeft.path}
+					class="text-[rgb(var(--black))] no-underline transition-colors duration-200 ease-out hover:text-[rgb(var(--gray-dark))] dark:hover:text-white"
+				>
+					{siteConfig.title}
+				</a>
 			</h2>
 		</div>
 
-		<!-- Center: main navigation -->
-		<div class="nav-center">
-			{
-				navCenter.map((item) => (
-					<TextLink href={item.path}>
-						<span class="nav-label">{item.label}</span>
-					</TextLink>
-				))
-			}
-		</div>
-
-		<!-- Right: icon links -->
-		<div class="nav-right">
-			{
-				navRight.map(({ path, label, svg }) => (
-					<IconLink href={path} label={label}>
-						<span class="nav-icon" set:html={svg} />
-						<span class="sr-only">{label}</span>
-					</IconLink>
-				))
-			}
-		</div>
-
-		<!-- Mobile: menu button -->
-		<div class="nav-mobile-button">
-			<button id="toggleMenu" aria-label="Menu">
-				<span set:html={MenuIcon} />
-			</button>
-		</div>
-	</nav>
-
-	<!-- Mobile menu dropdown -->
-	<div id="mobileMenu" class="nav-mobile">
-		<div class="mobile-nav-center">
+		<!-- Center: main navigation - hidden on mobile -->
+		<div class="hidden md:flex flex-1 justify-center gap-1">
 			{
 				navCenter.map((item) => (
 					<TextLink href={item.path}>{item.label}</TextLink>
 				))
 			}
 		</div>
-		<div class="mobile-nav-right">
+
+		<!-- Right: icon links - hidden on mobile -->
+		<div class="hidden md:flex flex-1 justify-end gap-1">
 			{
 				navRight.map(({ path, label, svg }) => (
-					<IconLink href={path} label={label}>
-						<span class="nav-icon" set:html={svg} />
-						{label}
-					</IconLink>
+					<IconLink href={path} label={label} svg={svg} />
+				))
+			}
+		</div>
+
+		<!-- Mobile: menu button -->
+		<div class="md:hidden">
+			<button
+				id="toggleMenu"
+				aria-label="Menu"
+				class="flex p-2 text-[rgb(var(--black))] bg-transparent border-none rounded-md transition-colors duration-200 ease-out hover:bg-[hsl(var(--muted-hsl))] dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white"
+			>
+				<span set:html={MenuIcon} class="w-6 h-6" />
+			</button>
+		</div>
+	</nav>
+</header-component>
+
+<!-- Mobile Menu Template -->
+<template id="mobileMenuTemplate">
+	<div
+		id="mobileMenuPortal"
+		class="md:hidden fixed left-4 right-4 flex-col gap-1 p-2 rounded-xl border-none shadow-xl transition-all duration-300 opacity-0 invisible pointer-events-none"
+		style="top: 4.5rem; z-index: 40;"
+	>
+		<div class="flex flex-col">
+			{
+				navCenter.map((item, index) => (
+					<TextLink
+						href={item.path}
+						isMobile
+						style={`animation-delay: ${index * 50}ms`}
+					>
+						{item.label}
+					</TextLink>
+				))
+			}
+		</div>
+
+		<div
+			class="mobile-menu-divider h-px bg-[hsl(var(--border-hsl)/0.4)] dark:bg-[hsl(var(--border-hsl)/0.2)] mx-2 my-1"
+		>
+		</div>
+
+		<div class="flex gap-2 px-1 pb-1">
+			{
+				navRight.map(({ path, label, svg }, index) => (
+					<IconLink
+						href={path}
+						label={label}
+						svg={svg}
+						isMobile
+						style={`animation-delay: ${(index + navCenter.length) * 50}ms`}
+					/>
 				))
 			}
 		</div>
 	</div>
-</header-component>
+</template>
 
 <script>
 	class HeaderComponent extends HTMLElement {
+		private mobileMenuPortal: HTMLElement | null = null;
+		private menuButton: HTMLElement | null = null;
+		private isMenuOpen = false;
+		private preScrollY = 0;
+
 		connectedCallback() {
-			// scroll state
-			let preScrollY = window.scrollY;
-			this.classList.toggle("not-top", preScrollY > 20);
+			const template = document.getElementById(
+				"mobileMenuTemplate",
+			) as HTMLTemplateElement;
+			if (template) {
+				const clone = template.content.cloneNode(
+					true,
+				) as DocumentFragment;
+				this.mobileMenuPortal = clone.querySelector(
+					"#mobileMenuPortal",
+				) as HTMLElement;
+				if (this.mobileMenuPortal)
+					document.body.appendChild(this.mobileMenuPortal);
+			}
 
+			this.preScrollY = window.scrollY;
+			this._updateScrollState(this.preScrollY);
+
+			let ticking = false;
 			window.addEventListener("scroll", () => {
-				const currentScrollY = window.scrollY;
-				this.classList.toggle("not-top", currentScrollY > 20);
-				this.dataset.show = (
-					currentScrollY < 350 || currentScrollY < preScrollY
-				).toString();
-				preScrollY = currentScrollY;
-			});
-
-			// mobile menu
-			const menuBtn = this.querySelector("#toggleMenu");
-			const mobileMenu = this.querySelector("#mobileMenu");
-
-			menuBtn?.addEventListener("click", () => {
-				this.classList.toggle("expanded");
-			});
-
-			mobileMenu?.querySelectorAll("a").forEach((link) => {
-				link.addEventListener("click", () => {
-					this.classList.remove("expanded");
+				if (ticking) return;
+				ticking = true;
+				requestAnimationFrame(() => {
+					const currentScrollY = window.scrollY;
+					this.dataset.show = (
+						currentScrollY < 350 || currentScrollY < this.preScrollY
+					).toString();
+					this._updateScrollState(currentScrollY);
+					this.preScrollY = currentScrollY;
+					ticking = false;
 				});
 			});
+
+			this.menuButton = this.querySelector("#toggleMenu");
+			this.menuButton?.addEventListener("click", (e) => {
+				e.stopPropagation();
+				this._toggleMenu();
+			});
+
+			// 点击链接关闭菜单 - 使用更通用的选择器
+			this.mobileMenuPortal
+				?.querySelectorAll("a")
+				.forEach((link) =>
+					link.addEventListener("click", () => this._toggleMenu()),
+				);
+
+			document.addEventListener("click", (e) => {
+				if (
+					this.isMenuOpen &&
+					!this.contains(e.target as Node) &&
+					!this.mobileMenuPortal?.contains(e.target as Node)
+				) {
+					this._toggleMenu();
+				}
+			});
+
+			const observer = new MutationObserver(() => {
+				if (this.isMenuOpen) this._updateMenuPosition();
+			});
+			observer.observe(this, {
+				attributes: true,
+				attributeFilter: ["data-show", "class"],
+			});
+		}
+
+		private _toggleMenu() {
+			this.isMenuOpen = !this.isMenuOpen;
+			this.classList.toggle("expanded", this.isMenuOpen);
+
+			if (!this.mobileMenuPortal) return;
+
+			const [add, remove] = this.isMenuOpen
+				? [
+						["opacity-100", "visible", "pointer-events-auto"],
+						["opacity-0", "invisible", "pointer-events-none"],
+					]
+				: [
+						["opacity-0", "invisible", "pointer-events-none"],
+						["opacity-100", "visible", "pointer-events-auto"],
+					];
+
+			this.mobileMenuPortal.classList.remove(...remove);
+			this.mobileMenuPortal.classList.add(...add);
+
+			if (this.isMenuOpen) this._updateMenuPosition();
+		}
+
+		private _updateScrollState(scrollY: number) {
+			const isScrolled = scrollY > 20;
+			this.classList.toggle("is-scrolled", isScrolled);
+			this.mobileMenuPortal?.classList.toggle("is-scrolled", isScrolled);
+		}
+
+		private _updateMenuPosition() {
+			if (this.mobileMenuPortal) {
+				this.mobileMenuPortal.style.top = `${this.getBoundingClientRect().bottom + 8}px`;
+			}
+		}
+
+		disconnectedCallback() {
+			this.mobileMenuPortal?.remove();
 		}
 	}
 
@@ -120,217 +228,75 @@ const navRight = [
 </script>
 
 <style>
+	/* ===== Header ===== */
 	header-component {
-		position: sticky;
-		top: 0;
-		z-index: 50;
-		display: block;
-		background: white;
-		border-bottom: 1px solid transparent;
-		transition: all 0.3s;
+		background-color: hsl(var(--card-hsl));
+		border-color: transparent;
+		transition:
+			transform 0.3s ease,
+			background-color 0.3s ease,
+			border-color 0.3s ease,
+			box-shadow 0.3s ease;
 	}
 
-	/* scroll state */
-	header-component.not-top {
-		background: rgba(255, 255, 255, 0.8);
+	header-component.is-scrolled {
+		background-color: hsl(var(--card-hsl) / 0.8);
 		backdrop-filter: blur(4px);
-		-webkit-backdrop-filter: blur(4px);
-		border-bottom: 1px solid #e4e4e7;
-		box-shadow:
-			0 4px 6px -1px rgba(0, 0, 0, 0.1),
-			0 2px 4px -1px rgba(0, 0, 0, 0.06);
-		padding-left: 2rem;
-		padding-right: 2rem;
+		border-color: hsl(var(--border-hsl));
+		box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+	}
+
+	.dark header-component.is-scrolled {
+		background-color: hsl(var(--card-hsl) / 0.85);
+		border-color: hsl(var(--border-hsl) / 0.2);
 	}
 
 	header-component[data-show="false"]:not(.expanded) {
 		transform: translateY(-100%);
 	}
 
-	nav {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		height: 64px;
-		margin: 0 auto;
-		padding: 0 1.5rem;
-		max-width: 1200px;
+	header-component.expanded {
+		transform: translateY(0) !important;
 	}
 
-	.nav-left {
-		flex: 1;
+	/* ===== Mobile Menu Portal ===== */
+	#mobileMenuPortal {
+		background-color: hsl(var(--card-hsl) / 0.88);
+		backdrop-filter: blur(12px) saturate(180%);
+		border-color: hsl(var(--border-hsl) / 0.6);
+		box-shadow:
+			0 20px 25px -5px rgb(0 0 0 / 0.1),
+			0 8px 10px -6px rgb(0 0 0 / 0.1);
+		max-height: calc(100vh - 6rem);
+		overflow-y: auto;
+		transition:
+			opacity 0.3s ease,
+			visibility 0.3s ease,
+			top 0.1s ease;
 	}
 
-	.nav-center {
-		flex: 1;
-		display: flex;
-		justify-content: center;
-		gap: 0.25rem;
+	#mobileMenuPortal.is-scrolled {
+		background-color: hsl(var(--card-hsl) / 0.82);
+		backdrop-filter: blur(16px) saturate(200%);
+		border-color: hsl(var(--border-hsl));
 	}
 
-	.nav-right {
-		flex: 1;
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.25rem;
+	.dark #mobileMenuPortal {
+		background-color: hsl(var(--card-hsl) / 0.85);
+		border-color: hsl(var(--border-hsl) / 0.2);
 	}
 
-	h2 {
-		margin: 0;
-		font-size: 1.25rem;
-		font-weight: 600;
+	.dark #mobileMenuPortal.is-scrolled {
+		background-color: hsl(var(--card-hsl) / 0.82);
 	}
 
-	h2 a {
-		color: black;
-		text-decoration: none;
+	.mobile-menu-divider {
+		transition: background-color 0.2s ease;
 	}
 
-	.nav-center a {
-		padding: 0.5rem 0.75rem;
-		color: #3f3f46;
-		text-decoration: none;
-		font-size: 0.9375rem;
-		font-weight: 500;
-		border-radius: 6px;
-	}
-
-	.nav-center a:hover {
-		background: #f4f4f5;
-		color: black;
-	}
-
-	.nav-right a {
-		display: flex;
-		padding: 0.5rem;
-		color: #3f3f46;
-		border-radius: 6px;
-	}
-
-	.nav-right a:hover {
-		background: #f4f4f5;
-		color: black;
-	}
-
-	.nav-icon {
-		display: flex;
-		width: 1.25rem;
-		height: 1.25rem;
-	}
-
-	.nav-mobile-button {
-		display: none;
-	}
-
-	.nav-mobile {
-		display: none;
-	}
-
-	@media (max-width: 768px) {
-		nav {
-			padding: 0 1rem;
+	@media (min-width: 768px) {
+		#mobileMenuPortal {
+			display: none !important;
 		}
-
-		.nav-center,
-		.nav-right {
-			display: none;
-		}
-
-		.nav-left {
-			flex: 0;
-		}
-
-		.nav-mobile-button {
-			display: block;
-		}
-
-		.nav-mobile-button button {
-			display: flex;
-			padding: 0.5rem;
-			background: transparent;
-			border: none;
-			color: black;
-			border-radius: 6px;
-		}
-
-		.nav-mobile-button button:hover {
-			background: #f4f4f5;
-		}
-
-		.nav-mobile-button svg {
-			width: 24px;
-			height: 24px;
-		}
-
-		.nav-mobile {
-			position: absolute;
-			top: 64px;
-			left: 0;
-			right: 0;
-			display: flex;
-			flex-direction: column;
-			gap: 1rem;
-			padding: 1rem;
-			background: white;
-			border-bottom: 1px solid #e4e4e7;
-			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-			transform: translateY(-100%);
-			opacity: 0;
-			visibility: hidden;
-			transition: all 0.3s;
-		}
-
-		.expanded .nav-mobile {
-			transform: translateY(0);
-			opacity: 1;
-			visibility: visible;
-		}
-
-		.mobile-nav-center {
-			display: flex;
-			flex-direction: column;
-			gap: 0.25rem;
-		}
-
-		.mobile-nav-center a {
-			padding: 0.75rem 1rem;
-			color: #3f3f46;
-			text-decoration: none;
-			border-radius: 6px;
-		}
-
-		.mobile-nav-center a:hover {
-			background: #f4f4f5;
-		}
-
-		.mobile-nav-right {
-			display: flex;
-			gap: 0.5rem;
-			padding-top: 0.5rem;
-			border-top: 1px solid #e4e4e7;
-		}
-
-		.mobile-nav-right a {
-			display: flex;
-			align-items: center;
-			gap: 0.5rem;
-			padding: 0.5rem;
-			color: #3f3f46;
-			text-decoration: none;
-			border-radius: 6px;
-		}
-
-		.mobile-nav-right a:hover {
-			background: #f4f4f5;
-		}
-	}
-
-	.sr-only {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
-		overflow: hidden;
 	}
 </style>

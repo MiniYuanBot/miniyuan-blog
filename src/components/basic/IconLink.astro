@@ -6,6 +6,8 @@ import type { HTMLAttributes } from "astro/types";
 type Props = HTMLAttributes<"a"> & {
     isExternal?: boolean;
     label: string; // aria-label
+    svg?: string;
+    isMobile?: boolean;
 };
 
 const {
@@ -13,6 +15,8 @@ const {
     class: className,
     isExternal = false,
     label,
+    svg,
+    isMobile = false,
     ...props
 } = Astro.props;
 
@@ -42,13 +46,35 @@ const externalProps = isExternalLink
     class:list={[
         className,
         "icon-link",
+        // Desktop styles
+        !isMobile && [
+            "flex p-2",
+            "text-[rgb(var(--gray))]",
+            "rounded-md",
+            "transition-colors duration-200 ease-out",
+            "hover:bg-[hsl(var(--muted-hsl))] hover:text-[rgb(var(--black))]",
+            "dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white",
+        ],
+        // Mobile styles
+        isMobile && [
+            "mobile-menu-icon-item flex flex-1 items-center justify-center gap-2 p-3",
+            "text-[rgb(var(--black))] dark:text-[rgb(var(--gray-light))]",
+            "text-sm font-medium no-underline",
+            "bg-transparent rounded-[0.625rem]",
+            "border border-transparent",
+            "transition-all duration-200 ease-out",
+            "hover:scale-105 hover:text-[rgb(var(--black))] dark:hover:text-white",
+            "dark:hover:border-[hsl(var(--border-hsl)/0.3)]",
+        ],
         { active: isActive, external: isExternalLink },
     ]}
     aria-label={label}
     {...externalProps}
     {...props}
 >
-    <span class="sr-only">{label}</span>
+    {svg && <span class="flex w-5 h-5" set:html={svg} />}
+    {isMobile && <span class="text-sm font-medium">{label}</span>}
+    {!isMobile && <span class="sr-only">{label}</span>}
     <slot />
 </a>
 
@@ -59,12 +85,6 @@ const externalProps = isExternalLink
         justify-content: center;
         text-decoration: none;
         color: inherit;
-
-        padding: 0.5em 0.75em;
-        min-width: 44px;
-        min-height: 44px;
-
-        border-radius: 4px;
         transition: all 0.2s ease;
     }
 
@@ -72,16 +92,29 @@ const externalProps = isExternalLink
         color: var(--accent, #000);
     }
 
-    .icon-link:hover {
-        background-color: rgba(0, 0, 0, 0.05);
+    .dark .icon-link.active {
+        color: var(--accent-dark, #fff);
     }
 
     /* external link tag */
     .icon-link.external::after {
         content: "↗";
         font-size: 0.75em;
-        margin-left: 0em;
+        margin-left: 0.15em;
         opacity: 0.6;
+    }
+
+    /* Mobile menu item styles */
+    .mobile-menu-icon-item {
+        text-shadow: 0 1px 2px hsl(var(--card-hsl) / 0.8);
+    }
+
+    .dark .mobile-menu-icon-item {
+        text-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+    }
+
+    .dark .mobile-menu-icon-item:hover {
+        border-color: hsl(var(--border-hsl) / 0.3);
     }
 
     .sr-only {

@@ -1,0 +1,49 @@
+You are a Tailwind CSS expert. I am using UnoCSS + @unocss/preset-wind3 in my Astro project with **Bear Blog + Code Block theme variables** (defined in `global.css`).
+
+**🎨 Available CSS Variables (must use these):**
+```css
+/* Bear Blog core */
+--accent: #2337ff;
+--accent-dark: #000d8a;
+--black: 15, 18, 25;
+--gray: 96, 115, 159;
+--gray-light: 229, 233, 240;
+--gray-dark: 34, 41, 57;
+
+/* Code block & UI (HSL format) */
+--muted-hsl: 210, 40%, 96.1%;
+--muted-foreground-hsl: 215.4, 16.3%, 46.9%;
+--border-hsl: 214.3, 31.8%, 91.4%;
+--card-hsl: 0, 0%, 100%;
+
+/* Dark mode variants available via .dark */
+```
+
+**📐 Responsive:**
+- Use Tailwind breakpoints only: `sm:640px` `md:768px` `lg:1024px` `xl:1280px` `2xl:1536px`
+- Mobile-first, no custom `max-width` values
+
+**✨ Animations:**
+- Entry animations → `.animate-fade-in-up` class (global)
+- Stagger delays → `animation-delay: [50/100/150]ms`
+- Interactive → Tailwind `transition-colors duration-200 ease-out`
+- Respects `prefers-reduced-motion` (built-in)
+
+**✅ Theme Variables Usage Rules:**
+- RGB format → `text-[rgb(var(--black))]`
+- HSL format → `bg-[hsl(var(--muted-hsl))]` or `bg-[hsl(var(--muted-hsl)/0.5)]`
+- Hex format → `text-[var(--accent)]`
+- **Never hardcode colors** — always use CSS variables
+
+**❌ Forbidden:**
+- No hex codes like `#2337ff` in components
+- No RGB values like `rgb(96,115,159)` in components
+- No custom breakpoints
+- No custom keyframes/animations (use `.animate-fade-in-up`)
+
+**Your task:**
+Transform my component with these style changes:
+
+**Output:** Complete `.astro` component with Tailwind classes + `<style>` block — **all colors must use CSS variables from global.css**.
+
+**Input:**

@@ -13,11 +13,13 @@
     "@astrojs/mdx": "^4.3.13",
     "@astrojs/rss": "^4.0.15",
     "@astrojs/sitemap": "^3.7.0",
-    "astro": "^5.17.1",
-    "sharp": "^0.34.3"
+    "astro": "^5.17.2",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "@lucide/astro": "^0.563.0",
-    "esbuild": "^0.27.3"
+    "@unocss/preset-wind3": "^66.6.0",
+    "@unocss/reset": "^66.6.0",
+    "@unocss/transformer-directives": "^66.6.0",
+    "unocss": "^66.6.0"
   }
 }

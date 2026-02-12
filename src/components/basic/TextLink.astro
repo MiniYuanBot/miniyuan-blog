@@ -3,9 +3,11 @@
 
 import type { HTMLAttributes } from "astro/types";
 
-type Props = HTMLAttributes<"a">; // attributes belong to <a> components
+type Props = HTMLAttributes<"a"> & {
+    isMobile?: boolean;
+};
 
-const { href, class: className, ...props } = Astro.props;
+const { href, class: className, isMobile = false, ...props } = Astro.props;
 const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, "");
 const subpath = pathname.match(/[^\/]+/g);
 const isActive = href === pathname || href === "/" + (subpath?.[0] || "");
@@ -13,35 +15,72 @@ const isActive = href === pathname || href === "/" + (subpath?.[0] || "");
 
 <a
     href={href}
-    class:list={[className, "text-link", { active: isActive }]}
+    class:list={[
+        className,
+        // Desktop styles
+        !isMobile && [
+            "inline-flex items-center justify-center no-underline",
+            "text-[rgb(var(--gray))] text-sm font-medium",
+            "px-3 py-2 min-w-11 min-h-11",
+            "rounded-md border-b-4 border-b-transparent",
+            "transition-colors duration-200 ease-out",
+            "hover:bg-[hsl(var(--muted-hsl))] hover:text-[rgb(var(--black))]",
+            "dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white",
+            isActive && [
+                "font-bold",
+                "border-b-[var(--accent)]",
+                "dark:border-b-[var(--accent-dark)]",
+            ],
+        ],
+        // Mobile styles
+        isMobile && [
+            "mobile-menu-item block no-underline",
+            "px-4 py-3.5 my-0.5",
+            "flex items-center justify-center",
+            "text-[rgb(var(--black))] dark:text-[rgb(var(--gray-light))]",
+            "text-[0.9375rem] font-medium",
+            "bg-transparent rounded-[0.625rem]",
+            "transition-all duration-200 ease-out",
+            "hover:translate-x-1",
+            "hover:text-[rgb(var(--black))] dark:hover:text-white",
+            "dark:hover:shadow-lg",
+            isActive && [
+                "font-semibold",
+                "border-l-3 border-l-[var(--accent)]",
+                "pl-[calc(1rem-3px)]",
+                "bg-[hsl(var(--muted-hsl)/0.3)]",
+                "dark:border-l-[var(--accent-dark)]",
+                "dark:bg-[rgb(var(--gray-dark)/0.2)]",
+                "dark:text-white",
+            ],
+        ],
+    ]}
+    aria-current={isActive ? "page" : undefined}
     {...props}
 >
-    <!-- Slot content will be inserted here -->
     <slot />
 </a>
+
 <style>
-    .text-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        text-decoration: none;
-        color: inherit;
-
-        padding: 0.5em 0.75em;
-        min-width: 44px;
-        min-height: 44px;
-
-        border-radius: 4px;
-        border-bottom: 4px solid transparent;
-        transition: border-color 0.2s ease;
+    /* Mobile menu item text shadow */
+    .mobile-menu-item {
+        text-shadow: 0 1px 2px hsl(var(--card-hsl) / 0.8);
     }
 
-    .text-link.active {
-        border-bottom-color: var(--accent, #000);
-        font-weight: bold;
+    .mobile-menu-item:hover {
+        text-shadow: 0 2px 4px hsl(var(--card-hsl) / 0.9);
     }
 
-    .text-link:hover {
-        background-color: rgba(0, 0, 0, 0.05);
+    .dark .mobile-menu-item {
+        text-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+    }
+
+    .dark .mobile-menu-item:hover {
+        text-shadow: 0 2px 4px rgb(0 0 0 / 0.5);
+    }
+
+    /* Border left width utility */
+    .border-l-3 {
+        border-left-width: 3px;
     }
 </style>
