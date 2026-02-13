@@ -1,8 +1,6 @@
 import type { z } from 'astro:content';
 import type { HeaderConfigSchema } from '../schemas';
 import { siteConfig } from './site-config';
-import { ICONS, type IconKey } from '../components/icons'
-
 
 
 export const headerConfig = {
@@ -17,7 +15,7 @@ export const headerConfig = {
         { title: 'About', link: '/about' },
     ],
     right: [
-        { title: 'Home', link: '/', svg: ICONS.home },
-        { title: 'Search', link: '/search', svg: ICONS.search },
+        { title: 'Home', link: '/', icon: "home" },
+        { title: 'Search', link: '/search', icon: "search" },
     ],
 } satisfies z.infer<typeof HeaderConfigSchema>;

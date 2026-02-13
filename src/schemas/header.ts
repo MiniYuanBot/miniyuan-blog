@@ -1,9 +1,5 @@
 import { z } from 'astro:content';
-
-const SvgStringSchema = z.string().refine(
-    (val) => val.startsWith('<svg') && val.endsWith('</svg>'),
-    { message: 'unavailable svg type' }
-);
+import { ICONS, type IconKey } from '@/components/icons';
 
 export const HeaderBaseSchema = z.object({
     title: z.string(),
@@ -15,7 +11,7 @@ export const HeaderConfigSchema = z.object({
     center: z.array(HeaderBaseSchema),
     right: z.array(
         HeaderBaseSchema.extend({
-            svg: SvgStringSchema,
+            icon: z.enum(Object.keys(ICONS) as [IconKey, ...IconKey[]]),
             ariaLabel: z.string().optional(),
         })
     ),

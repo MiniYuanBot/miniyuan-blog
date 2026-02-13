@@ -2,9 +2,10 @@
 // The <Header /> component creates a consistent HTML header.
 
 import { headerConfig } from "@/config";
+import { ThemeToggle } from "../advanced";
+import { Icon } from "../ui";
 import TextLink from "./TextLink.astro";
 import IconLink from "./IconLink.astro";
-import { ICONS, type IconKey } from '../icons'
 ---
 
 <header-component
@@ -18,7 +19,7 @@ import { ICONS, type IconKey } from '../icons'
 			<h2 class="m-0 text-[1.2rem] font-semibold">
 				<a
 					href={headerConfig.left.link}
-					class="text-[rgb(var(--black))] no-underline transition-colors duration-200 hover:text-[rgb(var(--gray-dark))] dark:hover:text-white"
+					class="text-[hsl(var(--black))] no-underline transition-colors duration-200 hover:text-[hsl(var(--gray-dark))] dark:hover:text-white"
 				>
 					{headerConfig.left.title}
 				</a>
@@ -37,20 +38,23 @@ import { ICONS, type IconKey } from '../icons'
 		<!-- Right: icon links - hidden on mobile -->
 		<div class="hidden md:flex flex-1 justify-end gap-1">
 			{
-				headerConfig.right.map(({ link, title, svg }) => (
-					<IconLink href={link} label={title} svg={svg} />
+				headerConfig.right.map(({ link, title, icon }) => (
+					<IconLink href={link} label={title} icon={icon} />
 				))
 			}
+
+			<ThemeToggle />
 		</div>
 
 		<!-- Mobile: menu button -->
-		<div class="md:hidden">
+		<div class="md:hidden flex justify-end gap-1">
+			<ThemeToggle />
 			<button
 				id="toggleMenu"
 				aria-label="Menu"
-				class="flex p-2 text-[rgb(var(--black))] bg-transparent border-none rounded-md transition-colors duration-200 hover:bg-[rgba(var(--gray-light),1)] dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white"
+				class="toggle-button-base hover:bg-[hsla(var(--gray-light),1)] dark:hover:bg-[hsl(var(--gray-dark)/0.5)] dark:hover:text-white"
 			>
-				<span set:html={ICONS.menu} class="w-6 h-6" />
+				<Icon name="menu" class="" />
 			</button>
 		</div>
 	</nav>
@@ -71,7 +75,7 @@ import { ICONS, type IconKey } from '../icons'
 							href={item.link}
 							isMobile
 							mobileBackground="transparent"
-							mobileHoverBackground="rgb(var(--gray-light))"
+							mobileHoverBackground="hsl(var(--gray-light))"
 							delay={index * 50}
 						>
 							{item.title}
@@ -81,20 +85,20 @@ import { ICONS, type IconKey } from '../icons'
 			</div>
 
 			<div
-				class="h-px bg-[hsl(var(--border-hsl)/0.4)] dark:bg-[hsl(var(--border-hsl)/0.2)] mx-2 my-1"
+				class="h-px bg-[hsl(var(--border)/0.4)] dark:bg-[hsl(var(--border)/0.2)] mx-2 my-1"
 			>
 			</div>
 
 			<div class="flex gap-2 px-1 pb-1">
 				{
-					headerConfig.right.map(({ link, title, svg }, index) => (
+					headerConfig.right.map(({ link, title, icon }, index) => (
 						<IconLink
 							href={link}
 							label={title}
-							svg={svg}
+							icon={icon}
 							isMobile
 							mobileBackground="transparent"
-							mobileHoverBackground="rgb(var(--gray-light))"
+							mobileHoverBackground="hsl(var(--gray-light))"
 							delay={(index + headerConfig.center.length) * 50}
 						/>
 					))
@@ -128,7 +132,6 @@ import { ICONS, type IconKey } from '../icons'
 			this.preScrollY = window.scrollY;
 			this._updateScrollState(this.preScrollY);
 
-			let ticking = false;
 			window.addEventListener(
 				"scroll",
 				() => {
@@ -221,22 +224,22 @@ import { ICONS, type IconKey } from '../icons'
 
 <style>
 	header-component {
-		background-color: hsl(var(--card-hsl));
-		border-color: hsla(var(--border-hsl), 0.5);
+		background-color: hsl(var(--card));
+		border-color: hsla(var(--border), 0.5);
 	}
 
 	header-component.is-scrolled {
-		background-color: hsla(var(--card-hsl), 0.92);
-		border-color: hsl(var(--border-hsl));
-		box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+		background-color: hsla(var(--card), 0.92);
+		border-color: hsl(var(--border));
+		box-shadow: 0 4px 6px -1px hsla(0 0 0 0.1);
 	}
 
 	.dark header-component {
-		border-color: hsla(var(--border-hsl), 0.3);
+		border-color: hsla(var(--border), 0.3);
 	}
 
 	.dark header-component.is-scrolled {
-		border-color: hsla(var(--border-hsl), 0.5);
+		border-color: hsla(var(--border), 0.5);
 	}
 
 	header-component[data-show="false"]:not(.expanded) {
@@ -248,8 +251,8 @@ import { ICONS, type IconKey } from '../icons'
 	}
 
 	#mobileMenuPortal {
-		background-color: hsl(var(--card-hsl));
-		border: 1px solid hsla(var(--border-hsl), 0.5);
+		background-color: hsl(var(--card));
+		border: 1px solid hsla(var(--border), 0.5);
 		transition:
 			max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
 			opacity 0.3s ease,
@@ -259,18 +262,18 @@ import { ICONS, type IconKey } from '../icons'
 	}
 
 	#mobileMenuPortal.is-scrolled {
-		background-color: hsla(var(--card-hsl), 0.92);
-		border-color: hsl(var(--border-hsl));
+		background-color: hsla(var(--card), 0.92);
+		border-color: hsl(var(--border));
 	}
 
 	.dark #mobileMenuPortal {
-		background-color: hsl(var(--card-hsl));
-		border-color: hsla(var(--border-hsl), 0.3);
+		background-color: hsl(var(--card));
+		border-color: hsla(var(--border), 0.3);
 	}
 
 	.dark #mobileMenuPortal.is-scrolled {
-		background-color: hsla(var(--card-hsl), 0.98);
-		border-color: hsla(var(--border-hsl), 0.5);
+		background-color: hsla(var(--card), 0.98);
+		border-color: hsla(var(--border), 0.5);
 	}
 
 	@media (min-width: 768px) {

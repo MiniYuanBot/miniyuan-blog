@@ -1,0 +1,37 @@
+---
+import { ICONS, type IconKey } from "../icons";
+
+export interface Props {
+    name: IconKey;
+    class?: string;
+    viewBox?: string;
+    [key: string]: any;
+}
+
+const {
+    name,
+    class: className = "",
+    viewBox = "0 0 24 24",
+    ...attrs
+} = Astro.props;
+
+const innerContent = ICONS[name];
+
+const finalClass = `icon-base ${className}`;
+---
+
+{
+    innerContent ? (
+        <svg
+            class={finalClass}
+            viewBox={viewBox}
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            {...attrs}
+            set:html={innerContent}
+        />
+    ) : null
+}

@@ -1,0 +1,70 @@
+---
+import { Icon } from "../ui";
+---
+
+<theme-toggle>
+    <button
+        id="themeToggle"
+        class="group/theme toggle-button-base hover:bg-border"
+        aria-label="Toggle theme"
+    >
+        <Icon
+            class="system group-hover/theme:text-primary"
+            name="computer"
+        />
+        <Icon class="light group-hover/theme:text-primary" name="sun" />
+        <Icon class="dark group-hover/theme:text-primary" name="moon" />
+    </button>
+</theme-toggle>
+
+<script>
+    import { setTheme, getTheme } from "@/utils";
+
+    class ThemeToggle extends HTMLElement {
+        connectedCallback() {
+            const btn = this.querySelector(
+                "#themeToggle",
+            ) as HTMLElement | null;
+            if (!btn) return;
+
+            const current = setTheme(getTheme() ?? undefined);
+            btn.dataset.theme = current;
+
+            btn.addEventListener("click", () => {
+                const newTheme = setTheme(undefined, true);
+                btn.dataset.theme = newTheme;
+            });
+        }
+    }
+
+    customElements.define("theme-toggle", ThemeToggle);
+</script>
+
+<style>
+    #themeToggle {
+        & .system,
+        & .light,
+        & .dark {
+            display: none;
+        }
+
+        &:not([data-theme]),
+        &[data-theme="system"] {
+            & .system {
+                display: block;
+            }
+        }
+
+        &[data-theme="light"] {
+            & .light {
+                display: block;
+            }
+        }
+
+        &[data-theme="dark"] {
+            & .dark {
+                display: block;
+            }
+        }
+    }
+</style>

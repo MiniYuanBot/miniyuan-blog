@@ -24,6 +24,12 @@ importers:
         specifier: ^0.34.5
         version: 0.34.5
     devDependencies:
+      '@unocss/preset-mini':
+        specifier: ^66.6.0
+        version: 66.6.0
+      '@unocss/preset-typography':
+        specifier: ^66.6.0
+        version: 66.6.0
       '@unocss/preset-wind3':
         specifier: ^66.6.0
         version: 66.6.0

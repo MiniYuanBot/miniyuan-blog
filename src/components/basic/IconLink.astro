@@ -2,17 +2,20 @@
 // The <IconLink /> component creates consistent HTML icon links with customizable backgrounds
 
 import type { HTMLAttributes } from "astro/types";
+import { Icon } from "../ui";
+import type { IconKey } from "../icons";
 
 type Props = HTMLAttributes<"a"> & {
     isExternal?: boolean;
     label: string;
-    svg?: string;
+    icon: IconKey;
     isMobile?: boolean;
     background?: string;
     hoverBackground?: string;
     mobileBackground?: string;
     mobileHoverBackground?: string;
     delay?: string | number;
+    iconClass?: string;
 };
 
 const {
@@ -20,13 +23,14 @@ const {
     class: className,
     isExternal = false,
     label,
-    svg,
+    icon,
     isMobile = false,
     background = "transparent",
-    hoverBackground = "hsl(var(--muted-hsl))",
+    hoverBackground = "hsl(var(--muted))",
     mobileBackground = "transparent",
     mobileHoverBackground = "transparent",
     delay,
+    iconClass = "",
     ...props
 } = Astro.props;
 
@@ -68,22 +72,19 @@ const onMouseLeave = `this.style.backgroundColor='${currentBg}'`;
         className,
         "icon-link",
         !isMobile && [
-            "flex p-2",
-            "text-[rgb(var(--gray))]",
-            "rounded-md",
-            "transition-colors duration-200 ease-out",
-            "hover:text-[rgb(var(--black))]",
-            "dark:hover:text-[rgb(var(--gray-light))]",
+            "toggle-button-base",
+            "hover:text-[hsl(var(--black))]",
+            "dark:hover:text-[hsl(var(--gray-light))]",
         ],
         isMobile && [
             "mobile-menu-icon-item flex flex-1 items-center justify-center gap-2 p-3",
-            "text-[rgb(var(--black))] dark:text-[rgb(var(--gray-light))]",
+            "text-[hsl(var(--black))] dark:text-[hsl(var(--gray-light))]",
             "rounded-[0.625rem]",
             "border border-transparent",
             "transition-all duration-200 ease-out",
             "hover:translate-x-1",
-            "hover:text-[rgb(var(--black))] dark:hover:text-[rgb(var(--gray-light))]",
-            "dark:hover:border-[hsl(var(--border-hsl)/0.3)]",
+            "hover:text-[hsl(var(--black))] dark:hover:text-[hsl(var(--gray-light))]",
+            "dark:hover:border-[hsl(var(--border)/0.3)]",
         ],
         { active: isActive, external: isExternalLink },
     ]}
@@ -94,7 +95,8 @@ const onMouseLeave = `this.style.backgroundColor='${currentBg}'`;
     {...externalProps}
     {...props}
 >
-    {svg && <span class="flex w-5 h-5" set:html={svg} />}
+    <Icon name={icon} class:list={["w-5 h-5", iconClass]} />
+
     {isMobile && <span class="text-base font-medium">{label}</span>}
     {!isMobile && <span class="sr-only">{label}</span>}
     <slot />
@@ -102,11 +104,11 @@ const onMouseLeave = `this.style.backgroundColor='${currentBg}'`;
 
 <style>
     .icon-link.active {
-        color: var(--accent);
+        color: hsl(var(--accent));
     }
 
     .dark .icon-link.active {
-        color: var(--accent-dark);
+        color: hsl(var(--accent-dark));
     }
 
     .icon-link.external::after {
@@ -117,11 +119,11 @@ const onMouseLeave = `this.style.backgroundColor='${currentBg}'`;
     }
 
     .mobile-menu-icon-item {
-        text-shadow: 0 1px 2px hsl(var(--card-hsl) / 0.8);
+        text-shadow: 0 1px 2px hsl(var(--card) / 0.8);
     }
 
     .dark .mobile-menu-icon-item {
-        text-shadow: 0 1px 3px rgb(var(--black) / 0.4);
+        text-shadow: 0 1px 3px hsl(var(--black) / 0.4);
     }
 
     .sr-only {

@@ -1,61 +1,72 @@
 /*
   UnoCSS + Bear Blog theme + Code block theme variables
-  Inspired by: https://github.com/satnaing/astro-paper
+  Inspired by: https://github.com/satnaing/astro-paper 
 */
 
 @unocss;
 
-/* ========== Bear Blog theme variables ========== */
+/* ========== Light theme (HSL only) ========== */
 :root {
-	/* Bear Blog original */
-	--accent: #2337ff;
-	--accent-dark: #000d8a;
-	--black: 15, 18, 25;
-	--white: 255, 255, 255;
-	--gray: 96, 115, 159;
-	--gray-light: 229, 233, 240;
-	--gray-dark: 34, 41, 57;
-	--gray-gradient: rgba(var(--gray-light), 50%), #fff;
-	--box-shadow: 0 2px 6px rgba(var(--gray), 25%),
-		0 8px 24px rgba(var(--gray), 33%),
-		0 16px 32px rgba(var(--gray), 33%);
+	--black: 220 20% 10%;
+	--white: 0 0% 100%;
 
-	/* Code block & UI theme variables (from reference) */
-	--muted: var(--gray-light);
-	--muted-foreground: var(--gray-dark);
-	--border: 214.3 31.8% 91.4%;
+	/* Primary accent colors */
+	--accent: 233 100% 57%;
+	--accent-dark: 233 100% 27%;
+
+	/* Base colors */
+	--background: 0 0% 100%;
+	--foreground: 220 20% 10%;
+
+	/* Gray scale (HSL) */
+	--gray: 215 20% 50%;
+	--gray-light: 215 20% 92%;
+	--gray-dark: 220 25% 18%;
+
+	/* Semantic colors */
+	--muted: 210 40% 96%;
+	--muted-foreground: 215 16% 47%;
+	--border: 214 32% 91%;
 	--card: 0 0% 100%;
-	--card-foreground: var(--gray-dark);
-	--scrollbar-thumb: hsl(var(--muted-foreground) / 0.3);
+	--card-foreground: 220 25% 18%;
 
-	/* HSL format for reference project compatibility */
-	--muted-hsl: 210, 40%, 96.1%;
-	--muted-foreground-hsl: 215.4, 16.3%, 46.9%;
-	--border-hsl: 214.3, 31.8%, 91.4%;
-	--card-hsl: 0, 0%, 100%;
+	/* UI elements */
+	--box-shadow: 0 2px 6px hsl(var(--gray) / 25%),
+		0 8px 24px hsl(var(--gray) / 33%),
+		0 16px 32px hsl(var(--gray) / 33%);
+	--scrollbar-thumb: hsl(var(--muted-foreground) / 30%);
 }
 
-/* ========== Dark theme ========== */
+/* ========== Dark theme (HSL only) ========== */
 .dark {
-	/* Bear Blog dark overrides */
-	--black: 255, 255, 255;
-	--white: 15, 18, 25;
-	--gray-dark: 229, 233, 240;
-	--gray: 156, 163, 175;
-	--gray-light: 31, 41, 55;
+	--black: 0 0% 100%;
+	--white: 220 47% 6%;
 
-	/* Code block dark theme */
-	--muted: 217.2, 32.6%, 17.5%;
-	--muted-foreground: 215, 20.2%, 65.1%;
-	--border: 217.2, 32.6%, 17.5%;
-	--card: 222.2, 84%, 4.9%;
-	--scrollbar-thumb: hsl(var(--muted-foreground) / 0.3);
+	/* Primary accent colors */
+	--accent: 233 100% 67%;
+	--accent-dark: 233 100% 77%;
 
-	/* HSL format */
-	--muted-hsl: 217.2, 32.6%, 17.5%;
-	--muted-foreground-hsl: 215, 20.2%, 65.1%;
-	--border-hsl: 217.2, 32.6%, 17.5%;
-	--card-hsl: 222.2, 84%, 4.9%;
+	/* Base colors (inverted) */
+	--background: 222 47% 6%;
+	--foreground: 0 0% 100%;
+
+	/* Gray scale (HSL) */
+	--gray: 220 9% 66%;
+	--gray-light: 220 13% 18%;
+	--gray-dark: 215 20% 92%;
+
+	/* Semantic colors */
+	--muted: 217 33% 17%;
+	--muted-foreground: 215 20% 65%;
+	--border: 217 33% 17%;
+	--card: 222 84% 5%;
+	--card-foreground: 0 0% 100%;
+
+	/* UI elements */
+	--box-shadow: 0 2px 6px hsl(var(--gray) / 25%),
+		0 8px 24px hsl(var(--gray) / 33%),
+		0 16px 32px hsl(var(--gray) / 33%);
+	--scrollbar-thumb: hsl(var(--muted-foreground) / 30%);
 }
 
 /* ========== Font faces ========== */
@@ -81,7 +92,6 @@
 		transform: translateY(2rem);
 		opacity: 0;
 	}
-
 	100% {
 		transform: translateY(0);
 		opacity: 1;
@@ -93,20 +103,19 @@
 	animation: 300ms fade-in-up forwards;
 }
 
-@media (prefers-reduced-motion) {
+@media (prefers-reduced-motion: reduce) {
 	.animate-fade-in-up {
 		animation: 100ms fade-in-up forwards;
 	}
 }
 
 /* ========== Scrollbar styling ========== */
-:not(html) {
-	&::-webkit-scrollbar {
-		@apply w-[5px] h-[5px];
-	}
+:not(html)::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
 
-	&::-webkit-scrollbar-thumb {
-		background-color: var(--scrollbar-thumb);
-		@apply rounded-full;
-	}
+:not(html)::-webkit-scrollbar-thumb {
+	background-color: var(--scrollbar-thumb);
+	border-radius: 9999px;
 }

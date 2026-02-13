@@ -1,5 +1,5 @@
 ---
-import { BaseHead, Header, Footer } from "../components/basic";
+import { BaseHead, Header, Footer, ThemeProvider } from "../components/basic";
 import { Hero, Education } from "../components/advanced";
 import { siteConfig, heroConfig, educationConfig } from "../config";
 ---
@@ -8,6 +8,7 @@ import { siteConfig, heroConfig, educationConfig } from "../config";
 <html lang="en">
 	<head>
 		<BaseHead title={siteConfig.title} description={siteConfig.description} />
+		<ThemeProvider />
 	</head>
 	<body>
 		<Header />
