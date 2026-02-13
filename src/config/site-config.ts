@@ -1,5 +1,5 @@
 import type { z } from 'astro:content';
-import type { SiteConfigSchema } from '../schemas/site';
+import type { SiteConfigSchema } from '../schemas';
 
 export const siteConfig = {
     title: 'MINIYUAN',

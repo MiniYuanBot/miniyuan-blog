@@ -1,5 +1,5 @@
 import type { z } from 'astro:content';
-import type { HeroConfigSchema, SkillSchema } from '../schemas/hero';
+import type { HeroConfigSchema, SkillSchema } from '../schemas';
 
 export const heroConfig = {
     avatarSrc: "/images/miniyuan.jpg",

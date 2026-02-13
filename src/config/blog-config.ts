@@ -1,5 +1,5 @@
 import type { z } from 'astro:content';
-import type { BlogPostSchema } from '../schemas/blog';
+import type { BlogPostSchema } from '../schemas';
 
 export const blogConfig = {
     contentPath: './src/content/blog',

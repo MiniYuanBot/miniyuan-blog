@@ -1,25 +1,10 @@
 ---
 // The <Header /> component creates a consistent HTML header.
 
-import { siteConfig } from "@/config";
+import { headerConfig } from "@/config";
 import TextLink from "./TextLink.astro";
 import IconLink from "./IconLink.astro";
-
-const HomeIcon = `<svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`;
-const SearchIcon = `<svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`;
-const MenuIcon = `<svg xmlns="http://www.w3.org/2000/svg " width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>`;
-
-const navLeft = { path: "/", label: siteConfig.title };
-const navCenter = [
-	{ path: "/blog", label: "Blog" },
-	{ path: "/tags", label: "Tags" },
-	{ path: "/links", label: "Links" },
-	{ path: "/about", label: "About" },
-];
-const navRight = [
-	{ path: "/", label: "Home", svg: HomeIcon },
-	{ path: "/search", label: "Search", svg: SearchIcon },
-];
+import { ICONS, type IconKey } from '../icons'
 ---
 
 <header-component
@@ -32,10 +17,10 @@ const navRight = [
 		<div class="flex-1">
 			<h2 class="m-0 text-[1.2rem] font-semibold">
 				<a
-					href={navLeft.path}
+					href={headerConfig.left.link}
 					class="text-[rgb(var(--black))] no-underline transition-colors duration-200 hover:text-[rgb(var(--gray-dark))] dark:hover:text-white"
 				>
-					{siteConfig.title}
+					{headerConfig.left.title}
 				</a>
 			</h2>
 		</div>
@@ -43,8 +28,8 @@ const navRight = [
 		<!-- Center: main navigation - hidden on mobile -->
 		<div class="hidden md:flex flex-1 justify-center gap-1">
 			{
-				navCenter.map((item) => (
-					<TextLink href={item.path}>{item.label}</TextLink>
+				headerConfig.center.map((item) => (
+					<TextLink href={item.link}>{item.title}</TextLink>
 				))
 			}
 		</div>
@@ -52,8 +37,8 @@ const navRight = [
 		<!-- Right: icon links - hidden on mobile -->
 		<div class="hidden md:flex flex-1 justify-end gap-1">
 			{
-				navRight.map(({ path, label, svg }) => (
-					<IconLink href={path} label={label} svg={svg} />
+				headerConfig.right.map(({ link, title, svg }) => (
+					<IconLink href={link} label={title} svg={svg} />
 				))
 			}
 		</div>
@@ -65,7 +50,7 @@ const navRight = [
 				aria-label="Menu"
 				class="flex p-2 text-[rgb(var(--black))] bg-transparent border-none rounded-md transition-colors duration-200 hover:bg-[rgba(var(--gray-light),1)] dark:hover:bg-[rgb(var(--gray-dark)/0.5)] dark:hover:text-white"
 			>
-				<span set:html={MenuIcon} class="w-6 h-6" />
+				<span set:html={ICONS.menu} class="w-6 h-6" />
 			</button>
 		</div>
 	</nav>
@@ -81,15 +66,15 @@ const navRight = [
 		<div class="p-2">
 			<div class="flex flex-col">
 				{
-					navCenter.map((item, index) => (
+					headerConfig.center.map((item, index) => (
 						<TextLink
-							href={item.path}
+							href={item.link}
 							isMobile
 							mobileBackground="transparent"
 							mobileHoverBackground="rgb(var(--gray-light))"
 							delay={index * 50}
 						>
-							{item.label}
+							{item.title}
 						</TextLink>
 					))
 				}
@@ -102,15 +87,15 @@ const navRight = [
 
 			<div class="flex gap-2 px-1 pb-1">
 				{
-					navRight.map(({ path, label, svg }, index) => (
+					headerConfig.right.map(({ link, title, svg }, index) => (
 						<IconLink
-							href={path}
-							label={label}
+							href={link}
+							label={title}
 							svg={svg}
 							isMobile
 							mobileBackground="transparent"
 							mobileHoverBackground="rgb(var(--gray-light))"
-							delay={(index + navCenter.length) * 50}
+							delay={(index + headerConfig.center.length) * 50}
 						/>
 					))
 				}
@@ -144,19 +129,18 @@ const navRight = [
 			this._updateScrollState(this.preScrollY);
 
 			let ticking = false;
-			window.addEventListener("scroll", () => {
-				if (ticking) return;
-				ticking = true;
-				requestAnimationFrame(() => {
+			window.addEventListener(
+				"scroll",
+				() => {
 					const currentScrollY = window.scrollY;
 					this.dataset.show = (
 						currentScrollY < 350 || currentScrollY < this.preScrollY
 					).toString();
 					this._updateScrollState(currentScrollY);
 					this.preScrollY = currentScrollY;
-					ticking = false;
-				});
-			});
+				},
+				{ passive: true },
+			);
 
 			this.menuButton = this.querySelector("#toggleMenu");
 			this.menuButton?.addEventListener("click", (e) => {

@@ -1,5 +1,5 @@
 import type { z } from 'astro:content';
-import type { EducationItemSchema, EducationConfigSchema } from '../schemas/education';
+import type { EducationItemSchema, EducationConfigSchema } from '../schemas';
 
 export const educationConfig = [
     {
