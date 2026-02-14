@@ -2,61 +2,62 @@
 import type { TypographyOptions } from '@unocss/preset-typography'
 import { defineConfig, presetMini, presetTypography, type Rule } from 'unocss'
 import type { Theme } from '@unocss/preset-mini'
+import { shortcuts } from './src/assets/styles'
 
-const fg = 'hsl(var(--foreground) / <alpha-value>)'
-const fgMuted = 'hsl(var(--muted-foreground) / <alpha-value>)'
-// const bgMuted = 'hsl(var(--muted) / <alpha-value>)'
-const border = 'hsl(var(--border) / <alpha-value>)'
 const accent = 'hsl(var(--accent) / <alpha-value>)'
-// const card = 'hsl(var(--card) / <alpha-value>)'
+const accentDark = 'hsl(var(--accent-dark) / <alpha-value>)'
+
+const background = 'hsl(var(--background) / <alpha-value>)'
+const foreground = 'hsl(var(--foreground) / <alpha-value>)'
+
+const gray = 'hsl(var(--gray) / <alpha-value>)'
+const grayLight = 'hsl(var(--gray-light) / <alpha-value>)'
+const grayDark = 'hsl(var(--gray-dark) / <alpha-value>)'
+
+const muted = 'hsl(var(--muted) / <alpha-value>)'
+const mutedForeground = 'hsl(var(--muted-foreground) / <alpha-value>)'
+const border = 'hsl(var(--border) / <alpha-value>)'
+const card = 'hsl(var(--card) / <alpha-value>)'
+const cardForeground = 'hsl(var(--card-foreground) / <alpha-value>)'
+
 
 const typographyConfig: TypographyOptions = {
     colorScheme: {
-        body: fgMuted,
-        headings: fg,
+        body: mutedForeground,
+        headings: foreground,
         links: accent,
-        bold: fg,
+        bold: foreground,
         hr: border,
     },
     // cssExtend: {}
 }
 
 const themeColors = {
-    background: 'hsl(var(--background) / <alpha-value>)',
-    foreground: 'hsl(var(--foreground) / <alpha-value>)',
+    background: background,
+    foreground: foreground,
+    border: border,
 
     accent: {
-        DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
-        dark: 'hsl(var(--accent-dark) / <alpha-value>)'
+        DEFAULT: accent,
+        dark: accentDark
     },
 
-    // gray: {
-    //     DEFAULT: 'hsl(var(--gray) / <alpha-value>)',
-    //     light: 'hsl(var(--gray-light) / <alpha-value>)',
-    //     dark: 'hsl(var(--gray-dark) / <alpha-value>)'
-    // },
+    gray: {
+        DEFAULT: gray,
+        light: grayLight,
+        dark: grayDark
+    },
 
-    // muted: {
-    //     DEFAULT: 'hsl(var(--muted) / <alpha-value>)',
-    //     foreground: 'hsl(var(--muted-foreground) / <alpha-value>)'
-    // },
+    muted: {
+        DEFAULT: muted,
+        foreground: mutedForeground
+    },
 
-    border: 'hsl(var(--border) / <alpha-value>)',
-    // card: {
-    //     DEFAULT: 'hsl(var(--card) / <alpha-value>)',
-    //     foreground: 'hsl(var(--card-foreground) / <alpha-value>)'
-    // }
+    card: {
+        DEFAULT: card,
+        foreground: cardForeground
+    }
 }
-
-const rules: Rule<object>[] = [
-    ['animate-fade-in-up', {
-        animation: 'fade-in-up 300ms forwards'
-    }],
-
-    ['scrollbar-thin', {
-        'scrollbar-width': 'thin'
-    }]
-]
 
 const theme = {
     colors: themeColors,
@@ -68,10 +69,15 @@ const theme = {
     // }
 } satisfies Partial<Theme>
 
-const shortcuts = {
-    'toggle-button-base': 'box-content size-5 rounded-md border p-1.5 transition-colors',
-    'icon-base': 'size-5'
-}
+const rules: Rule<object>[] = [
+    ['animate-fade-in-up', {
+        animation: 'fade-in-up 300ms forwards'
+    }],
+
+    ['scrollbar-thin', {
+        'scrollbar-width': 'thin'
+    }]
+]
 
 export default defineConfig({
     presets: [

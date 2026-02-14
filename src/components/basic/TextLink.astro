@@ -5,10 +5,6 @@ import type { HTMLAttributes } from "astro/types";
 
 type Props = HTMLAttributes<"a"> & {
     isMobile?: boolean;
-    background?: string;
-    hoverBackground?: string;
-    mobileBackground?: string;
-    mobileHoverBackground?: string;
     delay?: string | number;
 };
 
@@ -16,10 +12,6 @@ const {
     href,
     class: className,
     isMobile = false,
-    background = "transparent",
-    hoverBackground = "hsl(var(--muted))",
-    mobileBackground = "transparent",
-    mobileHoverBackground = "transparent",
     delay,
     ...props
 } = Astro.props;
@@ -28,93 +20,33 @@ const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, "");
 const subpath = pathname.match(/[^\/]+/g);
 const isActive = href === pathname || href === "/" + (subpath?.[0] || "");
 
-const currentBg = isMobile ? mobileBackground : background;
-const currentHoverBg = isMobile ? mobileHoverBackground : hoverBackground;
-
 // Build style object for initial state
-const styleObj: Record<string, string> = {
-    "background-color": currentBg,
-};
+const styleObj: Record<string, string> = {};
 
 if (delay !== undefined) {
     styleObj["animation-delay"] =
         typeof delay === "number" ? `${delay}ms` : delay;
 }
-
-// Generate hover handlers as strings for inline use
-const onMouseEnter = `this.style.backgroundColor='${currentHoverBg}'`;
-const onMouseLeave = `this.style.backgroundColor='${currentBg}'`;
 ---
 
 <a
     href={href}
     class:list={[
         className,
-        "text-link",
         !isMobile && [
-            "inline-flex items-center justify-center no-underline",
-            "text-[hsl(var(--black))] text-base font-medium",
-            "px-3 py-2 min-w-11 min-h-11",
-            "rounded-md border-b-4 border-b-transparent",
-            "transition-colors duration-200 ease-out",
-            "hover:text-[hsl(var(--black))]",
-            "dark:hover:text-white",
-            isActive && [
-                "relative font-semibold",
-                "text-[hsl(var(--accent))] dark:text-[hsl(var(--accent-dark))]",
-                "after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2",
-                "after:content-['']",
-                "after:w-1 after:h-1 after:rounded-full",
-                "after:bg-[hsl(var(--accent))] dark:after:bg-[hsl(var(--accent-dark))]",
-            ],
+            "desktop-nav-item",
+            "desktop-nav-text",
+            isActive && "font-semibold text-accent desktop-active-indicator",
         ],
         isMobile && [
-            "mobile-menu-item block no-underline",
-            "px-4 py-3.5 my-0.5",
-            "flex items-center justify-center",
-            "text-[hsl(var(--black))] dark:text-[hsl(var(--gray-light))]",
-            "text-[0.9375rem] font-medium",
-            "rounded-[0.625rem]",
-            "transition-all duration-200 ease-out",
-            "hover:translate-x-1",
-            "hover:text-[hsl(var(--black))] dark:hover:text-white",
-            "dark:hover:shadow-lg",
-            isActive && [
-                "relative font-semibold",
-                "text-[hsl(var(--accent))] dark:text-[hsl(var(--accent-dark))]",
-                "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2",
-                "before:content-['']",
-                "before:w-1 before:h-5",
-                "before:rounded-r-md",
-                "before:bg-[hsl(var(--accent))] dark:before:bg-[hsl(var(--accent-dark))]",
-                "pl-4",
-            ],
+            "mobile-menu-item-base",
+            "mobile-menu-text",
+            isActive && "font-semibold text-accent mobile-active-indicator",
         ],
     ]}
     style={styleObj}
-    onmouseenter={onMouseEnter}
-    onmouseleave={onMouseLeave}
     aria-current={isActive ? "page" : undefined}
     {...props}
 >
     <slot />
 </a>
-
-<style>
-    /* Only text shadows and border utility remain */
-    .mobile-menu-item {
-        text-shadow: 0 1px 2px hsla(var(--card), 0.8);
-    }
-
-    .mobile-menu-item:hover {
-        text-shadow: 0 2px 4px hsla(var(--card, 0.9));
-    }
-
-    :global(.dark) .mobile-menu-item {
-        text-shadow: 0 1px 3px hsl(0 0 0 / 0.4);
-    }
-
-    :global(.dark) .mobile-menu-item:hover {
-        text-shadow: 0 2px 4px hsl(0 0 0 / 0.5);
-    }
-</style>

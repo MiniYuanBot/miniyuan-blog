@@ -1,36 +1,27 @@
 ---
-// The <IconLink /> component creates consistent HTML icon links with customizable backgrounds
+// The <IconLink /> component creates consistent icon links
 
-import type { HTMLAttributes } from "astro/types";
 import { Icon } from "../ui";
-import type { IconKey } from "../icons";
+import type { HTMLAttributes } from "astro/types";
+import { type IconKey } from "../icons";
 
 type Props = HTMLAttributes<"a"> & {
-    isExternal?: boolean;
+    href: string;
     label: string;
     icon: IconKey;
+    isExternal?: boolean;
     isMobile?: boolean;
-    background?: string;
-    hoverBackground?: string;
-    mobileBackground?: string;
-    mobileHoverBackground?: string;
     delay?: string | number;
-    iconClass?: string;
 };
 
 const {
     href,
-    class: className,
-    isExternal = false,
     label,
     icon,
+    isExternal = false,
     isMobile = false,
-    background = "transparent",
-    hoverBackground = "hsl(var(--muted))",
-    mobileBackground = "transparent",
-    mobileHoverBackground = "transparent",
     delay,
-    iconClass = "",
+    class: className,
     ...props
 } = Astro.props;
 
@@ -48,93 +39,32 @@ const externalProps = isExternalLink
     ? { target: "_blank", rel: "noopener noreferrer" }
     : {};
 
-const currentBg = isMobile ? mobileBackground : background;
-const currentHoverBg = isMobile ? mobileHoverBackground : hoverBackground;
-
-// Build style object for initial state
-const styleObj: Record<string, string> = {
-    "background-color": currentBg,
-};
+// Build style object for animation delay
+const styleObj: Record<string, string> = {};
 
 if (delay !== undefined) {
     styleObj["animation-delay"] =
         typeof delay === "number" ? `${delay}ms` : delay;
 }
-
-// Generate hover handlers as strings for inline use
-const onMouseEnter = `this.style.backgroundColor='${currentHoverBg}'`;
-const onMouseLeave = `this.style.backgroundColor='${currentBg}'`;
 ---
 
 <a
-    href={hrefString}
+    href={href}
+    aria-label={label}
     class:list={[
         className,
-        "icon-link",
-        !isMobile && [
-            "toggle-button-base",
-            "hover:text-[hsl(var(--black))]",
-            "dark:hover:text-[hsl(var(--gray-light))]",
-        ],
-        isMobile && [
-            "mobile-menu-icon-item flex flex-1 items-center justify-center gap-2 p-3",
-            "text-[hsl(var(--black))] dark:text-[hsl(var(--gray-light))]",
-            "rounded-[0.625rem]",
-            "border border-transparent",
-            "transition-all duration-200 ease-out",
-            "hover:translate-x-1",
-            "hover:text-[hsl(var(--black))] dark:hover:text-[hsl(var(--gray-light))]",
-            "dark:hover:border-[hsl(var(--border)/0.3)]",
-        ],
-        { active: isActive, external: isExternalLink },
+        !isMobile && "icon-button-base",
+        isMobile && "mobile-menu-item-base",
+        isActive && ["text-accent font-semibold", isMobile && "mobile-active-indicator"],
     ]}
     style={styleObj}
-    onmouseenter={onMouseEnter}
-    onmouseleave={onMouseLeave}
-    aria-label={label}
+    aria-current={isActive ? "page" : undefined}
     {...externalProps}
     {...props}
 >
-    <Icon name={icon} class:list={["w-5 h-5", iconClass]} />
+    <Icon name={icon} class:list={["icon-base", isActive && "text-accent"]} />
 
-    {isMobile && <span class="text-base font-medium">{label}</span>}
     {!isMobile && <span class="sr-only">{label}</span>}
+    {isMobile && <span class="inherent">{label}</span>}
     <slot />
 </a>
-
-<style>
-    .icon-link.active {
-        color: hsl(var(--accent));
-    }
-
-    .dark .icon-link.active {
-        color: hsl(var(--accent-dark));
-    }
-
-    .icon-link.external::after {
-        content: "↗";
-        font-size: 0.75em;
-        margin-left: 0.15em;
-        opacity: 0.6;
-    }
-
-    .mobile-menu-icon-item {
-        text-shadow: 0 1px 2px hsl(var(--card) / 0.8);
-    }
-
-    .dark .mobile-menu-icon-item {
-        text-shadow: 0 1px 3px hsl(var(--black) / 0.4);
-    }
-
-    .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-    }
-</style>

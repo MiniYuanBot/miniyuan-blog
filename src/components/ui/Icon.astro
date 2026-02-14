@@ -16,14 +16,12 @@ const {
 } = Astro.props;
 
 const innerContent = ICONS[name];
-
-const finalClass = `icon-base ${className}`;
 ---
 
 {
     innerContent ? (
         <svg
-            class={finalClass}
+            class={className}
             viewBox={viewBox}
             fill="none"
             stroke="currentColor"

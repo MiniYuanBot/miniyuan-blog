@@ -8,26 +8,19 @@ import TextLink from "./TextLink.astro";
 import IconLink from "./IconLink.astro";
 ---
 
-<header-component
-	class="sticky top-0 z-50 block border-b transition-all duration-300"
->
-	<nav
-		class="flex items-center justify-between h-16 mx-auto px-6 md:px-8 max-w-7xl"
-	>
+<header-component class="header-base">
+	<nav class="nav-container">
 		<!-- Left: site title -->
-		<div class="flex-1">
-			<h2 class="m-0 text-[1.2rem] font-semibold">
-				<a
-					href={headerConfig.left.link}
-					class="text-[hsl(var(--black))] no-underline transition-colors duration-200 hover:text-[hsl(var(--gray-dark))] dark:hover:text-white"
-				>
+		<div class="nav-left">
+			<h2 class="site-title">
+				<a href={headerConfig.left.link} class="site-link">
 					{headerConfig.left.title}
 				</a>
 			</h2>
 		</div>
 
 		<!-- Center: main navigation - hidden on mobile -->
-		<div class="hidden md:flex flex-1 justify-center gap-1">
+		<div class="nav-center">
 			{
 				headerConfig.center.map((item) => (
 					<TextLink href={item.link}>{item.title}</TextLink>
@@ -36,25 +29,20 @@ import IconLink from "./IconLink.astro";
 		</div>
 
 		<!-- Right: icon links - hidden on mobile -->
-		<div class="hidden md:flex flex-1 justify-end gap-1">
+		<div class="nav-right">
 			{
 				headerConfig.right.map(({ link, title, icon }) => (
 					<IconLink href={link} label={title} icon={icon} />
 				))
 			}
-
 			<ThemeToggle />
 		</div>
 
 		<!-- Mobile: menu button -->
-		<div class="md:hidden flex justify-end gap-1">
+		<div class="nav-mobile">
 			<ThemeToggle />
-			<button
-				id="toggleMenu"
-				aria-label="Menu"
-				class="toggle-button-base hover:bg-[hsla(var(--gray-light),1)] dark:hover:bg-[hsl(var(--gray-dark)/0.5)] dark:hover:text-white"
-			>
-				<Icon name="menu" class="" />
+			<button id="toggleMenu" aria-label="Menu" class="icon-button-base">
+				<Icon name="menu" class="icon-base" />
 			</button>
 		</div>
 	</nav>
@@ -64,32 +52,23 @@ import IconLink from "./IconLink.astro";
 <template id="mobileMenuTemplate">
 	<div
 		id="mobileMenuPortal"
-		class="md:hidden fixed left-4 right-4 flex-col rounded-xl shadow-xl transition-all duration-500 overflow-hidden"
+		class="mobile-menu-portal"
 		style="top: 4.5rem; z-index: 40; max-height: 0; opacity: 0; visibility: hidden; pointer-events: none; padding: 0;"
 	>
-		<div class="p-2">
+		<div class="mobile-menu-container">
 			<div class="flex flex-col">
 				{
 					headerConfig.center.map((item, index) => (
-						<TextLink
-							href={item.link}
-							isMobile
-							mobileBackground="transparent"
-							mobileHoverBackground="hsl(var(--gray-light))"
-							delay={index * 50}
-						>
+						<TextLink href={item.link} isMobile delay={index * 50}>
 							{item.title}
 						</TextLink>
 					))
 				}
 			</div>
 
-			<div
-				class="h-px bg-[hsl(var(--border)/0.4)] dark:bg-[hsl(var(--border)/0.2)] mx-2 my-1"
-			>
-			</div>
+			<div class="mobile-menu-divider"></div>
 
-			<div class="flex gap-2 px-1 pb-1">
+			<div class="mobile-icon-grid">
 				{
 					headerConfig.right.map(({ link, title, icon }, index) => (
 						<IconLink
@@ -97,8 +76,6 @@ import IconLink from "./IconLink.astro";
 							label={title}
 							icon={icon}
 							isMobile
-							mobileBackground="transparent"
-							mobileHoverBackground="hsl(var(--gray-light))"
 							delay={(index + headerConfig.center.length) * 50}
 						/>
 					))
@@ -224,26 +201,15 @@ import IconLink from "./IconLink.astro";
 
 <style>
 	header-component {
-		background-color: hsl(var(--card));
-		border-color: hsla(var(--border), 0.5);
+		@apply bg-card border-border/50;
 	}
 
 	header-component.is-scrolled {
-		background-color: hsla(var(--card), 0.92);
-		border-color: hsl(var(--border));
-		box-shadow: 0 4px 6px -1px hsla(0 0 0 0.1);
-	}
-
-	.dark header-component {
-		border-color: hsla(var(--border), 0.3);
-	}
-
-	.dark header-component.is-scrolled {
-		border-color: hsla(var(--border), 0.5);
+		@apply header-scrolled;
 	}
 
 	header-component[data-show="false"]:not(.expanded) {
-		transform: translateY(-100%);
+		@apply header-hidden;
 	}
 
 	header-component.expanded {
@@ -251,8 +217,6 @@ import IconLink from "./IconLink.astro";
 	}
 
 	#mobileMenuPortal {
-		background-color: hsl(var(--card));
-		border: 1px solid hsla(var(--border), 0.5);
 		transition:
 			max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
 			opacity 0.3s ease,
@@ -261,19 +225,8 @@ import IconLink from "./IconLink.astro";
 		will-change: max-height, opacity;
 	}
 
-	#mobileMenuPortal.is-scrolled {
-		background-color: hsla(var(--card), 0.92);
-		border-color: hsl(var(--border));
-	}
-
-	.dark #mobileMenuPortal {
-		background-color: hsl(var(--card));
-		border-color: hsla(var(--border), 0.3);
-	}
-
-	.dark #mobileMenuPortal.is-scrolled {
-		background-color: hsla(var(--card), 0.98);
-		border-color: hsla(var(--border), 0.5);
+	#mobileMenuPortal.is-scrolled .p-2 {
+		@apply bg-card/92 border-border;
 	}
 
 	@media (min-width: 768px) {
