@@ -1,0 +1,56 @@
+---
+import Card from './Card.astro';
+
+interface Props {
+    school: string;
+    period: string;
+    location: string;
+    description: string;
+    logo?: string;
+    padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+    hover?: boolean
+}
+
+const { school, period, location, description, logo, padding = 'md', hover = true } = Astro.props;
+---
+
+<Card padding={padding} hover={hover} bordered class="group">
+    {/* Logo background */}
+    {logo && (
+        <div class="education-card-bg">
+            <img
+                src={logo}
+                alt={`${school} logo`}
+                class="education-card-logo"
+                loading="lazy"
+            />
+        </div>
+    )}
+
+    {/* Card content */}
+    <div class="education-card-content">
+        {/* School name */}
+        <div class="education-card-header">
+            <h3 class="education-card-title">
+                {school}
+            </h3>
+        </div>
+
+        {/* Time and location info */}
+        <div class="education-card-info">
+            <div class="education-card-info-wrapper">
+                <div class="education-card-info-item">
+                    <span class="education-card-period">{period}</span>
+                </div>
+                <div class="education-card-info-item">
+                    <span class="education-card-location">{location}</span>
+                </div>
+            </div>
+        </div>
+
+        {/* Description */}
+        <div class="mt-1">
+            <p class="education-card-description">{description}</p>
+        </div>
+    </div>
+</Card>

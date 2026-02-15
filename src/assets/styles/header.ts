@@ -1,6 +1,5 @@
 export const headerShortcuts = {
     // ========== Header ==========
-    'header-base': 'sticky top-0 z-50 block border-b border-border/50 transition-base bg-card',
     'header-scrolled': 'bg-card/92 border-border shadow-[0_4px_6px_-1px_hsla(0,0%,0%,0.1)]',
     'header-hidden': 'translate-y-[-100%]',
 
@@ -23,7 +22,7 @@ export const headerShortcuts = {
     'mobile-menu-text': 'text-base font-medium text-foreground',
     'mobile-active-indicator': 'relative before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:content-[""] before:w-1 before:h-5 before:rounded-r-md before:bg-accent pl-4',
 
-    'desktop-nav-item': 'inline:flex-center no-underline px-3 py-2 min-w-11 min-h-11 rounded-md transition-colors text-foreground text-base font-medium hover:bg-gray-light',
+    'desktop-nav-item': 'flex-center no-underline px-3 py-2 min-w-11 min-h-11 rounded-md transition-colors text-foreground text-base font-medium hover:bg-gray-light',
     'desktop-nav-text': 'text-base font-medium text-foreground',
     'desktop-active-indicator': 'relative font-semibold text-accent after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:content-[""] after:w-1 after:h-1 after:rounded-full after:bg-accent',
 }

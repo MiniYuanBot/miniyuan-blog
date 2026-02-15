@@ -1,5 +1,5 @@
 ---
-import { Card, SkillTag } from "../ui";
+import { Card } from "../ui";
 
 interface Props {
     avatarSrc: string;
@@ -22,7 +22,7 @@ const {
 } = Astro.props;
 ---
 
-<Card padding="large" hover={false} class="hero-section">
+<Card padding="lg" hover={false} class="hero-section">
     <div class="hero-grid">
         <div class="avatar-container">
             <img
@@ -45,17 +45,6 @@ const {
                     </p>
                 ))
             }
-
-            <div class="skill-tags">
-                {
-                    skills.map((skill, index) => (
-                        <SkillTag
-                            label={skill.label}
-                            icon={skill.icon}
-                        />
-                    ))
-                }
-            </div>
         </div>
     </div>
 </Card>
@@ -109,14 +98,6 @@ const {
         margin-bottom: 1.2rem;
         color: var(--gray, #6c757d);
     }
-
-    .skill-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.8rem;
-        margin-top: 2rem;
-    }
-
     @media (min-width: 768px) {
         .hero-grid {
             grid-template-columns: auto 1fr;

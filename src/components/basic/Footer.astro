@@ -5,7 +5,7 @@ const today = new Date();
 ---
 
 <footer
-	class="py-8 px-4 pb-24 text-center bg-gradient-to-b from-[rgb(var(--gray-light))] to-[rgb(var(--gray-light)/0)] text-[rgb(var(--gray))]"
+	class="py-8 px-4 pb-24 text-center bg-gradient-to-b from-background to-gray-light text-gray"
 >
 	&copy; {today.getFullYear()} MINIYUAN. All rights reserved.
 
@@ -13,7 +13,7 @@ const today = new Date();
 		<a
 			href="https://m.webtoo.ls/@astro"
 			target="_blank"
-			class="text-[rgb(var(--gray))] no-underline transition-colors duration-200 ease-out hover:text-[rgb(var(--gray-dark))]"
+			class="text-gray no-underline transition-colors hover:text-gray-dark"
 		>
 			<span class="sr-only">Follow Astro on Mastodon</span>
 			<svg
@@ -33,7 +33,7 @@ const today = new Date();
 		<a
 			href="https://twitter.com/astrodotbuild"
 			target="_blank"
-			class="text-[rgb(var(--gray))] no-underline transition-colors duration-200 ease-out hover:text-[rgb(var(--gray-dark))]"
+			class="text-gray no-underline transition-colors hover:text-gray-dark"
 		>
 			<span class="sr-only">Follow Astro on Twitter</span>
 			<svg
@@ -53,7 +53,7 @@ const today = new Date();
 		<a
 			href="https://github.com/withastro/astro"
 			target="_blank"
-			class="text-[rgb(var(--gray))] no-underline transition-colors duration-200 ease-out hover:text-[rgb(var(--gray-dark))]"
+			class="text-gray no-underline transition-colors hover:text-gray-dark"
 		>
 			<span class="sr-only">Go to Astro's GitHub repo</span>
 			<svg
@@ -75,10 +75,10 @@ const today = new Date();
 <style>
 	/* Dark mode overrides */
 	.dark footer {
-		@apply bg-gradient-to-b from-[rgb(var(--gray-dark)/0.2)] to-transparent text-[rgb(var(--gray-light))];
+		@apply bg-gradient-to-b from-gray-dark to-transparent text-gray-light;
 	}
 
 	.dark footer a {
-		@apply text-[rgb(var(--gray-light))] hover:text-[rgb(var(--white)/0.9)];
+		@apply text-gray-light hover:text-white;
 	}
 </style>

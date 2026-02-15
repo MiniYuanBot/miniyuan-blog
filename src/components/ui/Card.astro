@@ -1,49 +1,38 @@
 ---
-import type { HTMLAttributes } from "astro/types";
-
-interface Props extends HTMLAttributes<"article"> {
-    padding?: "small" | "middle" | "large";
+// src/components/ui/Card.astro
+export interface Props {
+    class?: string;
+    padding?: "none" | "sm" | "md" | "lg" | "xl";
     hover?: boolean;
+    bordered?: boolean;
+    glass?: boolean;
+    children?: any;
 }
 
-const { padding = "middle", hover = true, ...props } = Astro.props;
+const {
+    class: className = "",
+    padding = "md",
+    hover = true,
+    bordered = true,
+    glass = false,
+} = Astro.props;
 
-const paddingClass = {
-    small: "card-padding-small",
-    middle: "card-padding-middle",
-    large: "card-padding-large",
-}[padding];
+const paddingMap = {
+    none: "",
+    sm: "card-padding-sm",
+    md: "card-padding-md",
+    lg: "card-padding-lg",
+    xl: "card-padding-xl",
+};
 ---
 
-<article
-    class:list={["card", paddingClass, { "card-hover": hover }]}
-    {...props}
->
+<div class:list={[
+    "card-container",
+    { "card-hover": hover },
+    { "card-bordered": bordered },
+    paddingMap[padding],
+    glass ? "card-glass" : "card-solid",
+    className
+]}>
     <slot />
-</article>
-
-<style>
-    .card {
-        position: relative;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-    }
-    
-    .card-padding-small {
-        padding: 1rem;
-    }
-    
-    .card-padding-middle {
-        padding: 1.5rem;
-    }
-    
-    .card-padding-large {
-        padding: 2rem;
-    }
-    
-    .card-hover:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-    }
-</style>
+</div>

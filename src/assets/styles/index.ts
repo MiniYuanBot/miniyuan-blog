@@ -1,8 +1,10 @@
 import { sharedShortcuts } from './shared'
 import { layoutShortcuts } from './layout'
 import { transitionShortcuts } from './transitions'
-import { iconShortcuts } from './icons'
+import { iconShortcuts, cardShortcuts } from './ui'
 import { headerShortcuts } from './header'
+import { educationShortcuts } from './education'
+import { SkillCardShortcuts } from './skill'
 import type { UserShortcuts } from 'unocss'
 
 export const shortcuts: UserShortcuts = {
@@ -10,5 +12,8 @@ export const shortcuts: UserShortcuts = {
     ...layoutShortcuts,
     ...transitionShortcuts,
     ...iconShortcuts,
+    ...cardShortcuts,
     ...headerShortcuts,
+    ...educationShortcuts,
+    ...SkillCardShortcuts,
 }

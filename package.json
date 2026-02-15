@@ -17,7 +17,6 @@
     "sharp": "^0.34.5"
   },
   "devDependencies": {
-    "@unocss/preset-mini": "^66.6.0",
     "@unocss/preset-typography": "^66.6.0",
     "@unocss/preset-wind3": "^66.6.0",
     "@unocss/reset": "^66.6.0",

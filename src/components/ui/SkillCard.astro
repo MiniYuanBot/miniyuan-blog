@@ -1,0 +1,61 @@
+---
+// src/components/skill-card.astro
+import Card from "@/components/ui/Card.astro";
+
+interface Props {
+    title?: string;
+    skills: Array<{
+        category: string;
+        items: string[];
+    }>;
+    showHeader?: boolean;
+    padding?: "none" | "sm" | "md" | "lg" | "xl";
+    hover?: boolean;
+    class?: string;
+}
+
+const {
+    title = "Skills",
+    skills,
+    showHeader = false,
+    padding = "md",
+    hover = true,
+    class: className = "",
+} = Astro.props;
+---
+
+<Card
+    padding={padding}
+    hover={hover}
+    bordered={true}
+    class={className}
+>
+    <div class={"skill-card-wrapper"}>
+        {
+            showHeader && title && (
+                <div class={"skill-card-header"}>
+                    <h3 class={"skill-card-title"}>{title}</h3>
+                </div>
+            )
+        }
+
+        <div class={"skill-card-content"}>
+            {
+                skills.map((skill) => (
+                    <div class={"skill-card-item"}>
+                        <span class={"skill-card-category"}>
+                            {skill.category}:
+                        </span>
+                        <div class={"skill-card-tags"}>
+                            {skill.items.map((item) => (
+                                <span class={"skill-card-tag transition-base"}>
+                                    {item}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</Card>

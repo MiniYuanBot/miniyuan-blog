@@ -1,3 +1,5 @@
 export { default as Icon } from './Icon.astro'
 export { default as Card } from './Card.astro'
-export { default as SkillTag } from './SkillTag.astro'
+export { default as EducationCard } from './EducationCard.astro'
+export { default as SkillCard } from './SkillCard.astro'
+export { default as ThemeToggle } from './ThemeToggle.astro'

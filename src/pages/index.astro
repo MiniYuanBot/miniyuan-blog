@@ -1,20 +1,61 @@
 ---
 import { BaseHead, Header, Footer, ThemeProvider } from "../components/basic";
-import { Hero, Education } from "../components/advanced";
-import { siteConfig, heroConfig, educationConfig } from "../config";
+import { Hero, Section } from "../components/layouts";
+import { EducationCard, SkillCard } from "../components/ui";
+import { siteConfig, heroConfig, educationConfig, skillConfig } from "../config";
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={siteConfig.title} description={siteConfig.description} />
+		<BaseHead
+			title={siteConfig.title}
+			description={siteConfig.description}
+		/>
 		<ThemeProvider />
 	</head>
-	<body>
+	<body class="bg-background text-foreground">
 		<Header />
 		<main>
-			<Hero {...heroConfig} />
-			<Education items={educationConfig} />
+			<!-- Hero -->
+			<Section>
+				<Hero {...heroConfig} />
+			</Section>
+
+			<!-- Education -->
+			<Section title="Education">
+				{
+					educationConfig.map((item) => (
+						<EducationCard
+							school={item.school}
+							period={item.period}
+							location={item.location}
+							description={item.description}
+							logo={item.logo}
+						/>
+					))
+				}
+			</Section>
+
+			<!-- Skills -->
+			<Section title="Skills">
+				{
+					skillConfig.map((item) => (
+						<SkillCard
+							title={item.title}
+							showHeader={item.showHeader}
+							padding={item.padding}
+							hover={item.hover}
+							skills={item.skills}
+						/>
+					))
+				}
+			</Section>
+
+			<!-- Projects -->
+			<!-- Blogs -->
+			<!-- Misc -->
+			<!-- Publications -->
 		</main>
 		<Footer />
 	</body>
