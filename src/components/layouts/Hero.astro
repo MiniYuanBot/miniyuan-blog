@@ -7,105 +7,37 @@ interface Props {
     name: string;
     tagline: string;
     introduction: string[];
-    skills: Array<{
-        label: string;
-        icon?: string;
-    }>;
 }
 const {
     avatarSrc,
-    avatarAlt = "个人头像",
+    avatarAlt = "profile photo",
     name,
     tagline,
     introduction,
-    skills,
 } = Astro.props;
 ---
 
-<Card padding="lg" hover={false} class="hero-section">
+<Card padding="lg" hover={false} class="hero-container">
     <div class="hero-grid">
-        <div class="avatar-container">
+        <div class="hero-avatar-container">
             <img
                 src={avatarSrc}
                 alt={avatarAlt}
-                class="avatar"
+                class="hero-avatar hero-avatar-hover"
                 width="240"
                 height="240"
-                loading="eager"
+                loading="lazy"
             />
         </div>
-        <div class="intro-content">
-            <h1>Hi I'm {name}</h1>
-            <p class="tagline">{tagline}</p>
+        <div class="hero-content">
+            <h1 class="hero-title">Hi I'm {name}</h1>
+            <p class="hero-tagline">{tagline}</p>
 
             {
-                introduction.map((text, index) => (
-                    <p class="intro-text">
-                        {text}
-                    </p>
+                introduction.map((text) => (
+                    <p class="hero-text">{text}</p>
                 ))
             }
         </div>
     </div>
 </Card>
-
-<style>
-    .hero-section {
-        background: linear-gradient(
-            135deg,
-            #f5f7ff 0%,
-            #f0f4ff 100%
-        ) !important;
-        margin-top: 2rem;
-    }
-
-    .hero-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 3rem;
-        align-items: center;
-    }
-
-    .avatar-container {
-        display: flex;
-        justify-content: center;
-    }
-
-    .avatar {
-        width: 200px;
-        height: 200px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 5px solid white;
-        box-shadow: 0 8px 30px rgba(67, 97, 238, 0.2);
-        transition: all 0.3s ease;
-    }
-
-    .avatar:hover {
-        transform: scale(1.03);
-    }
-
-    .tagline {
-        font-size: 1.4rem;
-        color: var(--primary, #4361ee);
-        margin-bottom: 1.2rem;
-        font-weight: 600;
-    }
-
-    .intro-text {
-        font-size: 1.15rem;
-        line-height: 1.7;
-        margin-bottom: 1.2rem;
-        color: var(--gray, #6c757d);
-    }
-    @media (min-width: 768px) {
-        .hero-grid {
-            grid-template-columns: auto 1fr;
-        }
-
-        .avatar {
-            width: 240px;
-            height: 240px;
-        }
-    }
-</style>

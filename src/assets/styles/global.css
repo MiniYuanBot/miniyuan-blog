@@ -21,13 +21,13 @@
 	/* Gray scale (HSL) */
 	--gray: 215 20% 50%;
 	--gray-light: 215 20% 92%;
-	--gray-dark: 220 25% 18%;
+	--gray-dark: 218 20% 45%;
 
 	/* Semantic colors */
 	--muted: 210 40% 96%;
 	--muted-foreground: 215 16% 47%;
 	--border: 214 32% 91%;
-	--card: 0 0% 100%;
+	--card: 0 0% 99%;
 	--card-foreground: 220 25% 18%;
 }
 
@@ -47,7 +47,7 @@
 	/* Gray scale (HSL) */
 	--gray: 220 9% 66%;
 	--gray-light: 220 13% 18%;
-	--gray-dark: 215 20% 92%;
+	--gray-dark: 215 20% 80%;
 
 	/* Semantic colors */
 	--muted: 217 33% 17%;

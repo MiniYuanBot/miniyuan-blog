@@ -6,14 +6,13 @@ export const iconShortcuts = {
 
 export const cardShortcuts = {
     // ========== Layout & Containers ==========
-    'card-container': 'relative w-full rounded-lg shadow-sm overflow-hidden transition-base',
+    'card-container': 'relative w-full rounded-lg border border-border/50 shadow-md overflow-hidden transition-base',
     
     // ========== Component Parts ==========
     'card-content': 'w-full h-full',
     
     // ========== States & Variants ==========
-    'card-hover': 'hover:translate-y-[-3px] hover:shadow-lg',
-    'card-bordered': 'border border-border/50 hover:border-border',
+    'card-hover': 'hover:translate-y-[-3px] hover:shadow-lg hover:border-border',
     'card-glass': 'backdrop-blur-md bg-card/80',
     'card-solid': 'bg-card',
     

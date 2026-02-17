@@ -1,62 +1,47 @@
 ---
-import { BaseHead, Header, Footer, ThemeProvider } from "../components/basic";
-import { Hero, Section } from "../components/layouts";
+import { BaseLayout, Hero, Section } from "../components/layouts";
 import { EducationCard, SkillCard } from "../components/ui";
-import { siteConfig, heroConfig, educationConfig, skillConfig } from "../config";
+import { heroConfig, educationConfig, skillConfig, siteConfig } from "../config";
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead
-			title={siteConfig.title}
-			description={siteConfig.description}
-		/>
-		<ThemeProvider />
-	</head>
-	<body class="bg-background text-foreground">
-		<Header />
-		<main>
-			<!-- Hero -->
-			<Section>
-				<Hero {...heroConfig} />
-			</Section>
+<BaseLayout title={siteConfig.title} description={siteConfig.description}>
+	<!-- Hero -->
+	<Section>
+		<Hero {...heroConfig} />
+	</Section>
 
-			<!-- Education -->
-			<Section title="Education">
-				{
-					educationConfig.map((item) => (
-						<EducationCard
-							school={item.school}
-							period={item.period}
-							location={item.location}
-							description={item.description}
-							logo={item.logo}
-						/>
-					))
-				}
-			</Section>
+	<!-- Education -->
+	<Section title="Education">
+		{
+			educationConfig.map((item) => (
+				<EducationCard
+					school={item.school}
+					period={item.period}
+					location={item.location}
+					description={item.description}
+					logo={item.logo}
+				/>
+			))
+		}
+	</Section>
 
-			<!-- Skills -->
-			<Section title="Skills">
-				{
-					skillConfig.map((item) => (
-						<SkillCard
-							title={item.title}
-							showHeader={item.showHeader}
-							padding={item.padding}
-							hover={item.hover}
-							skills={item.skills}
-						/>
-					))
-				}
-			</Section>
+	<!-- Skills -->
+	<Section title="Skills">
+		{
+			skillConfig.map((item) => (
+				<SkillCard
+					title={item.title}
+					showHeader={item.showHeader}
+					padding={item.padding}
+					hover={item.hover}
+					skills={item.skills}
+				/>
+			))
+		}
+	</Section>
 
-			<!-- Projects -->
-			<!-- Blogs -->
-			<!-- Misc -->
-			<!-- Publications -->
-		</main>
-		<Footer />
-	</body>
-</html>
+	<!-- Projects -->
+	<!-- Blogs -->
+	<!-- Misc -->
+	<!-- Publications -->
+</BaseLayout>

@@ -1,4 +1,4 @@
-export const SkillCardShortcuts = {
+export const skillShortcuts = {
     // ========== Layout & Containers ==========
     'skill-card-container': '',
     'skill-card-wrapper': 'stack-start',

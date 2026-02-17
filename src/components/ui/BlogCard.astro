@@ -1,0 +1,109 @@
+---
+// src/components/ui/BlogCard.astro
+import { Image } from "astro:assets";
+import Card from "./Card.astro";
+import { FormattedDate } from "@/components/basic";
+
+export interface Props {
+    title: string;
+    pubDate: Date;
+    author?: string;
+    position?: string;
+    tags?: string[];
+    heroImage?: ImageMetadata;
+    excerpt?: string;
+    href: string;
+    class?: string;
+}
+
+const {
+    title,
+    pubDate,
+    author = "miniyuan",
+    position = "Developer",
+    tags = ["hhh", "yyy", "123", "456", "789"],
+    heroImage,
+    excerpt,
+    href,
+    class: className = "",
+} = Astro.props;
+
+const hasImage = !!heroImage;
+---
+
+<a href={href} class="blog-card-link">
+    <Card
+        padding="none"
+        hover={true}
+        class:list={[
+            "blog-card",
+            "blog-card-hover",
+            { "blog-card-no-image": !hasImage },
+            className,
+        ]}
+    >
+        {
+            hasImage ? (
+                <>
+                    {/* Background Image Layer */}
+                    <div class="blog-card-bg-wrapper">
+                        <Image
+                            width={720}
+                            height={360}
+                            src={heroImage!}
+                            alt={title}
+                            class="blog-card-bg group-hover:scale-105"
+                        />
+                    </div>{" "}
+                    {/* Gradient Overlay */}
+                    <div class="blog-card-overlay" />
+                </>
+            ) : (
+                <div />
+            )
+        }
+        {/* Content Layer */}
+        <div class="blog-card-content">
+            {/* Top Row: Tags */}
+            <div class="flex flex-wrap gap-2 mb-auto pb-4">
+                {
+                    tags
+                        .slice(0, 4)
+                        .map((tag) => <span class="blog-card-tag">{tag}</span>)
+                }
+                {
+                    tags.length > 4 && (
+                        <span class="blog-card-tag-more">
+                            +{tags.length - 4}
+                        </span>
+                    )
+                }
+            </div>
+
+            {/* Bottom Content */}
+            <div class="blog-card-footer">
+                <div class="blog-card-header">
+                    <div class="flex items-center gap-2">
+                        <span class="blog-card-author">
+                            {author}
+                        </span>
+                        {
+                            position && (
+                                <span class="blog-card-position">
+                                    {position}
+                                </span>
+                            )
+                        }
+                    </div>
+                    <time class="blog-card-date">
+                        <FormattedDate date={pubDate} />
+                    </time>
+                </div>
+
+                <h3 class="blog-card-title">{title}</h3>
+
+                {excerpt && <p class="blog-card-excerpt">{excerpt}</p>}
+            </div>
+        </div>
+    </Card>
+</a>

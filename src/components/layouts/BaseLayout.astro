@@ -1,0 +1,30 @@
+---
+import { BaseHead, Header, Footer, ThemeProvider } from "../basic";
+import { siteConfig } from "@/config";
+import { SiteConfigSchema } from "@/schemas";
+
+interface Props {
+	title: string
+	description: string
+}
+
+const { title, description } = Astro.props
+---
+
+<!doctype html>
+<html lang={siteConfig.lang}>
+	<head>
+		<BaseHead
+			title={title}
+			description={description}
+		/>
+		<ThemeProvider />
+	</head>
+	<body class="bg-background text-foreground">
+		<Header />
+		<main>
+			<slot />
+		</main>
+		<Footer />
+	</body>
+</html>

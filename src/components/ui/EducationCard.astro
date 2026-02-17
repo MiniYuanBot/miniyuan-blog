@@ -14,7 +14,7 @@ interface Props {
 const { school, period, location, description, logo, padding = 'md', hover = true } = Astro.props;
 ---
 
-<Card padding={padding} hover={hover} bordered class="group">
+<Card padding={padding} hover={hover} class="group hover:cursor-pointer">
     {/* Logo background */}
     {logo && (
         <div class="education-card-bg">

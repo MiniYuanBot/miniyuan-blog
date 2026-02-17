@@ -12,5 +12,4 @@ export const HeroConfigSchema = z.object({
     name: z.string(),
     tagline: z.string(),
     introduction: z.array(z.string()),
-    skills: z.array(SkillSchema),
 });

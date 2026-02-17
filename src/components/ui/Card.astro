@@ -4,7 +4,6 @@ export interface Props {
     class?: string;
     padding?: "none" | "sm" | "md" | "lg" | "xl";
     hover?: boolean;
-    bordered?: boolean;
     glass?: boolean;
     children?: any;
 }
@@ -13,7 +12,6 @@ const {
     class: className = "",
     padding = "md",
     hover = true,
-    bordered = true,
     glass = false,
 } = Astro.props;
 
@@ -29,7 +27,6 @@ const paddingMap = {
 <div class:list={[
     "card-container",
     { "card-hover": hover },
-    { "card-bordered": bordered },
     paddingMap[padding],
     glass ? "card-glass" : "card-solid",
     className
