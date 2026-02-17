@@ -7,7 +7,7 @@ export interface Props {
 const { class: className, title } = Astro.props;
 ---
 
-<section class:list={["section-container", className]}>
+<section class:list={["w-full max-w-4xl mx-auto px-4 py-6 md:py-8 lg:py-10", className]}>
     {title && <div class="text-2xl font-bold mb-4">{title}</div>}
     <div class="stack-center-spread">
         <slot />

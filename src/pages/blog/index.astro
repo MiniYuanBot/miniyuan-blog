@@ -1,30 +1,105 @@
 ---
 import { getCollection } from "astro:content";
 import { Section, BaseLayout } from "@/components/layouts";
+import { Card, Icon, Button } from "@/components/ui";
 import BlogCard from "@/components/ui/BlogCard.astro";
 
 const posts = (await getCollection("blog")).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const allTags = posts.flatMap((post) => post.data.tags || []);
+
+const tagCounts: Record<string, number> = {};
+allTags.forEach((tag) => {
+	tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+});
+
+const uniqueTags = Object.keys(tagCounts).sort(
+	(a, b) => tagCounts[b] - tagCounts[a],
+);
+
+// tags to show on sidebar
+const sidebarTags = uniqueTags.slice(0, 3);
 ---
 
 <BaseLayout title="Blogs" description="The posts of miniyuan's blog">
-	<Section title="Blogs">
-		<div class="blog-container">
-			{
-				posts.map((post) => (
-					<BlogCard
-						title={post.data.title}
-						pubDate={post.data.pubDate}
-						author={post.data.author}
-						position={post.data.position}
-						tags={post.data.tags}
-						heroImage={post.data.heroImage}
-						excerpt={post.data.description}
-						href={`/blog/${post.id}/`}
-					/>
-				))
-			}
-		</div>
-	</Section>
+	<div class="flex flex-col md:flex-row lg:gap-8 xl:gap-12 relative">
+		{/* blogs */}
+		<Section title="Blogs">
+			<div class="w-full grid grid-cols-1 gap-6 p-0">
+				{
+					posts.map((post) => (
+						<BlogCard
+							title={post.data.title}
+							pubDate={post.data.pubDate}
+							excerpt={post.data.excerpt}
+							author={post.data.author}
+							position={post.data.position}
+							tags={post.data.tags}
+							heroImageLight={post.data.heroImageLight}
+							heroImageDark={post.data.heroImageDark}
+							href={`/blog/${post.id}/`}
+						/>
+					))
+				}
+			</div>
+		</Section>
+
+		{/* sidebar */}
+		{
+			!!uniqueTags.length && (
+				<aside
+					class="
+					md:w-56 lg:w-72 flex-shrink-0 
+					mt-8 lg:mt-0 
+					order-last 
+					animate-fade-in
+				"
+					id="sidebar"
+				>
+					<Card padding="md" hover glass class="hover:cursor-pointer">
+						<h2
+							class="
+						text-xl font-semibold 
+						flex items-center gap-2 
+						text-foreground
+						border-b border-muted-foreground/50 
+						pb-4 mb-4
+					"
+						>
+							<Icon name="tag" class="size-5" />
+							Tags
+						</h2>
+
+						<ul class="flex flex-wrap gap-2 mb-4">
+							{sidebarTags.map((tag) => (
+								<li>
+									<Button
+										as="a"
+										href={`/tags/${encodeURIComponent(tag)}`}
+										variant="pill"
+										title={`${tag} (${tagCounts[tag]})`}
+										aria-label={`View posts tagged with ${tag}`}
+									/>
+								</li>
+							))}
+						</ul>
+
+						{/* view all if tags to much */}
+						{uniqueTags.length > sidebarTags.length && (
+							<div class="text-right border-t border-muted-foreground/50 pt-4">
+								<Button
+									as="a"
+									variant="ahead"
+									title="View all tags"
+									href="/tags"
+								/>
+							</div>
+						)}
+					</Card>
+				</aside>
+			)
+		}
+	</div>
 </BaseLayout>

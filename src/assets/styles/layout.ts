@@ -57,10 +57,6 @@ export const layoutShortcuts = {
     // 'grid-auto-fill-md': 'grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4',
 
     // ========== Common Layout Patterns ==========
-    // Page layouts
-    'section-container': 'w-full max-w-4xl mx-auto px-4 py-6 md:py-8 lg:py-10',
-    'header-container': 'sticky top-0 z-50 block border-b border-border/50 transition-base bg-background/80',
-    
     // Card layouts
     // 'card-grid': 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6',
     // 'card-list': 'flex flex-col gap-4',

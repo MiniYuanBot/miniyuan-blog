@@ -1,6 +1,6 @@
 ---
 // src/components/skill-card.astro
-import Card from "@/components/ui/Card.astro";
+import { Card, Button } from "@/components/ui";
 
 interface Props {
     title?: string;
@@ -45,9 +45,7 @@ const {
                         </span>
                         <div class={"skill-card-tags"}>
                             {skill.items.map((item) => (
-                                <span class={"skill-card-tag transition-base"}>
-                                    {item}
-                                </span>
+                                <Button as="span" title={item} class="hover:cursor-pointer" />
                             ))}
                         </div>
                     </div>

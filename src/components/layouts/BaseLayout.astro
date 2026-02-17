@@ -1,7 +1,6 @@
 ---
 import { BaseHead, Header, Footer, ThemeProvider } from "../basic";
 import { siteConfig } from "@/config";
-import { SiteConfigSchema } from "@/schemas";
 
 interface Props {
 	title: string
@@ -20,9 +19,9 @@ const { title, description } = Astro.props
 		/>
 		<ThemeProvider />
 	</head>
-	<body class="bg-background text-foreground">
+	<body class="flex flex-col bg-background text-foreground">
 		<Header />
-		<main>
+		<main class="w-full mx-auto max-w-[70rem] min-h-[100dvh] px-4 py-8 flex-1">
 			<slot />
 		</main>
 		<Footer />

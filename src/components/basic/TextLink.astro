@@ -4,6 +4,8 @@
 import type { HTMLAttributes } from "astro/types";
 
 type Props = HTMLAttributes<"a"> & {
+    href: string;
+    class?: string;
     isMobile?: boolean;
     delay?: string | number;
 };

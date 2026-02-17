@@ -10,7 +10,7 @@ export const headerShortcuts = {
     'nav-right': 'hidden md:flex flex-1 justify-end gap-1',
     'nav-mobile': 'md:hidden flex justify-end gap-1',
 
-    'site-title': 'm-0 text-lg font-semibold',
+    'site-title': 'm-0 text-xl font-semibold',
     'site-link': 'text-foreground no-underline transition-colors hover:text-muted-foreground',
 
     'mobile-menu-portal': 'md:hidden fixed left-4 right-4 flex-col rounded-xl shadow-xl transition-base overflow-hidden',

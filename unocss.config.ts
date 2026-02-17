@@ -1,8 +1,7 @@
 // unocss.config.ts
-import type { TypographyOptions } from '@unocss/preset-typography'
 import { defineConfig, presetWind3, presetTypography, type Rule } from 'unocss'
 import type { Theme } from '@unocss/preset-wind3'
-import { shortcuts } from './src/assets/styles'
+import { shortcuts, typographyConfig } from './src/assets/styles'
 
 const accent = 'hsl(var(--accent) / <alpha-value>)'
 const accentDark = 'hsl(var(--accent-dark) / <alpha-value>)'
@@ -20,17 +19,6 @@ const border = 'hsl(var(--border) / <alpha-value>)'
 const card = 'hsl(var(--card) / <alpha-value>)'
 const cardForeground = 'hsl(var(--card-foreground) / <alpha-value>)'
 
-
-const typographyConfig: TypographyOptions = {
-    colorScheme: {
-        body: mutedForeground,
-        headings: foreground,
-        links: accent,
-        bold: foreground,
-        hr: border,
-    },
-    // cssExtend: {}
-}
 
 const themeColors = {
     background: background,

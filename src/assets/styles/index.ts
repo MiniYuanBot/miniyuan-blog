@@ -1,3 +1,4 @@
+import type { UserShortcuts } from 'unocss'
 import { sharedShortcuts } from './shared'
 import { layoutShortcuts } from './layout'
 import { transitionShortcuts } from './transitions'
@@ -6,8 +7,9 @@ import { headerShortcuts } from './header'
 import { educationShortcuts } from './education'
 import { skillShortcuts } from './skill'
 import { heroShortcuts } from './hero'
-import { blogShortcuts } from './blog'
-import type { UserShortcuts } from 'unocss'
+import { blogShortcuts, blogPostShortcuts } from './blog'
+
+export { typographyConfig } from './prose'
 
 export const shortcuts: UserShortcuts = {
     ...sharedShortcuts,
@@ -20,4 +22,5 @@ export const shortcuts: UserShortcuts = {
     ...skillShortcuts,
     ...heroShortcuts,
     ...blogShortcuts,
+    ...blogPostShortcuts,
 }

@@ -5,40 +5,61 @@ import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
 import { FormattedDate } from "@/components/basic";
+import { Icon } from "@/components/ui";
 
 type Props = CollectionEntry<"blog">["data"];
 
-const { title, description, author, pubDate, updatedDate, heroImage } =
-	Astro.props;
+const {
+	title,
+	excerpt,
+	author,
+	tags,
+	pubDate,
+	updatedDate,
+	heroImageLight,
+	heroImageDark,
+} = Astro.props;
 ---
 
-<BaseLayout title={title} description={description}>
-	<article>
-		<div class="hero-image">
-			{
-				heroImage && (
-					<Image width={1020} height={510} src={heroImage} alt="" />
-				)
-			}
-		</div>
-		<div class="prose">
-			<div class="title">
-				<div class="date">
-					<FormattedDate date={pubDate} />
+<BaseLayout title={title} description={excerpt}>
+	<article class="blog-post-article">
+		<div
+			class="prose prose-md max-w-none p-6 md:p-8 lg:p-10 dark:prose-invert"
+		>
+			<header class="">
+				<div class="blog-post-meta">
+					<time
+						class="inline-flex items-center gap-2"
+						datetime={pubDate.toISOString()}
+					>
+						<Icon name="calendar" class="size-5" />
+						<FormattedDate date={pubDate} />
+					</time>
+
 					{
 						updatedDate && (
-							<div class="last-updated-on">
-								Last updated on{" "}
+							<div class="inline-flex items-center gap-2">
+								<span class="blog-post-last-updated-badge">
+									Updated
+								</span>
 								<FormattedDate date={updatedDate} />
 							</div>
 						)
 					}
+
+					<div class="blog-post-author">
+						<span>{author}</span>
+					</div>
 				</div>
-				<!-- <div class="author">{author}</div> -->
-				<h1>{title}</h1>
-				<hr />
-			</div>
-			<!-- Slot content will be inserted here -->
+
+				<h1 class="mt-8 mb-0">
+					{title}
+				</h1>
+
+				<hr class="blog-post-divider" />
+			</header>
+
+			<!-- Article content, use prose style atomatically -->
 			<slot />
 		</div>
 	</article>
