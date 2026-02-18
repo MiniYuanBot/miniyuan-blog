@@ -1,0 +1,93 @@
+---
+// src/pages/tags/[...tag].astro
+import { getCollection } from "astro:content";
+import { BaseLayout, Section } from "@/components/layouts";
+import { Card, Icon, Button } from "@/components/ui";
+import BlogCard from "@/components/ui/BlogCard.astro";
+
+export async function getStaticPaths() {
+    const posts = await getCollection("blog");
+    const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))];
+
+    return tags.map((tag) => ({
+        params: { tag },
+        props: { tag },
+    }));
+}
+
+const { tag } = Astro.params;
+
+const taggedPosts = (await getCollection("blog"))
+    .filter((post) => post.data.tags?.includes(tag || ""))
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const postCount = taggedPosts.length;
+
+const relatedTags = [
+    ...new Set(taggedPosts.flatMap((post) => post.data.tags || [])),
+]
+    .filter((t) => t !== tag)
+    .slice(0, 5);
+---
+
+<BaseLayout
+    title={`tag: ${tag}`}
+    description={`view ${postCount} blogs with tag ${tag}`}
+>
+    <Section title={tag} subtitle={`${postCount} blogs`} backhref="/tags">
+        {
+            taggedPosts.length > 0 ? (
+                <div class="space-y-6">
+                    {taggedPosts.map((post) => (
+                        <div class="animate-fade-in">
+                            <BlogCard
+                                title={post.data.title}
+                                pubDate={post.data.pubDate}
+                                excerpt={post.data.excerpt}
+                                author={post.data.author}
+                                position={post.data.position}
+                                tags={post.data.tags}
+                                heroImageLight={post.data.heroImageLight}
+                                heroImageDark={post.data.heroImageDark}
+                                href={`/blog/${post.id}/`}
+                            />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <Card padding="xl" hover={false} class="text-center py-20">
+                    <Icon
+                        name="tag"
+                        class="size-10 mx-auto mb-4 text-muted-foreground"
+                    />
+                    <p class="text-xl text-muted-foreground mb-4">
+                        No blog under this tag
+                    </p>
+                    <Button
+                        as="a"
+                        href="/tags"
+                        variant="ahead"
+                        title="View other tags"
+                    />
+                </Card>
+            )
+        }
+    </Section>
+
+    <Section title="Related Tags">
+        {
+            relatedTags.length > 0 && (
+                <div class="flex flex-wrap gap-2">
+                    {relatedTags.map((relatedTag) => (
+                        <Button
+                            as="a"
+                            href={`/tags/${encodeURIComponent(relatedTag)}`}
+                            variant="pill"
+                            title={relatedTag}
+                        />
+                    ))}
+                </div>
+            )
+        }
+    </Section>
+</BaseLayout>

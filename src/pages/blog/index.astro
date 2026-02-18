@@ -20,7 +20,9 @@ const uniqueTags = Object.keys(tagCounts).sort(
 );
 
 // tags to show on sidebar
-const sidebarTags = uniqueTags.slice(0, 3);
+const sidebarTagMax = 10;
+
+const sidebarTags = uniqueTags.slice(0, sidebarTagMax);
 ---
 
 <BaseLayout title="Blogs" description="The posts of miniyuan's blog">
@@ -51,14 +53,15 @@ const sidebarTags = uniqueTags.slice(0, 3);
 			!!uniqueTags.length && (
 				<aside
 					class="
+					px-4
 					md:w-56 lg:w-72 flex-shrink-0 
-					mt-8 lg:mt-0 
+					mt-8 lg:mt-16 
 					order-last 
 					animate-fade-in
 				"
 					id="sidebar"
 				>
-					<Card padding="md" hover glass class="hover:cursor-pointer">
+					<Card padding="md" hover={false} class="shadow-md hover:cursor-pointer">
 						<h2
 							class="
 						text-xl font-semibold 

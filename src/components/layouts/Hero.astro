@@ -5,39 +5,32 @@ interface Props {
     avatarSrc: string;
     avatarAlt?: string;
     name: string;
-    tagline: string;
     introduction: string[];
 }
 const {
     avatarSrc,
     avatarAlt = "profile photo",
     name,
-    tagline,
     introduction,
 } = Astro.props;
 ---
 
-<Card padding="lg" hover={false} class="hero-container">
-    <div class="hero-grid">
-        <div class="hero-avatar-container">
-            <img
-                src={avatarSrc}
-                alt={avatarAlt}
-                class="hero-avatar hero-avatar-hover"
-                width="240"
-                height="240"
-                loading="lazy"
-            />
-        </div>
-        <div class="hero-content">
-            <h1 class="hero-title">Hi I'm {name}</h1>
-            <p class="hero-tagline">{tagline}</p>
-
-            {
-                introduction.map((text) => (
-                    <p class="hero-text">{text}</p>
-                ))
-            }
-        </div>
+<div
+    class="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-8 md:gap-10 items-start md:items-center"
+>
+    <div class="flex justify-center md:justify-start">
+        <img
+            src={avatarSrc}
+            alt={avatarAlt}
+            class="w-[200px] h-[200px] md:w-[240px] md:h-[240px] rounded-full object-cover border-4 border-gray-light shadow-lg transition-base hover:cursor-pointer hover:scale-105"
+            width="240"
+            height="240"
+            loading="lazy"
+        />
     </div>
-</Card>
+    <div class="flex flex-col text-center md:text-left">
+        <h1 class="text-3xl md:text-4xl font-bold text-foreground mb-2">
+            Hi! I'm {name}
+        </h1>
+    </div>
+</div>
