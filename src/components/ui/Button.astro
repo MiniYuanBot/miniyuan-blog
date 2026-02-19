@@ -4,9 +4,9 @@ import type { HTMLTag, Polymorphic } from "astro/types";
 type Props<T extends HTMLTag> = Polymorphic<{ as: T }> & {
     as?: string;
     title?: string;
-    href?: string;
     variant?: "button" | "pill" | "back" | "ahead";
-    target?: string;
+    href?: string;
+    target?: "_self" | "_blank";
     class?: string;
 };
 
@@ -16,8 +16,11 @@ const {
     title,
     href,
     variant = "button",
+    target = "_self",
     ...props
 } = Astro.props;
+
+const rel = target === "_blank" ? "noopener noreferrer" : undefined;
 ---
 
 <Component
@@ -28,6 +31,8 @@ const {
         className,
     ]}
     href={href}
+    target={target}
+    rel={rel}
     data-astro-prefetch
     {...props}
 >

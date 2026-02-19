@@ -12,9 +12,9 @@ const { class: className, title, subtitle, backhref } = Astro.props;
 ---
 
 <section class:list={["w-full max-w-4xl mx-auto px-4 py-4 md:py-8 lg:py-6", className]}>
-    {backhref && <Button as="a" title="Back" variant="back" href={backhref} />}
-    {title && <div class="text-2xl font-bold mt-4 mb-2">{title}</div>}
-    {subtitle && <div class="text-xl text-muted-foreground mb-4">{subtitle}</div>}
+    {backhref && <Button as="a" title="Back" variant="back" href={backhref} class="mb-4" />}
+    {title && <div class="text-2xl font-bold mt-2 mb-2">{title}</div>}
+    {subtitle && <div class="text-md text-muted-foreground mb-4">{subtitle}</div>}
     <div class="flex flex-col gap-3 p-3">
         <slot />
     </div>

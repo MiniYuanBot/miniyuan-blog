@@ -1,5 +1,4 @@
 ---
-// src/components/ui/BlogCard.astro
 import { Image } from "astro:assets";
 import Card from "./Card.astro";
 import { FormattedDate } from "@/components/basic";
@@ -31,8 +30,9 @@ const {
     class: className = "",
 } = Astro.props;
 
-const hasImage = !!heroImageLight || !!heroImageDark;
+const hasImage = !!(heroImageLight || heroImageDark);
 const showTagMax = 1;
+const imgBaseClass = "absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105";
 ---
 
 <article
@@ -42,103 +42,78 @@ const showTagMax = 1;
     ]}
     aria-label={`Read blog: ${title}`}
 >
-    {/* Main Card Link - Pseudo-element provides full card clickability */}
-    <a
-        href={href}
-        class:list={[
-            "block no-underline text-inherit w-full relative cursor-pointer",
-            "after:absolute after:inset-0 after:z-[1] after:content-[''] after:pointer-events-auto", // overlay to highlight the content
-        ]}
-        aria-label={title}
-    >
-        <Card
-            padding="none"
-            hover={false}
-            class="relative w-full overflow-hidden rounded-xl"
-        >
-            {
-                hasImage && (
-                    <>
-                        {/* Switch background image with theme changing */}
-                        <div class="absolute inset-0 w-full h-full overflow-hidden">
-                            {heroImageLight && (
-                                <Image
-                                    width={720}
-                                    height={360}
-                                    src={heroImageLight}
-                                    alt={title}
-                                    class="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 dark:hidden"
-                                />
-                            )}
-                            {heroImageDark && (
-                                <Image
-                                    width={720}
-                                    height={360}
-                                    src={heroImageDark}
-                                    alt={title}
-                                    class="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 hidden dark:block"
-                                />
-                            )}
-                        </div>
-                        {/* Gradient Overlay for better text readability */}
-                        <div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent transition-opacity" />
-                    </>
-                )
-            }
-            {/* Content Layer - Text content displayed above the image */}
-            <div class="relative z-[2] flex flex-col justify-end h-full min-h-[320px] p-6 pt-0 gap-3">
-                {/* Bottom Content */}
-                <div class="flex flex-col gap-2">
-                    <div class="flex-between gap-2 flex-wrap">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm font-semibold text-foreground">
-                                {author}
-                            </span>
-                            {
-                                position && (
-                                    <span class="text-sm text-muted-foreground pl-2 border-l border-gray-light">
-                                        {position}
-                                    </span>
-                                )
-                            }
-                        </div>
-                        <time class="text-sm text-muted-foreground font-mono">
-                            <FormattedDate date={pubDate} />
-                        </time>
-                    </div>
-
-                    <h3 class="text-xl font-bold text-foreground line-clamp-2 leading-tight transition-colors group-hover:text-accent">{title}</h3>
-
-                    {excerpt && <p class="text-base text-foreground/80 line-clamp-2 leading-relaxed">{excerpt}</p>}
+    <Card as="a" href={href} padding="none" hover={false}>
+        {hasImage && (
+            <>
+                <div class="absolute inset-0 overflow-hidden">
+                    {heroImageLight && (
+                        <Image
+                            width={720}
+                            height={360}
+                            src={heroImageLight}
+                            alt={title}
+                            class={`${imgBaseClass} dark:hidden`}
+                        />
+                    )}
+                    {heroImageDark && (
+                        <Image
+                            width={720}
+                            height={360}
+                            src={heroImageDark}
+                            alt={title}
+                            class={`${imgBaseClass} hidden dark:block`}
+                        />
+                    )}
                 </div>
-            </div>
-        </Card>
-    </a>
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+            </>
+        )}
+        
+        <div class="relative z-10 flex flex-col justify-end h-full min-h-[320px] p-6 pt-0 gap-3">
+            <div class="flex flex-col gap-2">
+                <div class="flex-between gap-2 flex-wrap">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-foreground">{author}</span>
+                        {position && (
+                            <span class="text-sm text-muted-foreground pl-2 border-l border-gray-light">
+                                {position}
+                            </span>
+                        )}
+                    </div>
+                    <time class="text-sm text-muted-foreground font-mono">
+                        <FormattedDate date={pubDate} />
+                    </time>
+                </div>
 
-    {/* Top Row: Tags */}
-    <div class="absolute top-0 left-0 right-0 z-10 flex flex-wrap gap-2 p-6 pointer-events-none">
-        {
-            tags
-                .slice(0, showTagMax)
-                .map((tag) => (
-                    <Button
-                        as="a"
-                        href={`/tags/${encodeURIComponent(tag)}`}
-                        variant="pill"
-                        title={tag}
-                        class="pointer-events-auto"
-                    />
-                ))
-        }
-        {
-            tags.length > showTagMax && (
-                <Button
-                    as="span"
-                    variant="pill"
-                    title={`+${tags.length - showTagMax}`}
-                    class="pointer-events-auto hover:cursor-pointer"
-                />
-            )
-        }
+                <h3 class="text-xl font-bold text-foreground line-clamp-2 leading-tight transition-colors group-hover:text-accent">
+                    {title}
+                </h3>
+
+                {excerpt && (
+                    <p class="text-base text-foreground/80 line-clamp-2 leading-relaxed">
+                        {excerpt}
+                    </p>
+                )}
+            </div>
+        </div>
+    </Card>
+
+    <div class="absolute top-0 left-0 right-0 z-20 flex flex-wrap gap-2 p-6">
+        {tags.slice(0, showTagMax).map((tag) => (
+            <Button
+                as="a"
+                href={`/tags/${encodeURIComponent(tag)}`}
+                variant="pill"
+                title={tag}
+            />
+        ))}
+        {tags.length > showTagMax && (
+            <Button
+                as="span"
+                variant="pill"
+                title={`+${tags.length - showTagMax}`}
+                class="cursor-pointer"
+            />
+        )}
     </div>
 </article>

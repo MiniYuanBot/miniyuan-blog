@@ -36,7 +36,8 @@ const svgProps = variant === "fill"
 {
     innerContent ? (
         <svg
-            class={className}
+            xmlns="http://www.w3.org/2000/svg"
+            class:list={["shrink-0", className]}
             viewBox={viewBox}
             {...svgProps}
             {...attrs}

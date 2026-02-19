@@ -1,19 +1,26 @@
 ---
-// src/components/ui/Card.astro
-export interface Props {
-    class?: string;
+import type { HTMLTag, Polymorphic } from "astro/types";
+
+type Props<T extends HTMLTag> = Polymorphic<{ as: T }> & {
+    as?: string;
     padding?: "none" | "sm" | "md" | "lg" | "xl";
     hover?: boolean;
-    glass?: boolean;
-    children?: any;
-}
+    href?: string;
+    target?: "_self" | "_blank";
+    class?: string;
+};
 
 const {
+    as: Component = "div",
     class: className = "",
     padding = "md",
     hover = true,
-    glass = false,
+    href,
+    target = "_self",
+    ...props
 } = Astro.props;
+
+const rel = target === "_blank" ? "noopener noreferrer" : undefined;
 
 const paddingMap = {
     none: "",
@@ -22,14 +29,27 @@ const paddingMap = {
     lg: "p-5 md:p-6 lg:p-7 xl:p-8",
     xl: "p-6 md:p-7 lg:p-8 xl:p-9",
 };
+
+type PaddingKey = keyof typeof paddingMap;
 ---
 
-<div class:list={[
-    "relative w-full rounded-lg border border-border/50 shadow-md overflow-hidden transition-base",
-    { "hover:translate-y-[-3px] hover:shadow-lg hover:border-border": hover },
-    paddingMap[padding],
-    glass ? "backdrop-blur-md bg-card/80" : "bg-card",
-    className
-]}>
+<Component
+    class:list={[
+        "group block relative w-full bg-card rounded-lg border border-border/50 shadow-md overflow-hidden transition-base no-underline",
+        {
+            "hover:translate-y-[-3px] hover:shadow-lg hover:border-border":
+                hover,
+            "cursor-pointer": hover,
+            "cursor-default": !hover,
+        },
+        paddingMap[padding as PaddingKey],
+        className,
+    ]}
+    href={href}
+    target={target}
+    rel={rel}
+    data-astro-prefetch
+    {...props}
+>
     <slot />
-</div>
+</Component>

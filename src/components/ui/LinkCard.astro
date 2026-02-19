@@ -1,0 +1,65 @@
+---
+import { Card, Icon } from "@/components/ui";
+
+export interface Props {
+    title: string;
+    description?: string;
+    url: string;
+    avatar?: string;
+    target?: "_blank" | "_self";
+    class?: string;
+}
+
+const {
+    title,
+    description,
+    url,
+    avatar,
+    target = "_blank",
+    class: className = "",
+} = Astro.props;
+---
+
+<Card
+    as="a"
+    href={url}
+    target={target}
+    class={className}
+    aria-label={`Visit ${title}`}
+>
+    <div class="flex items-center gap-4 h-full">
+        <div class="flex-shrink-0">
+            {
+                avatar ? (
+                    <img
+                        src={avatar}
+                        alt={`${title}`}
+                        class="size-12 rounded-full object-cover bg-muted"
+                        loading="lazy"
+                    />
+                ) : (
+                    <div class="size-12 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+                        <Icon name="link" class="size-6" />
+                    </div>
+                )
+            }
+        </div>
+
+        <div class="flex-1 min-w-0 flex flex-col h-full">
+            <h3 class="text-lg font-semibold text-card-foreground group-hover:text-accent transition-colors">
+                {title}
+            </h3>
+            {
+                description && (
+                    <p class="text-sm text-muted-foreground line-clamp-2 mt-1">
+                        {description}
+                    </p>
+                )
+            }
+            <div class="flex items-center gap-1 mt-auto pt-2 text-xs text-muted-foreground/70">
+                <Icon name="external" class="size-3" />
+                <span class="truncate">{new URL(url).hostname.replace("www.", "")}</span>
+            </div>
+        </div>
+    </div>
+</Card>

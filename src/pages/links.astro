@@ -1,0 +1,94 @@
+---
+import { BaseLayout, Section } from "@/components/layouts";
+import { Card, Icon } from "@/components/ui";
+import LinkCard from "@/components/ui/LinkCard.astro";
+import { linkConfig } from "@/config";
+---
+
+<BaseLayout title="Links" description="My friends and favorite tools">
+    <!-- Link Groups -->
+    {
+        linkConfig.map((group) => (
+            <Section title={group.title}>
+                {group.links.length > 0 ? (
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {group.links.map((link) => (
+                            <LinkCard
+                                title={link.title}
+                                description={link.description}
+                                url={link.url}
+                                avatar={link.avatar}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <Card padding="lg" class="text-center py-16">
+                        <Icon
+                            name="empty"
+                            class="size-8 mx-auto mb-4 text-muted-foreground"
+                        />
+                        <p class="text-lg text-muted-foreground">No links</p>
+                    </Card>
+                )}
+            </Section>
+        ))
+    }
+
+    <!-- Add Link Section -->
+    <Section title="Apply for a Friend Link">
+        <p class="text-base text-muted-foreground mb-4">
+            Would you like to exchange friend links? Please contact me with the
+            following information:
+        </p>
+        <Card padding="lg" hover={false}>
+            <div class="grid grid-rows-2 grid-cols-2 gap-3 h-full">
+                <!-- Site Name -->
+                <div class="flex items-center">
+                    <span class="text-base text-foreground w-32 shrink-0"
+                        >Site Name</span
+                    >
+                    <span class="text-sm text-muted-foreground">MINIBLOG</span>
+                </div>
+
+                <!-- Favicon -->
+                <div class="flex items-center">
+                    <span class="text-base text-foreground w-32 shrink-0"
+                        >Favicon</span
+                    >
+                    <span class="text-sm text-muted-foreground break-all"
+                        >http://localhost:4321/favicon.ico</span
+                    >
+                </div>
+
+                <!-- Description -->
+                <div class="flex items-center">
+                    <span class="text-base text-foreground w-32 shrink-0"
+                        >Description</span
+                    >
+                    <span class="text-sm text-muted-foreground"
+                        >Miniyuan is getting stronger!</span
+                    >
+                </div>
+
+                <!-- URL -->
+                <div class="flex items-center">
+                    <span class="text-base text-foreground w-32 shrink-0"
+                        >URL</span
+                    >
+                    <span
+                        class="text-sm text-muted-foreground hover:cursor-pointer hover:underline break-all"
+                    >
+                        <a
+                            href="http://localhost:4321"
+                            target="_blank"
+                            class="inline-flex items-center gap-1"
+                        >
+                            http://localhost:4321
+                            <Icon name="external" class="size-3" />
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </Card>
+    </Section>
+</BaseLayout>

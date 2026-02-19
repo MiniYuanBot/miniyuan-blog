@@ -7,11 +7,9 @@ const posts = await getCollection("blog");
 
 const tagCounts: Record<string, number> = {};
 posts.forEach((post) => {
-    if (post.data.tags) {
-        post.data.tags.forEach((tag) => {
-            tagCounts[tag] = (tagCounts[tag] || 0) + 1;
-        });
-    }
+    post.data.tags?.forEach((tag) => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+    });
 });
 
 const tags = Object.keys(tagCounts).sort((a, b) => a.localeCompare(b));
@@ -30,46 +28,36 @@ const tags = Object.keys(tagCounts).sort((a, b) => a.localeCompare(b));
                         );
 
                         return (
-                            <a
+                            <Card
+                                as="a"
                                 href={`/tags/${encodeURIComponent(tag)}`}
-                                class="block group focus:outline-none"
+                                padding="lg"
+                                hover
                                 aria-label={`view ${count} blogs with tag ${tag}`}
+                                class="flex flex-col items-center justify-center text-center aspect-square"
                             >
-                                <Card
-                                    padding="lg"
-                                    hover
-                                    class="h-full flex flex-col items-center justify-center text-center aspect-square transition-transform group-hover:-translate-y-1"
-                                >
-                                    <Icon name="tag" class="size-8" />
-                                    <h2 class="text-xl font-semibold mb-2 break-all">
-                                        {tag}
-                                    </h2>
-
-                                    <p class="text-sm text-muted-foreground">
-                                        {count} blogs
-                                    </p>
-
-                                    {/* A bar indicates the count of blogs */}
-                                    <div class="w-16 h-1 bg-muted rounded-full mt-4 overflow-hidden">
-                                        <div
-                                            class="h-full bg-accent rounded-full transition-all group-hover:opacity-100"
-                                            style={{
-                                                width: `${Math.min(count * 10, 100)}%`,
-                                                opacity: intensity,
-                                            }}
-                                        />
-                                    </div>
-                                </Card>
-                            </a>
+                                <Icon name="tag" class="size-8" />
+                                <h2 class="text-xl font-semibold mb-2 break-all">
+                                    {tag}
+                                </h2>
+                                <p class="text-sm text-muted-foreground">
+                                    {count} blogs
+                                </p>
+                                <div class="w-16 h-1 bg-muted rounded-full mt-4 overflow-hidden">
+                                    <div
+                                        class="h-full bg-accent rounded-full transition-all group-hover:opacity-100"
+                                        style={{
+                                            width: `${Math.min(count * 10, 100)}%`,
+                                            opacity: intensity,
+                                        }}
+                                    />
+                                </div>
+                            </Card>
                         );
                     })}
                 </div>
             ) : (
-                <Card
-                    padding="xl"
-                    glass
-                    class="text-center py-20 max-w-md mx-auto"
-                >
+                <Card padding="xl" class="text-center py-20 max-w-md mx-auto">
                     <Icon
                         name="tag"
                         class="size-10 mx-auto mb-4 text-muted-foreground"
