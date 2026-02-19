@@ -1,4 +1,3 @@
-// src/assets/styles/layout.ts
 export const layoutShortcuts = {
     // ========== Flex Layout ==========
     // Basic flex

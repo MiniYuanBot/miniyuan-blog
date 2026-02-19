@@ -1,11 +1,10 @@
 ---
 // Define a consistent html layout for blog posts.
 
-import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import BaseLayout from "./BaseLayout.astro";
 import { FormattedDate } from "@/components/basic";
-import { Icon } from "@/components/ui";
+import { Card, Icon } from "@/components/ui";
 
 type Props = CollectionEntry<"blog">["data"];
 
@@ -22,45 +21,49 @@ const {
 ---
 
 <BaseLayout title={title} description={excerpt}>
-	<article class="blog-post-article">
-		<div
-			class="prose prose-md max-w-none p-6 md:p-8 lg:p-10 dark:prose-invert"
-		>
-			<header class="">
-				<div class="blog-post-meta">
-					<time
-						class="inline-flex items-center gap-2"
-						datetime={pubDate.toISOString()}
-					>
-						<Icon name="calendar" class="size-5" />
-						<FormattedDate date={pubDate} />
-					</time>
+	<Card
+		hover={false}
+		padding="lg"
+		class="shadow-lg overflow-hidden max-w-none prose prose-md dark:prose-invert"
+	>
+		<header>
+			<div
+				class="flex flex-row items-center justify-start pt-2 gap-8 text-muted-foreground"
+			>
+				<time
+					class="inline-flex items-center gap-2 text-base font-mono"
+					datetime={pubDate.toISOString()}
+				>
+					<Icon name="calendar" class="size-5" />
+					<FormattedDate date={pubDate} />
+				</time>
 
-					{
-						updatedDate && (
-							<div class="inline-flex items-center gap-2">
-								<span class="blog-post-last-updated-badge">
-									Updated
-								</span>
-								<FormattedDate date={updatedDate} />
-							</div>
-						)
-					}
+				{
+					updatedDate && (
+						<time
+							class="inline-flex items-center gap-2 text-base font-mono"
+							datetime={pubDate.toISOString()}
+						>
+							<Icon name="pencil" class="size-5" />
+							<FormattedDate date={updatedDate} />
+						</time>
+					)
+				}
 
-					<div class="blog-post-author">
-						<span>{author}</span>
-					</div>
+				<div class="inline-flex items-center gap-2 text-base">
+					<Icon name="user" class="size-5" />
+					<span>{author}</span>
 				</div>
+			</div>
 
-				<h1 class="mt-8 mb-0">
-					{title}
-				</h1>
+			<h1 class="mt-4 mb-0">
+				{title}
+			</h1>
 
-				<hr class="blog-post-divider" />
-			</header>
+			<hr class="my-6 md:my-8 border-t border-gray/20" />
+		</header>
 
-			<!-- Article content, use prose style atomatically -->
-			<slot />
-		</div>
-	</article>
+		<!-- Article content, use prose style atomatically -->
+		<slot />
+	</Card>
 </BaseLayout>

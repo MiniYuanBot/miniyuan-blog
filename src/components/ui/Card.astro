@@ -17,18 +17,18 @@ const {
 
 const paddingMap = {
     none: "",
-    sm: "card-padding-sm",
-    md: "card-padding-md",
-    lg: "card-padding-lg",
-    xl: "card-padding-xl",
+    sm: "p-3 md:p-4",
+    md: "p-4 md:p-5 lg:p-6",
+    lg: "p-5 md:p-6 lg:p-7 xl:p-8",
+    xl: "p-6 md:p-7 lg:p-8 xl:p-9",
 };
 ---
 
 <div class:list={[
-    "card-container",
-    { "card-hover": hover },
+    "relative w-full rounded-lg border border-border/50 shadow-md overflow-hidden transition-base",
+    { "hover:translate-y-[-3px] hover:shadow-lg hover:border-border": hover },
     paddingMap[padding],
-    glass ? "card-glass" : "card-solid",
+    glass ? "backdrop-blur-md bg-card/80" : "bg-card",
     className
 ]}>
     <slot />

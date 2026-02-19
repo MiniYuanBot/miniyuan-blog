@@ -1,24 +1,12 @@
 import type { UserShortcuts } from 'unocss'
-import { sharedShortcuts } from './shared'
 import { layoutShortcuts } from './layout'
-import { transitionShortcuts } from './transitions'
-import { iconShortcuts, cardShortcuts } from './ui'
-import { headerShortcuts } from './header'
-import { educationShortcuts } from './education'
-import { skillShortcuts } from './skill'
-import { blogShortcuts, blogPostShortcuts } from './blog'
+import { sharedShortcuts, iconShortcuts, headerShortcuts } from './ui'
 
 export { typographyConfig } from './prose'
 
 export const shortcuts: UserShortcuts = {
     ...sharedShortcuts,
     ...layoutShortcuts,
-    ...transitionShortcuts,
     ...iconShortcuts,
-    ...cardShortcuts,
     ...headerShortcuts,
-    ...educationShortcuts,
-    ...skillShortcuts,
-    ...blogShortcuts,
-    ...blogPostShortcuts,
 }

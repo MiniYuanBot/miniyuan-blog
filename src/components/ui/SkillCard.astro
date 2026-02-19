@@ -27,23 +27,23 @@ const {
     hover={hover}
     class="hover:cursor-pointer"
 >
-    <div class={"skill-card-wrapper"}>
+    <div class="stack-start">
         {
             showHeader && title && (
-                <div class={"skill-card-header"}>
-                    <h3 class={"skill-card-title"}>{title}</h3>
+                <div class="flex-between border-b border-border/50 w-full pb-2 mb-4">
+                    <h3 class="text-lg font-semibold text-foreground w-full">{title}</h3>
                 </div>
             )
         }
 
-        <div class={"skill-card-content"}>
+        <div class="flex flex-col gap-3">
             {
                 skills.map((skill) => (
-                    <div class={"skill-card-item"}>
-                        <span class={"skill-card-category"}>
+                    <div class="flex items-start gap-2">
+                        <span class="text-sm font-medium text-muted-foreground min-w-[90px]">
                             {skill.category}:
                         </span>
-                        <div class={"skill-card-tags"}>
+                        <div class="flex flex-wrap gap-2">
                             {skill.items.map((item) => (
                                 <Button as="span" title={item} class="hover:cursor-pointer" />
                             ))}

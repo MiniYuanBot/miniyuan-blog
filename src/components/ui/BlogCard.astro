@@ -22,7 +22,7 @@ const {
     title,
     pubDate,
     author = "miniyuan",
-    position = "Developer",
+    position = "Jupyter",
     tags = [],
     heroImageLight,
     heroImageDark,
@@ -37,7 +37,7 @@ const showTagMax = 1;
 
 <article
     class:list={[
-        "blog-card-wrapper group hover:-translate-y-2 hover:shadow-lg transition-base", // positioning context
+        "relative block w-full group hover:-translate-y-2 hover:shadow-lg transition-base",
         className,
     ]}
     aria-label={`Read blog: ${title}`}
@@ -45,7 +45,10 @@ const showTagMax = 1;
     {/* Main Card Link - Pseudo-element provides full card clickability */}
     <a
         href={href}
-        class="blog-card-link blog-card-link-overlay"
+        class:list={[
+            "block no-underline text-inherit w-full relative cursor-pointer",
+            "after:absolute after:inset-0 after:z-[1] after:content-[''] after:pointer-events-auto", // overlay to highlight the content
+        ]}
         aria-label={title}
     >
         <Card
@@ -57,14 +60,14 @@ const showTagMax = 1;
                 hasImage && (
                     <>
                         {/* Switch background image with theme changing */}
-                        <div class="blog-card-bg-wrapper">
+                        <div class="absolute inset-0 w-full h-full overflow-hidden">
                             {heroImageLight && (
                                 <Image
                                     width={720}
                                     height={360}
                                     src={heroImageLight}
                                     alt={title}
-                                    class="blog-card-bg group-hover:scale-105 dark:hidden"
+                                    class="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 dark:hidden"
                                 />
                             )}
                             {heroImageDark && (
@@ -73,47 +76,47 @@ const showTagMax = 1;
                                     height={360}
                                     src={heroImageDark}
                                     alt={title}
-                                    class="blog-card-bg group-hover:scale-105 hidden dark:block"
+                                    class="absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105 hidden dark:block"
                                 />
                             )}
                         </div>
                         {/* Gradient Overlay for better text readability */}
-                        <div class="blog-card-overlay" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent transition-opacity" />
                     </>
                 )
             }
             {/* Content Layer - Text content displayed above the image */}
-            <div class="blog-card-content blog-card-content-layer">
+            <div class="relative z-[2] flex flex-col justify-end h-full min-h-[320px] p-6 pt-0 gap-3">
                 {/* Bottom Content */}
-                <div class="blog-card-footer">
-                    <div class="blog-card-header">
+                <div class="flex flex-col gap-2">
+                    <div class="flex-between gap-2 flex-wrap">
                         <div class="flex items-center gap-2">
-                            <span class="blog-card-author">
+                            <span class="text-sm font-semibold text-foreground">
                                 {author}
                             </span>
                             {
                                 position && (
-                                    <span class="blog-card-position">
+                                    <span class="text-sm text-muted-foreground pl-2 border-l border-gray-light">
                                         {position}
                                     </span>
                                 )
                             }
                         </div>
-                        <time class="blog-card-date">
+                        <time class="text-sm text-muted-foreground font-mono">
                             <FormattedDate date={pubDate} />
                         </time>
                     </div>
 
-                    <h3 class="blog-card-title">{title}</h3>
+                    <h3 class="text-xl font-bold text-foreground line-clamp-2 leading-tight transition-colors group-hover:text-accent">{title}</h3>
 
-                    {excerpt && <p class="blog-card-excerpt">{excerpt}</p>}
+                    {excerpt && <p class="text-base text-foreground/80 line-clamp-2 leading-relaxed">{excerpt}</p>}
                 </div>
             </div>
         </Card>
     </a>
 
-    {/* Top Row: Tags - Positioned above card link via z-index layering */}
-    <div class="blog-card-tags">
+    {/* Top Row: Tags */}
+    <div class="absolute top-0 left-0 right-0 z-10 flex flex-wrap gap-2 p-6 pointer-events-none">
         {
             tags
                 .slice(0, showTagMax)
@@ -123,7 +126,7 @@ const showTagMax = 1;
                         href={`/tags/${encodeURIComponent(tag)}`}
                         variant="pill"
                         title={tag}
-                        class="blog-card-tag-link"
+                        class="pointer-events-auto"
                     />
                 ))
         }
@@ -133,7 +136,7 @@ const showTagMax = 1;
                     as="span"
                     variant="pill"
                     title={`+${tags.length - showTagMax}`}
-                    class="blog-card-tag-more"
+                    class="pointer-events-auto hover:cursor-pointer"
                 />
             )
         }

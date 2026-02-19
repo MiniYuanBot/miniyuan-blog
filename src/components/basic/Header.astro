@@ -8,19 +8,21 @@ import TextLink from "./TextLink.astro";
 import IconLink from "./IconLink.astro";
 ---
 
-<header-component class="sticky top-0 z-50 block border-b border-border/50 transition-base bg-background/80">
-	<nav class="nav-container">
+<header-component
+	class="sticky top-0 z-50 block border-b border-border/50 transition-base bg-background/80"
+>
+	<nav class="flex-between h-16 mx-auto px-6 md:px-8 max-w-7xl">
 		<!-- Left: site title -->
-		<div class="nav-left">
-			<h2 class="site-title">
-				<a href={headerConfig.left.link} class="site-link">
+		<div class="flex-1">
+			<h2 class="m-0 text-xl font-semibold">
+				<a href={headerConfig.left.link} class="text-foreground no-underline transition-colors hover:text-accent">
 					{headerConfig.left.title}
 				</a>
 			</h2>
 		</div>
 
 		<!-- Center: main navigation - hidden on mobile -->
-		<div class="nav-center">
+		<div class="hidden md:flex flex-1 justify-center gap-1">
 			{
 				headerConfig.center.map((item) => (
 					<TextLink href={item.link}>{item.title}</TextLink>
@@ -29,7 +31,7 @@ import IconLink from "./IconLink.astro";
 		</div>
 
 		<!-- Right: icon links - hidden on mobile -->
-		<div class="nav-right">
+		<div class="hidden md:flex flex-1 justify-end gap-1">
 			{
 				headerConfig.right.map(({ link, title, icon }) => (
 					<IconLink href={link} label={title} icon={icon} />
@@ -39,7 +41,7 @@ import IconLink from "./IconLink.astro";
 		</div>
 
 		<!-- Mobile: menu button -->
-		<div class="nav-mobile">
+		<div class="md:hidden flex justify-end gap-1">
 			<ThemeToggle />
 			<button id="toggleMenu" aria-label="Menu" class="icon-button-base">
 				<Icon name="menu" class="icon-base" />
@@ -52,10 +54,11 @@ import IconLink from "./IconLink.astro";
 <template id="mobileMenuTemplate">
 	<div
 		id="mobileMenuPortal"
-		class="mobile-menu-portal"
-		style="top: 4.5rem; z-index: 40; max-height: 0; opacity: 0; visibility: hidden; pointer-events: none; padding: 0;"
+		class="md:hidden fixed left-4 right-4 top-[4.5rem] z-40
+            flex flex-col rounded-xl shadow-md transition-base
+            max-h-0 opacity-0 invisible pointer-events-none p-0"
 	>
-		<div class="mobile-menu-container">
+		<div class="p-2 bg-card border border-border/50 rounded-xl">
 			<div class="flex flex-col">
 				{
 					headerConfig.center.map((item, index) => (
@@ -66,9 +69,9 @@ import IconLink from "./IconLink.astro";
 				}
 			</div>
 
-			<div class="mobile-menu-divider"></div>
+			<div class="h-px bg-gray-light mx-2 my-1"></div>
 
-			<div class="mobile-icon-grid">
+			<div class="flex gap-2 px-1 pb-1">
 				{
 					headerConfig.right.map(({ link, title, icon }, index) => (
 						<IconLink
@@ -87,112 +90,126 @@ import IconLink from "./IconLink.astro";
 
 <script>
 	class HeaderComponent extends HTMLElement {
-		private mobileMenuPortal: HTMLElement | null = null;
-		private menuButton: HTMLElement | null = null;
-		private isMenuOpen = false;
-		private preScrollY = 0;
+		private portal: HTMLElement | null = null;
+		private isOpen = false;
+		private lastScroll = 0;
+		private abortController: AbortController | null = null;
+		private observer: MutationObserver | null = null;
 
 		connectedCallback() {
+			// create AbortController to control cleaning stuff
+			this.abortController = new AbortController();
+			const { signal } = this.abortController;
+
 			const template = document.getElementById(
 				"mobileMenuTemplate",
-			) as HTMLTemplateElement;
+			) as HTMLTemplateElement | null;
 			if (template) {
 				const clone = template.content.cloneNode(
 					true,
 				) as DocumentFragment;
-				this.mobileMenuPortal =
-					clone.getElementById("mobileMenuPortal");
-				if (this.mobileMenuPortal)
-					document.body.appendChild(this.mobileMenuPortal);
+				this.portal = clone.getElementById("mobileMenuPortal");
+				if (this.portal) document.body.appendChild(this.portal);
 			}
 
-			this.preScrollY = window.scrollY;
-			this._updateScrollState(this.preScrollY);
+			this.lastScroll = window.scrollY;
+			this._updateScroll(window.scrollY);
 
 			window.addEventListener(
 				"scroll",
 				() => {
-					const currentScrollY = window.scrollY;
+					const current = window.scrollY;
 					this.dataset.show = (
-						currentScrollY < 350 || currentScrollY < this.preScrollY
+						current < 350 || current < this.lastScroll
 					).toString();
-					this._updateScrollState(currentScrollY);
-					this.preScrollY = currentScrollY;
+					this._updateScroll(current);
+					this.lastScroll = current;
 				},
-				{ passive: true },
+				{ passive: true, signal },
 			);
 
-			this.menuButton = this.querySelector("#toggleMenu");
-			this.menuButton?.addEventListener("click", (e) => {
-				e.stopPropagation();
-				this._toggleMenu();
-			});
-
-			this.mobileMenuPortal
-				?.querySelectorAll("a")
-				.forEach((link) =>
-					link.addEventListener("click", () => this._toggleMenu()),
-				);
-
-			document.addEventListener("click", (e) => {
-				if (
-					this.isMenuOpen &&
-					!this.contains(e.target as Node) &&
-					!this.mobileMenuPortal?.contains(e.target as Node)
-				) {
+			this.querySelector("#toggleMenu")?.addEventListener(
+				"click",
+				(e) => {
+					e.stopPropagation();
 					this._toggleMenu();
-				}
+				},
+				{ signal },
+			);
+
+			// close if click inside link
+			this.portal?.querySelectorAll("a").forEach((link) => {
+				link.addEventListener("click", () => this._toggleMenu(), {
+					signal,
+				});
 			});
 
-			const observer = new MutationObserver(() => {
-				if (this.isMenuOpen) this._updateMenuPosition();
-			});
-			observer.observe(this, {
+			// close if click outside
+			document.addEventListener(
+				"click",
+				(e) => {
+					if (
+						this.isOpen &&
+						!this.contains(e.target as Node) &&
+						!this.portal?.contains(e.target as Node)
+					) {
+						this._toggleMenu();
+					}
+				},
+				{ signal },
+			);
+
+			this.observer = new MutationObserver(
+				() => this.isOpen && this._positionMenu(),
+			);
+			this.observer.observe(this, {
 				attributes: true,
 				attributeFilter: ["data-show", "class"],
 			});
 		}
 
+		private _updateScroll(y: number) {
+			const scrolled = y > 20;
+			this.classList.toggle("is-scrolled", scrolled);
+			this.portal?.classList.toggle("is-scrolled", scrolled);
+		}
+
 		private _toggleMenu() {
-			this.isMenuOpen = !this.isMenuOpen;
-			this.classList.toggle("expanded", this.isMenuOpen);
+			this.isOpen = !this.isOpen;
+			this.classList.toggle("expanded", this.isOpen);
 
-			if (!this.mobileMenuPortal) return;
+			if (!this.portal) return;
 
-			if (this.isMenuOpen) {
-				this.mobileMenuPortal.style.visibility = "visible";
-				this.mobileMenuPortal.style.pointerEvents = "auto";
-
-				const height = this.mobileMenuPortal.scrollHeight;
-
-				this.mobileMenuPortal.style.maxHeight = `${height}px`;
-				this.mobileMenuPortal.style.opacity = "1";
-				this.mobileMenuPortal.style.padding = "";
+			if (this.isOpen) {
+				Object.assign(this.portal.style, {
+					visibility: "visible",
+					pointerEvents: "auto",
+					maxHeight: `${this.portal.scrollHeight}px`,
+					opacity: "1",
+				});
+				this._positionMenu();
 			} else {
-				this.mobileMenuPortal.style.maxHeight = "0";
-				this.mobileMenuPortal.style.opacity = "0";
-				this.mobileMenuPortal.style.visibility = "hidden";
-				this.mobileMenuPortal.style.pointerEvents = "none";
-				this.mobileMenuPortal.style.padding = "0";
+				Object.assign(this.portal.style, {
+					maxHeight: "0",
+					opacity: "0",
+					visibility: "hidden",
+					pointerEvents: "none",
+					padding: "0",
+				});
 			}
-
-			if (this.isMenuOpen) this._updateMenuPosition();
 		}
 
-		private _updateScrollState(scrollY: number) {
-			const isScrolled = scrollY > 20;
-			this.classList.toggle("is-scrolled", isScrolled);
-			this.mobileMenuPortal?.classList.toggle("is-scrolled", isScrolled);
-		}
-
-		private _updateMenuPosition() {
-			if (this.mobileMenuPortal) {
-				this.mobileMenuPortal.style.top = `${this.getBoundingClientRect().bottom + 8}px`;
+		private _positionMenu() {
+			if (this.portal) {
+				this.portal.style.top = `${this.getBoundingClientRect().bottom + 8}px`;
 			}
 		}
 
 		disconnectedCallback() {
-			this.mobileMenuPortal?.remove();
+			// clean the listen stuff
+			this.abortController?.abort();
+			this.observer?.disconnect();
+			this.portal?.remove();
 		}
 	}
 
@@ -200,16 +217,12 @@ import IconLink from "./IconLink.astro";
 </script>
 
 <style>
-	header-component {
-		@apply bg-card border-border/50;
-	}
-
 	header-component.is-scrolled {
-		@apply header-scrolled;
+		@apply "bg-card/92 border-border/92 shadow-md";
 	}
 
 	header-component[data-show="false"]:not(.expanded) {
-		@apply header-hidden;
+		@apply "translate-y-[-100%]";
 	}
 
 	header-component.expanded {
@@ -217,16 +230,11 @@ import IconLink from "./IconLink.astro";
 	}
 
 	#mobileMenuPortal {
-		transition:
-			max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-			opacity 0.3s ease,
-			padding 0.3s ease,
-			visibility 0.3s ease;
-		will-change: max-height, opacity;
+		@apply transition-base duration-500;
 	}
 
 	#mobileMenuPortal.is-scrolled .p-2 {
-		@apply bg-card/92 border-border;
+		@apply bg-card/92 border-border/92;
 	}
 
 	@media (min-width: 768px) {
