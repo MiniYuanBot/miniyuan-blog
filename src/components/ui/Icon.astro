@@ -5,6 +5,7 @@ export interface Props {
     name: IconKey;
     class?: string;
     viewBox?: string;
+    variant?: "fill" | "stroke";
     [key: string]: any;
 }
 
@@ -12,10 +13,24 @@ const {
     name,
     class: className = "",
     viewBox = "0 0 24 24",
+    variant = "stroke",
     ...attrs
 } = Astro.props;
 
 const innerContent = ICONS[name];
+
+const svgProps = variant === "fill" 
+    ? {
+        fill: "currentColor",
+        stroke: "none",
+    }
+    : {
+        fill: "none",
+        stroke: "currentColor",
+        "stroke-width": "2",
+        "stroke-linecap": "round" as const,
+        "stroke-linejoin": "round" as const,
+    };
 ---
 
 {
@@ -23,11 +38,7 @@ const innerContent = ICONS[name];
         <svg
             class={className}
             viewBox={viewBox}
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            {...svgProps}
             {...attrs}
             set:html={innerContent}
         />
