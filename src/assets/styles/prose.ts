@@ -15,12 +15,12 @@ export const typographyConfig: TypographyOptions = {
         // ========== Headings with Anchor Links ==========
         'h2, h3, h4, h5, h6': {
             'scroll-margin-top': '4rem',
-            fontWeight: '600',
-            lineHeight: '1.3',
+            'font-weight': '600',
+            'line-height': '1.3',
         },
         'h2': {
-            borderBottom: '1px solid hsl(var(--border))',
-            paddingBottom: '0.3rem',
+            'border-bottom': '1px solid hsl(var(--border))',
+            'padding-bottom': '0.3rem',
         },
 
         // Anchor link icons that appear on heading hover
@@ -30,8 +30,8 @@ export const typographyConfig: TypographyOptions = {
             transition: 'opacity 0.2s ease',
             opacity: '0',
             'user-select': 'none',
-            textDecoration: 'none',
-            borderBottom: 'none',
+            'text-decoration': 'none',
+            'border-bottom': 'none',
         },
         'h1>a:hover, h2>a:hover, h3>a:hover, h4>a:hover, h5>a:hover, h6>a:hover': {
             opacity: '1',
@@ -49,22 +49,22 @@ export const typographyConfig: TypographyOptions = {
             'word-wrap': 'break-word',
             'word-break': 'break-word',
             'overflow-wrap': 'anywhere',
-            textDecoration: 'none',
-            borderBottom: '1px solid transparent',
+            'text-decoration': 'none',
+            'border-bottom': '1px solid transparent',
             transition: 'border-color 0.2s ease',
         },
         'a:hover': {
-            borderBottom: '1px solid hsl(var(--accent))',
+            'border-bottom': '1px solid hsl(var(--accent))',
         },
 
         // ========== Inline Code ==========
         ':not(pre) > code': {
             'white-space': 'pre-wrap',
             'word-break': 'break-all',
-            backgroundColor: 'hsl(var(--muted))',
+            'background-color': 'hsl(var(--muted))',
             padding: '0.3em 0.5em',
-            borderRadius: '0.375rem',
-            fontSize: '0.875em',
+            'border-radius': '0.375rem',
+            'font-size': '0.875em',
             border: '1px solid hsl(var(--border))',
         },
         ':not(pre)>code::before': {
@@ -76,17 +76,17 @@ export const typographyConfig: TypographyOptions = {
 
         // ========== Code Blocks ==========
         'pre': {
-            backgroundColor: 'hsl(var(--muted) / 0.5)',
+            'background-color': 'hsl(var(--muted) / 0.5)',
             padding: '1rem',
-            borderRadius: '0.5rem',
+            'border-radius': '0.5rem',
             overflow: 'auto',
             border: '1px solid hsl(var(--border))',
         },
         'pre code': {
-            backgroundColor: 'transparent',
+            'background-color': 'transparent',
             padding: '0',
             border: 'none',
-            fontSize: '0.9em',
+            'font-size': '0.9em',
             color: 'inherit',
         },
 
@@ -96,11 +96,11 @@ export const typographyConfig: TypographyOptions = {
             overflow: 'hidden',
             borderInlineStartColor: 'hsl(var(--accent))',
             borderLeftColor: 'hsl(var(--accent))',
-            borderRadius: '0.75rem',
+            'border-radius': '0.75rem',
             padding: '1rem 1.6rem',
-            backgroundColor: 'hsl(var(--muted) / 0.3)',
+            'background-color': 'hsl(var(--muted) / 0.3)',
             margin: '1.5rem 0',
-            fontStyle: 'normal',
+            'font-style': 'normal',
         },
         'blockquote::after': {
             color: 'hsl(var(--muted-foreground))',
@@ -108,8 +108,8 @@ export const typographyConfig: TypographyOptions = {
             content: '"”"',
             top: '2.6rem',
             right: '-1.4rem',
-            fontSize: '10rem',
-            fontFamily: 'Georgia, serif',
+            'font-size': '10rem',
+            'font-family': 'Georgia, serif',
             transform: 'rotate(-15deg)',
             opacity: '0.1',
             pointerEvents: 'none',
@@ -120,8 +120,8 @@ export const typographyConfig: TypographyOptions = {
             paddingInlineStart: '1.625em',
         },
         'li': {
-            marginTop: '.5em',
-            marginBottom: '.5em',
+            'margin-top': '.5em',
+            'margin-bottom': '.5em',
         },
         'li::marker': {
             color: 'hsl(var(--accent) / 0.7)',
@@ -129,24 +129,24 @@ export const typographyConfig: TypographyOptions = {
 
         // ========== Tables ==========
         'table': {
-            fontSize: '.875em',
+            'font-size': '.875em',
             width: '100%',
             borderCollapse: 'collapse',
         },
         'thead': {
-            backgroundColor: 'hsl(var(--muted) / 0.5)',
+            'background-color': 'hsl(var(--muted) / 0.5)',
         },
         'table tr': {
-            borderBottom: '1px solid hsl(var(--border))',
+            'border-bottom': '1px solid hsl(var(--border))',
         },
         'tbody tr:last-child': {
-            borderBottom: 'none',
+            'border-bottom': 'none',
         },
         'thead th': {
-            fontWeight: '500',
+            'font-weight': '500',
             color: 'hsl(var(--foreground))',
             padding: '0.75rem 1rem',
-            textAlign: 'left',
+            'text-align': 'left',
         },
         'td, th': {
             padding: '0.75rem 1rem',
@@ -154,22 +154,22 @@ export const typographyConfig: TypographyOptions = {
 
         // ========== Images ==========
         'img': {
-            borderRadius: '0.75rem',
+            'border-radius': '0.75rem',
             margin: '1.5rem auto',
-            boxShadow: 'var(--un-shadow-md)',
+            'box-shadow': 'var(--un-shadow-md)',
             display: 'block',
-            maxWidth: '100%',
+            'max-width': '100%',
             height: 'auto',
         },
 
         // ========== Keyboard Input ==========
         'kbd': {
-            borderColor: 'hsl(var(--border))',
-            backgroundColor: 'hsl(var(--muted))',
+            'border-color': 'hsl(var(--border))',
+            'background-color': 'hsl(var(--muted))',
             padding: '0.2rem 0.4rem',
-            borderRadius: '0.25rem',
-            fontSize: '0.875em',
-            boxShadow: '0 0 0 1px hsl(var(--card)), 0 3px hsl(var(--card))',
+            'border-radius': '0.25rem',
+            'font-size': '0.875em',
+            'box-shadow': '0 0 0 1px hsl(var(--card)), 0 3px hsl(var(--card))',
         },
 
         // ========== Superscript & Footnotes ==========
@@ -179,18 +179,18 @@ export const typographyConfig: TypographyOptions = {
 
         // ========== Dark Mode Adjustments ==========
         '.dark blockquote': {
-            backgroundColor: 'hsl(var(--muted) / 0.15)',
+            'background-color': 'hsl(var(--muted) / 0.15)',
         },
         '.dark pre': {
-            backgroundColor: 'hsl(var(--muted) / 0.2)',
+            'background-color': 'hsl(var(--muted) / 0.2)',
         },
         '.dark code': {
-            backgroundColor: 'hsl(var(--muted) / 0.3)',
+            'background-color': 'hsl(var(--muted) / 0.3)',
         },
 
         // ========== Responsive ==========
         '@media (max-width: 640px) blockquote::after': {
-            fontSize: '8rem',
+            'font-size': '8rem',
             top: '2rem',
             right: '-1rem',
         },
