@@ -1,4 +1,5 @@
 import type { TypographyOptions } from '@unocss/preset-typography'
+import type { CSSObject } from 'unocss'
 
 export const typographyConfig: TypographyOptions = {
     // Base color scheme using theme variables
@@ -112,7 +113,7 @@ export const typographyConfig: TypographyOptions = {
             'font-family': 'Georgia, serif',
             transform: 'rotate(-15deg)',
             opacity: '0.1',
-            pointerEvents: 'none',
+            'pointer-events': 'none',
         },
 
         // ========== Lists ==========
@@ -131,7 +132,7 @@ export const typographyConfig: TypographyOptions = {
         'table': {
             'font-size': '.875em',
             width: '100%',
-            borderCollapse: 'collapse',
+            'border-collapse': 'collapse',
         },
         'thead': {
             'background-color': 'hsl(var(--muted) / 0.5)',
@@ -189,11 +190,13 @@ export const typographyConfig: TypographyOptions = {
         },
 
         // ========== Responsive ==========
-        '@media (max-width: 640px) blockquote::after': {
-            'font-size': '8rem',
-            top: '2rem',
-            right: '-1rem',
-        },
+        '@media (max-width: 640px)': {
+            'blockquote::after': {
+                'font-size': '8rem',
+                top: '2rem',
+                right: '-1rem',
+            },
+        } as any,
     },
 }
 
