@@ -1,5 +1,4 @@
 import type { TypographyOptions } from '@unocss/preset-typography'
-import type { CSSObject } from 'unocss'
 
 export const typographyConfig: TypographyOptions = {
     // Base color scheme using theme variables
@@ -190,13 +189,11 @@ export const typographyConfig: TypographyOptions = {
         },
 
         // ========== Responsive ==========
-        '@media (max-width: 640px)': {
-            'blockquote::after': {
-                'font-size': '8rem',
-                top: '2rem',
-                right: '-1rem',
-            },
-        } as any,
+        '@media (max-width: 640px) blockquote::after': {
+            'font-size': '8rem',
+            top: '2rem',
+            right: '-1rem',
+        },
     },
 }
 
