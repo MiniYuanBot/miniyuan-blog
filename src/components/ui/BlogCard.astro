@@ -37,12 +37,12 @@ const imgBaseClass = "absolute inset-0 w-full h-full object-cover transition-tra
 
 <article
     class:list={[
-        "relative block w-full group hover:-translate-y-2 hover:shadow-lg transition-base",
+        "relative block w-full group hover:-translate-y-2 hover:shadow-lg hover:cursor-pointer transition-base",
         className,
     ]}
     aria-label={`Read blog: ${title}`}
 >
-    <Card as="a" href={href} padding="none" hover={false}>
+    <Card as="a" href={href} padding="none" hover={false} class="hover:cursor-pointer">
         {hasImage && (
             <>
                 <div class="absolute inset-0 overflow-hidden">

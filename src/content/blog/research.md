@@ -40,10 +40,12 @@ OSI 七层模型如下：
 
 1. 传统方式：
 Server (1s calculate) => Switch (1s transport) => Client (1s calculate)
+
 Total Time = 1s + 1s + 1s = 3s
 
 2. 在网计算：
 Server (1s calculate) => Switch (1.25s transport & calculate) => Client (0.25s calculate)
+
 Total Time = 1s + 1.25s + 0,25s = 2.5s
 
 ### wwf 老师的研究思路

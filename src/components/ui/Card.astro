@@ -37,10 +37,8 @@ type PaddingKey = keyof typeof paddingMap;
     class:list={[
         "group block relative w-full bg-card rounded-lg border border-border/50 shadow-md overflow-hidden transition-base no-underline",
         {
-            "hover:translate-y-[-3px] hover:shadow-lg hover:border-border":
+            "hover:-translate-y-2 hover:shadow-lg hover:border-border hover:cursor-pointer":
                 hover,
-            "cursor-pointer": hover,
-            "cursor-default": !hover,
         },
         paddingMap[padding as PaddingKey],
         className,
