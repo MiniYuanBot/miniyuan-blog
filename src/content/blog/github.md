@@ -1,17 +1,15 @@
 ---
-title: 'github 使用指南'
-excerpt: '如何利用 github 进行高效代码合作'
+title: 'GitHub 使用指南'
+excerpt: '如何利用 GitHub 进行高效代码合作'
 author: 'miniyuan'
-position: 'github'
+position: 'Beijing'
 tags:
-- 'github'
+- 'GitHub'
 pubDate: 'March 03 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
-
-# GitHub 使用指南
 
 ## 一、基础概念
 
