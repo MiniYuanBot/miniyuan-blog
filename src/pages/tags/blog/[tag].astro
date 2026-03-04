@@ -1,9 +1,7 @@
 ---
-// src/pages/tags/[...tag].astro
 import { getCollection } from "astro:content";
 import { BaseLayout, Section } from "@/components/layouts";
-import { Card, Icon, Button } from "@/components/ui";
-import BlogCard from "@/components/ui/BlogCard.astro";
+import { Card, Icon, Button, BlogCard } from "@/components/ui";
 
 export async function getStaticPaths() {
     const posts = await getCollection("blog");
@@ -24,14 +22,31 @@ const taggedPosts = (await getCollection("blog"))
 const postCount = taggedPosts.length;
 
 const relatedTags = [
-    ...new Set(taggedPosts.flatMap((post) => post.data.tags || [])),
+    ...new Set(
+        taggedPosts
+            .flatMap((post) => post.data.tags || [])
+            .filter((t) => t !== tag), // not this tag
+    ),
 ]
-    .filter((t) => t !== tag)
+    .sort((a, b) => {
+        const countA = taggedPosts.filter((post) =>
+            post.data.tags?.includes(a),
+        ).length;
+        const countB = taggedPosts.filter((post) =>
+            post.data.tags?.includes(b),
+        ).length;
+        return countB - countA;
+    })
     .slice(0, 5);
+
+const getTagCount = (tagName: string) => {
+    return taggedPosts.filter((post) => post.data.tags?.includes(tagName))
+        .length;
+};
 ---
 
 <BaseLayout
-    title={`tag: ${tag}`}
+    title={`blog tag: ${tag}`}
     description={`view ${postCount} blogs with tag ${tag}`}
 >
     <Section title={tag} subtitle={`${postCount} blogs`} backhref="/tags">
@@ -61,33 +76,43 @@ const relatedTags = [
                         class="size-10 mx-auto mb-4 text-muted-foreground"
                     />
                     <p class="text-xl text-muted-foreground mb-4">
-                        No blog under this tag
+                        No blogs under this tag
                     </p>
                     <Button
                         as="a"
                         href="/tags"
                         variant="ahead"
-                        title="View other tags"
+                        title="View other blog tags"
                     />
                 </Card>
             )
         }
     </Section>
 
-    <Section title="Related Tags">
-        {
-            relatedTags.length > 0 && (
-                <div class="flex flex-wrap gap-2">
-                    {relatedTags.map((relatedTag) => (
-                        <Button
-                            as="a"
-                            href={`/tags/${encodeURIComponent(relatedTag)}`}
-                            variant="pill"
-                            title={relatedTag}
-                        />
-                    ))}
+    {
+        relatedTags.length > 0 && (
+            <Section title="Related Tags">
+                <div class="mb-8">
+                    <div class="flex flex-wrap gap-2">
+                        {relatedTags.map((relatedTag) => {
+                            const count = getTagCount(relatedTag);
+                            return (
+                                <Button
+                                    as="a"
+                                    href={`/tags/blog/${encodeURIComponent(relatedTag)}`}
+                                    variant="pill"
+                                    class="group"
+                                >
+                                    <span>{relatedTag}</span>
+                                    <span class="ml-1 text-xs opacity-60">
+                                        ({count})
+                                    </span>
+                                </Button>
+                            );
+                        })}
+                    </div>
                 </div>
-            )
-        }
-    </Section>
+            </Section>
+        )
+    }
 </BaseLayout>

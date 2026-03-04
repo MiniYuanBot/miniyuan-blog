@@ -4,67 +4,90 @@ import { BaseLayout, Section } from "@/components/layouts";
 import { Card, Icon } from "@/components/ui";
 
 const posts = await getCollection("blog");
+const notes = await getCollection("note");
 
-const tagCounts: Record<string, number> = {};
+const blogCounts: Record<string, number> = {};
+const noteCounts: Record<string, number> = {};
+const totalCounts: Record<string, number> = {};
+
 posts.forEach((post) => {
     post.data.tags?.forEach((tag) => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        blogCounts[tag] = (blogCounts[tag] || 0) + 1;
+        totalCounts[tag] = (totalCounts[tag] || 0) + 1;
     });
 });
 
-const tags = Object.keys(tagCounts).sort((a, b) => a.localeCompare(b));
+notes.forEach((note) => {
+    note.data.tags?.forEach((tag) => {
+        noteCounts[tag] = (noteCounts[tag] || 0) + 1;
+        totalCounts[tag] = (totalCounts[tag] || 0) + 1;
+    });
+});
+
+const blogTags = Object.keys(blogCounts).sort((a, b) => a.localeCompare(b));
+const noteTags = Object.keys(noteCounts).sort((a, b) => a.localeCompare(b));
 ---
 
 <BaseLayout title="Tags" description="View blogs by tag">
-    <Section title="Tags">
-        {
-            tags.length > 0 ? (
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-                    {tags.map((tag) => {
-                        const count = tagCounts[tag];
-                        const intensity = Math.min(
-                            0.3 + (count / 10) * 0.2,
-                            0.9,
-                        );
+    {
+        [blogTags, noteTags].map((tags, index) => {
+            const sectionTitle = ["Blog Tags", "Note Tags"][index];
+            const typeName = ["blog", "note"][index]
 
-                        return (
-                            <Card
-                                as="a"
-                                href={`/tags/${encodeURIComponent(tag)}`}
-                                padding="lg"
-                                hover
-                                aria-label={`view ${count} blogs with tag ${tag}`}
-                                class="flex flex-col items-center justify-center text-center aspect-square"
-                            >
-                                <Icon name="tag" class="size-8" />
-                                <h2 class="text-xl font-semibold mb-2 break-all">
-                                    {tag}
-                                </h2>
-                                <p class="text-sm text-muted-foreground">
-                                    {count} blogs
-                                </p>
-                                <div class="w-16 h-1 bg-muted rounded-full mt-4 overflow-hidden">
-                                    <div
-                                        class="h-full bg-accent rounded-full transition-all group-hover:opacity-100"
-                                        style={{
-                                            width: `${Math.min(count * 10, 100)}%`,
-                                            opacity: intensity,
-                                        }}
-                                    />
-                                </div>
-                            </Card>
-                        );
-                    })}
-                </div>
-            ) : (
-                <Card padding="xl" class="text-center py-20 max-w-md mx-auto">
-                    <Icon
-                        name="tag"
-                        class="size-10 mx-auto mb-4 text-muted-foreground"
-                    />
-                    <p class="text-xl text-muted-foreground">No tags</p>
-                </Card>
-            )
-        }
-    </Section>
+            return (
+                <Section title={sectionTitle}>
+                    {tags.length > 0 ? (
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                            {tags.map((tag) => {
+                                const count = index === 0 ? blogCounts[tag] : noteCounts[tag];
+                                const intensity = Math.min(
+                                    0.3 + (count / 10) * 0.2,
+                                    0.9,
+                                );
+
+                                return (
+                                    <Card
+                                        as="a"
+                                        href={`/tags/${typeName}/${encodeURIComponent(tag)}`}
+                                        padding="lg"
+                                        hover
+                                        aria-label={`view ${count} ${typeName}s with tag ${tag}`}
+                                        class="flex flex-col items-center justify-center text-center aspect-square"
+                                    >
+                                        <Icon name="tag" class="size-8" />
+                                        <h2 class="text-xl font-semibold mb-2 break-all">
+                                            {tag}
+                                        </h2>
+                                        <p class="text-sm text-muted-foreground">
+                                            {count} {typeName}
+                                        </p>
+                                        <div class="w-16 h-1 bg-muted rounded-full mt-4 overflow-hidden">
+                                            <div
+                                                class="h-full bg-accent rounded-full transition-all group-hover:opacity-100"
+                                                style={{
+                                                    width: `${Math.min(count * 10, 100)}%`,
+                                                    opacity: intensity,
+                                                }}
+                                            />
+                                        </div>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <Card
+                            padding="xl"
+                            class="text-center py-20 max-w-md mx-auto"
+                        >
+                            <Icon
+                                name="tag"
+                                class="size-10 mx-auto mb-4 text-muted-foreground"
+                            />
+                            <p class="text-xl text-muted-foreground">No tags</p>
+                        </Card>
+                    )}
+                </Section>
+            );
+        })
+    }
 </BaseLayout>

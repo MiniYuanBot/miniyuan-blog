@@ -1,0 +1,118 @@
+---
+import { getCollection } from "astro:content";
+import { BaseLayout, Section } from "@/components/layouts";
+import { Card, Icon, Button, NoteCard } from "@/components/ui";
+
+export async function getStaticPaths() {
+    const notes = await getCollection("note");
+    const tags = [...new Set(notes.flatMap((note) => note.data.tags || []))];
+
+    return tags.map((tag) => ({
+        params: { tag },
+        props: { tag },
+    }));
+}
+
+const { tag } = Astro.params;
+
+const taggedNotes = (await getCollection("note"))
+    .filter((note) => note.data.tags?.includes(tag || ""))
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const noteCount = taggedNotes.length;
+
+const relatedTags = [
+    ...new Set(
+        taggedNotes
+            .flatMap((note) => note.data.tags || [])
+            .filter((t) => t !== tag), // not this tag
+    ),
+]
+    .sort((a, b) => {
+        const countA = taggedNotes.filter((note) =>
+            note.data.tags?.includes(a),
+        ).length;
+        const countB = taggedNotes.filter((note) =>
+            note.data.tags?.includes(b),
+        ).length;
+        return countB - countA;
+    })
+    .slice(0, 5);
+
+const getTagCount = (tagName: string) => {
+    return taggedNotes.filter((note) => note.data.tags?.includes(tagName))
+        .length;
+};
+---
+
+<BaseLayout
+    title={`note tag: ${tag}`}
+    description={`view ${noteCount} notes with tag ${tag}`}
+>
+    <Section title={tag} subtitle={`${noteCount} notes`} backhref="/tags">
+        {
+            taggedNotes.length > 0 ? (
+                <div class="space-y-6">
+                    {taggedNotes.map((note) => (
+                        <div class="animate-fade-in">
+                            <NoteCard
+                                title={note.data.title}
+                                pubDate={note.data.pubDate}
+                                excerpt={note.data.excerpt}
+                                author={note.data.author}
+                                position={note.data.position}
+                                tags={note.data.tags}
+                                heroImageLight={note.data.heroImageLight}
+                                heroImageDark={note.data.heroImageDark}
+                                href={`/note/${note.id}/`}
+                            />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <Card padding="xl" hover={false} class="text-center py-20">
+                    <Icon
+                        name="tag"
+                        class="size-10 mx-auto mb-4 text-muted-foreground"
+                    />
+                    <p class="text-xl text-muted-foreground mb-4">
+                        No notes under this tag
+                    </p>
+                    <Button
+                        as="a"
+                        href="/tags"
+                        variant="ahead"
+                        title="View other note tags"
+                    />
+                </Card>
+            )
+        }
+    </Section>
+
+    {
+        relatedTags.length > 0 && (
+            <Section title="Related Tags">
+                <div class="mb-8">
+                    <div class="flex flex-wrap gap-2">
+                        {relatedTags.map((relatedTag) => {
+                            const count = getTagCount(relatedTag);
+                            return (
+                                <Button
+                                    as="a"
+                                    href={`/tags/note/${encodeURIComponent(relatedTag)}`}
+                                    variant="pill"
+                                    class="group"
+                                >
+                                    <span>{relatedTag}</span>
+                                    <span class="ml-1 text-xs opacity-60">
+                                        ({count})
+                                    </span>
+                                </Button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </Section>
+        )
+    }
+</BaseLayout>

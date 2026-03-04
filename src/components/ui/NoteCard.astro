@@ -40,7 +40,7 @@ const imgBaseClass = "absolute inset-0 w-full h-full object-cover transition-tra
         "relative block w-full group hover:-translate-y-2 hover:shadow-lg hover:cursor-pointer transition-base",
         className,
     ]}
-    aria-label={`Read blog: ${title}`}
+    aria-label={`Read note: ${title}`}
 >
     <Card as="a" href={href} padding="none" hover={false} class="hover:cursor-pointer">
         {hasImage && (
@@ -102,7 +102,7 @@ const imgBaseClass = "absolute inset-0 w-full h-full object-cover transition-tra
         {tags.slice(0, showTagMax).map((tag) => (
             <Button
                 as="a"
-                href={`/tags/blog/${encodeURIComponent(tag)}`}
+                href={`/tags/note/${encodeURIComponent(tag)}`}
                 variant="pill"
                 title={tag}
             />

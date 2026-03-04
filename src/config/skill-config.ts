@@ -1,6 +1,6 @@
-import { SkillCardConfigSchema } from '@/schemas';
+import { type SkillConfig } from '@/schemas';
 
-export const skillConfig = SkillCardConfigSchema.parse([
+export const skillConfig: SkillConfig = [
     {
         title: "Skills",
         showHeader: false,
@@ -21,4 +21,4 @@ export const skillConfig = SkillCardConfigSchema.parse([
             }
         ]
     }
-]);
+];

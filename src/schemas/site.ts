@@ -6,3 +6,5 @@ export const SiteConfigSchema = z.object({
     favicon: z.string().default('/favicon.svg'),
     lang: z.enum(['zh-CN', 'en-US']),
 });
+
+export type SiteConfig = z.infer<typeof SiteConfigSchema>;

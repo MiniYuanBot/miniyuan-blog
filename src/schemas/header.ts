@@ -16,3 +16,5 @@ export const HeaderConfigSchema = z.object({
         })
     ),
 });
+
+export type HeaderConfig = z.infer<typeof HeaderConfigSchema>;

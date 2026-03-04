@@ -1,0 +1,31 @@
+---
+import { type CollectionEntry, getCollection, render } from 'astro:content';
+import { BlogPost } from '@/components/layouts';
+
+export async function getStaticPaths() {
+	const notes = await getCollection('note');
+	return notes.map((post) => ({
+		params: { slug: post.id },
+		props: post,
+	}));
+}
+type Props = CollectionEntry<'note'>;
+
+const note = Astro.props;
+
+// convert string to Data object
+const noteWithDates = {
+	...note,
+	data: {
+		...note.data,
+		pubDate: new Date(note.data.pubDate),
+		updatedDate: note.data.updatedDate ? new Date(note.data.updatedDate) : undefined,
+	}
+};
+
+const { Content } = await render(noteWithDates);
+---
+
+<BlogPost {...noteWithDates.data}>
+	<Content />
+</BlogPost>

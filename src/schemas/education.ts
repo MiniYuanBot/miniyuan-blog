@@ -10,3 +10,6 @@ export const EducationItemSchema = z.object({
 });
 
 export const EducationConfigSchema = z.array(EducationItemSchema);
+
+export type EducationItem = z.infer<typeof EducationItemSchema>;
+export type EducationConfig = z.infer<typeof EducationConfigSchema>;

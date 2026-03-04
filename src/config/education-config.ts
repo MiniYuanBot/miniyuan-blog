@@ -1,7 +1,6 @@
-import type { z } from 'astro:content';
-import type { EducationItemSchema, EducationConfigSchema } from '../schemas';
+import type { EducationConfig } from '../schemas';
 
-export const educationConfig = [
+export const educationConfig: EducationConfig = [
     {
         school: "北京大学",
         period: "August 2024 - Present",
@@ -16,7 +15,4 @@ export const educationConfig = [
         description: "High School",
         logo: "images/yugao-logo.png",
     },
-] satisfies z.infer<typeof EducationConfigSchema>;
-
-export type EducationItem = z.infer<typeof EducationItemSchema>;
-export type EducationConfig = z.infer<typeof EducationConfigSchema>;
+]

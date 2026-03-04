@@ -1,7 +1,7 @@
 import { z, type ImageFunction } from 'astro:content';
 import { DateSchema, OptionalDateSchema } from './data';
 
-export const BlogPostSchema = (image: ImageFunction) => z.object({
+export const NotePostSchema = (image: ImageFunction) => z.object({
     title: z.string(),
     excerpt: z.string(),
     author: z.string().optional(),
@@ -12,5 +12,3 @@ export const BlogPostSchema = (image: ImageFunction) => z.object({
     heroImageLight: image().optional(),
     heroImageDark: image().optional(),
 });
-
-export type BlogPost = z.infer<ReturnType<typeof BlogPostSchema>>;

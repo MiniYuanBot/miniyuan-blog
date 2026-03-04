@@ -1,11 +1,8 @@
-import type { z } from 'astro:content';
-import type { SiteConfigSchema } from '../schemas';
+import type { SiteConfig } from '../schemas';
 
-export const siteConfig = {
+export const siteConfig: SiteConfig = {
     title: 'MINIBLOG',
     description: "Welcome to miniyuan's blog",
     favicon: '/favicon.svg',
     lang: 'zh-CN',
-} satisfies z.infer<typeof SiteConfigSchema>;
-
-export type SiteConfig = z.infer<typeof SiteConfigSchema>;
+}

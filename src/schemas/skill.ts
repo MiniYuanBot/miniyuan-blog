@@ -13,8 +13,8 @@ export const SkillCardSchema = z.object({
     hover: z.boolean().default(true),
 });
 
-export const SkillCardConfigSchema = z.array(SkillCardSchema);
+export const SkillConfigSchema = z.array(SkillCardSchema);
 
 export type SkillItem = z.infer<typeof SkillItemSchema>;
 export type SkillCard = z.infer<typeof SkillCardSchema>;
-export type SkillCardConfig = z.infer<typeof SkillCardConfigSchema>;
+export type SkillConfig = z.infer<typeof SkillConfigSchema>;

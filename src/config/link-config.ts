@@ -1,7 +1,6 @@
-import type { z } from 'astro:content';
-import type { LinkConfigSchema } from '../schemas';
+import type { LinkConfig } from '../schemas';
 
-export const linkConfig = [
+export const linkConfig: LinkConfig = [
     {
         title: "Friend Links",
         links: [
@@ -127,6 +126,4 @@ export const linkConfig = [
             }
         ]
     }
-] satisfies z.infer<typeof LinkConfigSchema>;
-
-export type LinkConfig = z.infer<typeof LinkConfigSchema>;
+]

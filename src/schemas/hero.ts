@@ -8,3 +8,4 @@ export const HeroConfigSchema = z.object({
     introduction: z.array(z.string()),
 });
 
+export type HeroConfig = z.infer<typeof HeroConfigSchema>;

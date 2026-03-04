@@ -1,7 +1,6 @@
-import type { z } from 'astro:content';
-import type { HeroConfigSchema } from '../schemas';
+import type { HeroConfig } from '../schemas';
 
-export const heroConfig = {
+export const heroConfig: HeroConfig = {
     avatarSrc: "/images/miniyuan.jpg",
     avatarAlt: "profile photo",
     name: "miniyuan",
@@ -10,6 +9,4 @@ export const heroConfig = {
         "我喜欢一切有挑战的任务，也喜欢摆烂（bushi）",
         "Miniyuan is getting stronger!",
     ],
-} satisfies z.infer<typeof HeroConfigSchema>;
-
-export type HeroConfig = z.infer<typeof HeroConfigSchema>;
+}
