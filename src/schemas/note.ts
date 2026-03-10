@@ -1,4 +1,5 @@
-import { z, type ImageFunction } from 'astro:content';
+import { z } from 'astro/zod'
+import { type ImageFunction } from 'astro:content';
 import { DateSchema, OptionalDateSchema } from './data';
 
 export const NotePostSchema = (image: ImageFunction) => z.object({

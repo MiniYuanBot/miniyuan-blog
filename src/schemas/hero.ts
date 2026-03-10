@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'astro/zod'
 import { ImagePathSchema } from './data';
 
 export const HeroConfigSchema = z.object({

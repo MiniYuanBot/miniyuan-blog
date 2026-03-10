@@ -93,9 +93,9 @@ git clone repo-address
 ```
 
 其中 `repo-address` 有以下几种格式：
-1. https 地址: https://github.com/user-name/repo-name.git
-2. ssh: git@github.com:user-name/repo-name.git
-3. 如果你配置了 SSH 别名: your-host-name:user-name/repo-name.git
+1. https 地址: https://github.com/ownr-name/repo-name.git
+2. ssh: git@github.com:owner-name/repo-name.git
+3. 如果你配置了 SSH 别名: your-host-name:owner-name/repo-name.git
 4. 如果你想的话，还可以配置 Git 别名
 
 ### Fork 他人仓库

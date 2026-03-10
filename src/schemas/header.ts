@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'astro/zod'
 import { ICONS, type IconKey } from '@/components/icons';
 
 export const HeaderBaseSchema = z.object({

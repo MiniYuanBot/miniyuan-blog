@@ -1,11 +1,12 @@
 ---
-title: '环境配置'
-excerpt: '计算机网络 Lab 环境配置'
+title: '计算机网络 Lab0 环境配置'
+excerpt: '26 春 计算机网络 Lab 环境配置'
 author: 'miniyuan'
 position: 'Beijing'
 tags:
-- '计网'
 - 'network'
+- '计算机网络'
+- '计网'
 pubDate: 'March 03 2026'
 
 # updatedDate
@@ -40,13 +41,20 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 ## 4. 显示
 
-由于直接显示 server 不太友好，我们可以利用 Jupyter/ VSCode/ VIM 显示虚拟机。笨人使用 VSCode 进行配置。首先产生 ssh 密钥
+为了更友好地进行开发与测试，我们可以利用 Jupyter/ VSCode/ VIM 显示虚拟机。笨人选择使用 VSCode 进行配置。使用如下命令即可登录虚拟机（若已开机）：
+
+```bash
+ssh your_user_name@your_host_only_ip
+# 或登录 root
+```
+
+首先在宿主机上产生 ssh 密钥：
 
 ```bash
 ssh-keygen -t rsa -b 4096 -C "your_statement"
 ```
 
-将 .pub 公钥拷贝到虚拟机的 ~/.ssh/quthorized_keys 中
+将 .pub 公钥拷贝到虚拟机的 ~/.ssh/quthorized_keys 中：
 
 ```bash
 echo "your_pub_ssh_key" >> ~/.ssh/authorized_keys

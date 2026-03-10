@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'astro/zod'
 
 export const DateSchema = z.coerce.date();
 export const OptionalDateSchema = z.coerce.date().optional();

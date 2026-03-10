@@ -1,4 +1,4 @@
-import { z } from 'astro:content';
+import { z } from 'astro/zod'
 
 export const SiteConfigSchema = z.object({
     title: z.string(),

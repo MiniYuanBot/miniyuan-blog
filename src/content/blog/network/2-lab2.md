@@ -1,0 +1,738 @@
+---
+title: '计算机网络 Lab2 协议实现'
+excerpt: '26 春 计算机网络 Lab2 基于 socket 编程的 SMTP 客户端实现'
+author: 'miniyuan'
+position: 'Beijing'
+tags:
+- 'network'
+- '计算机网络'
+- '计网'
+pubDate: 'March 06 2026'
+# updatedDate
+heroImageLight: '@/assets/images/light/light-01.png'
+heroImageDark: '@/assets/images/dark/dark-01.png'
+---
+
+## 目录
+1. [实验概述](#一实验概述)
+2. [基础知识](#二基础知识)
+3. [实现步骤详解](#三实现步骤详解)
+4. [代码框架](#四代码框架)
+5. [调试与测试](#五调试与测试)
+6. [常见问题](#六常见问题)
+
+---
+
+## 一、实验概述
+
+### 1.1 实验目标
+- 掌握**Socket网络编程**的基本方法
+- 理解**SMTP协议**的工作流程与应用层协议设计
+- 掌握**Base64/UUencode编码**在数据传输中的应用
+- 实现一个完整的带附件邮件发送客户端
+
+### 1.2 实验环境
+- **操作系统**: Linux (Ubuntu/Debian)
+- **编译器**: GCC
+- **SMTP服务器**: `smtphz.qiye.163.com:25` (北京大学学生邮箱)
+- **测试邮箱**: 建议使用QQ邮箱接收
+
+### 1.3 前置准备
+
+```bash
+# 安装编译环境和uuencode工具
+sudo apt update
+sudo apt install build-essential sharutils
+
+# 验证安装
+gcc --version        # 检查GCC
+uuencode --version   # 检查uuencode
+```
+
+---
+
+## 二、基础知识
+
+### 2.1 Socket 编程基础
+
+#### 2.1.1 Socket 基本概念
+Socket 是应用层与传输层之间的接口，提供端到端的通信能力。它支持使用多种传输层协议。
+
+```
+┌─────────────┐
+│ Application │  ← HTTP/FTP/SMTP
+├─────────────┤
+│  Socket API │  ← 编程接口 (socket/send/recv/close)
+├─────────────┤
+│  Transport  │  ← TCP/UDP
+├─────────────┤
+│   Network   │  ← IP
+├─────────────┤
+│     Link    │  ← Ethernet
+└─────────────┘
+```
+
+#### 2.1.2 核心 API
+
+| 函数 | 功能 | 关键参数 |
+|------|------|---------|
+| `socket()` | 创建套接字 | `AF_INET`(IPv4), `SOCK_STREAM`(TCP) |
+| `connect()` | 建立连接 | 服务器地址结构体 |
+| `send()` | 发送数据 | 套接字描述符, 缓冲区, 长度 |
+| `recv()` | 接收数据 | 套接字描述符, 缓冲区, 最大长度 |
+| `close()` | 关闭连接 | 套接字描述符 |
+
+#### 2.1.3 地址结构体
+
+```c
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+struct sockaddr_in {
+    sa_family_t    sin_family;  // 地址族: AF_INET
+    in_port_t      sin_port;    // 端口号: htons(25)
+    struct in_addr sin_addr;    // IP地址: inet_addr("...")
+};
+
+// 域名解析函数
+struct hostent *gethostbyname(const char *name);
+```
+
+---
+
+### 2.2 SMTP协议详解
+
+#### 2.2.1 SMTP工作流程
+
+```
+┌─────────┐                    ┌─────────┐
+│  Client │                    │ Server  │
+└────┬────┘                    └────┬────┘
+     │                              │
+     │ ─────── TCP连接 ───────────→ │  (端口25)
+     │ ←────── 220 smtphz... ────── │  服务器就绪
+     │                              │
+     │ ─────── EHLO client ───────→ │
+     │ ←────── 250-8BITMIME... ──── │  能力列表
+     │                              │
+     │ ─────── AUTH LOGIN ────────→ │
+     │ ←────── 334 VXNlcm5hbWU= ─── │  Base64"Username"
+     │ ─────── [Base64用户名] ─────→ │
+     │ ←────── 334 UGFzc3dvcmQ= ─── │  Base64"Password"
+     │ ─────── [Base64密码] ───────→ │
+     │ ←────── 235 Authentication ─ │  认证成功
+     │                              │
+     │ ─────── MAIL FROM:<> ────────→ │
+     │ ←────── 250 Mail OK ──────── │
+     │ ─────── RCPT TO:<> ──────────→ │
+     │ ←────── 250 Mail OK ──────── │
+     │                              │
+     │ ─────── DATA ────────────────→ │
+     │ ←────── 354 End with . ───── │
+     │ ─────── [邮件内容] ──────────→ │
+     │ ─────── . ───────────────────→ │  结束标记
+     │ ←────── 250 Mail OK ──────── │
+     │                              │
+     │ ─────── QUIT ────────────────→ │
+     │ ←────── 221 Bye ──────────── │
+     │                              │
+```
+
+#### 2.2.2 SMTP命令与响应码
+
+**常用命令：**
+
+| 命令 | 格式 | 说明 |
+|------|------|------|
+| `HELO` | `HELO <hostname>` | 问候(旧版) |
+| `EHLO` | `EHLO <hostname>` | 扩展问候(推荐) |
+| `AUTH` | `AUTH LOGIN` | 认证开始 |
+| `MAIL` | `MAIL FROM:<地址>` | 指定发件人 |
+| `RCPT` | `RCPT TO:<地址>` | 指定收件人 |
+| `DATA` | `DATA` | 开始传输邮件内容 |
+| `QUIT` | `QUIT` | 结束会话 |
+
+**响应码：**
+
+| 代码 | 含义 | 处理方式 |
+|------|------|---------|
+| 220 | 服务就绪 | 连接成功，继续 |
+| 235 | 认证成功 | 继续发送 |
+| 250 | 请求完成 | 命令成功，继续 |
+| 334 | 认证挑战 | 发送Base64凭证 |
+| 354 | 开始输入 | 发送邮件内容 |
+| 221 | 服务关闭 | 正常结束 |
+
+---
+
+### 2.3 编码技术
+
+#### 2.3.1 Base64编码（用于认证）
+
+**原理：** 将3字节(24位)二进制数据转换为4个ASCII字符(每6位对应一个字符)
+
+```
+原始数据:  M    a    n
+ASCII:    77   97   110
+二进制:   01001101 01100001 01101110
+6位分组:  010011 010110 000101 101110
+Base64:    T     W     F     u
+```
+
+**实验中的应用：**
+
+```bash
+# 命令行编码测试
+echo -n "your_username" | base64
+echo -n "your_password" | base64
+
+# C语言实现要点
+// 注意：SMTP要求用户名密码分别单独编码发送，不是"username:password"格式
+```
+
+#### 2.3.2 UUencode编码（用于附件）
+
+**原理：** 将3字节二进制数据转换为4个可打印ASCII字符(0x20-0x60)
+
+**格式规范：**
+
+```
+begin <权限> <文件名>
+<编码数据行1>
+<编码数据行2>
+...
+`
+end
+```
+
+**示例：**
+
+```bash
+# 编码图片
+uuencode photo.jpg photo.jpg > photo.uue
+
+# 查看编码结果
+cat photo.uue
+# 输出:
+# begin 644 photo.jpg
+# M_]C_X  02D9)1@ !@  9# 0$!P  !@  0$!P  !@  0$!P  !@  0$!P  !@
+# M @  0$!P  !@  0$!P  !@  0$!P  !@  0$!P  !@  0$!P  !@  0$!P
+# ...
+# `
+# end
+```
+
+**C语言集成：**
+
+```c
+// 方法1: 调用系统命令
+system("uuencode attachment.jpg attachment.jpg > /tmp/att.uue");
+
+// 方法2: 读取文件后使用库函数编码 (需自行实现或引入库)
+```
+
+---
+
+### 2.4 邮件格式（ASCII模式）
+
+```
+┌─────────────────────────────────────┐
+│              邮件头部                │
+├─────────────────────────────────────┤
+│ From: sender@stu.pku.edu.cn         │
+│ To: recipient@qq.com                │
+│ Subject: Test Subject               │
+│                                     │  ← 空行分隔头部和正文
+├─────────────────────────────────────┤
+│              邮件正文                │
+├─────────────────────────────────────┤
+│ This is the body of the email.      │
+│ It can contain multiple lines.      │
+│                                     │
+├─────────────────────────────────────┤
+│              附件部分                │
+├─────────────────────────────────────┤
+│ begin 644 image.jpg                 │
+│ M_]C_X  02D9)1@ !@  9# 0$!P  !@    │
+│ M @  0$!P  !@  0$!P  !@  0$!P      │
+│ ...                                 │
+│ `                                   │
+│ end                                 │
+└─────────────────────────────────────┘
+```
+
+**重要限制：**
+- 本实验使用**ASCII格式**，不支持中文（编码问题）
+- 邮件内容必须以`\r\n`作为行结束符
+- 结束标记为单独一行的`.`（点号）
+
+---
+
+## 三、实现步骤详解
+
+### Step 1: 建立Socket连接
+
+```c
+/**
+ * 连接到SMTP服务器
+ * @param server: 服务器域名或IP
+ * @param port: 端口号(25)
+ * @return: 成功返回socket描述符，失败返回-1
+ */
+int connect_to_server(const char* server, int port) {
+    int sockfd;
+    struct sockaddr_in serv_addr;
+    struct hostent *server_host;
+    
+    // 1. 创建socket
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        perror("ERROR opening socket");
+        return -1;
+    }
+    
+    // 2. 域名解析
+    server_host = gethostbyname(server);
+    if (server_host == NULL) {
+        fprintf(stderr, "ERROR, no such host: %s\n", server);
+        close(sockfd);
+        return -1;
+    }
+    
+    // 3. 设置服务器地址
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(port);
+    memcpy(&serv_addr.sin_addr.s_addr, 
+           server_host->h_addr, 
+           server_host->h_length);
+    
+    // 4. 建立连接
+    if (connect(sockfd, (struct sockaddr*)&serv_addr, 
+                sizeof(serv_addr)) < 0) {
+        perror("ERROR connecting");
+        close(sockfd);
+        return -1;
+    }
+    
+    return sockfd;
+}
+```
+
+### Step 2: 接收并验证服务器响应
+
+```c
+/**
+ * 接收服务器响应
+ * @param sock: socket描述符
+ * @param buffer: 接收缓冲区
+ * @param buf_size: 缓冲区大小
+ * @return: 接收到的字节数，失败返回-1
+ */
+int recv_response(int sock, char* buffer, int buf_size) {
+    memset(buffer, 0, buf_size);
+    int n = recv(sock, buffer, buf_size - 1, 0);
+    if (n < 0) {
+        perror("ERROR receiving from socket");
+        return -1;
+    }
+    buffer[n] = '\0';
+    printf("Server: %s", buffer);  // 调试输出
+    return n;
+}
+
+/**
+ * 检查响应码
+ * @param response: 服务器响应字符串
+ * @param expected_code: 期望的响应码(如"220")
+ * @return: 匹配返回1，否则返回0
+ */
+int check_response(const char* response, const char* expected_code) {
+    return (strncmp(response, expected_code, 3) == 0);
+}
+```
+
+### Step 3: 发送SMTP命令
+
+```c
+/**
+ * 发送命令并检查响应
+ * @param sock: socket描述符
+ * @param cmd: 要发送的命令(自动添加\r\n)
+ * @param expected_code: 期望的响应码
+ * @return: 成功返回1，失败返回0
+ */
+int send_command(int sock, const char* cmd, const char* expected_code) {
+    char buffer[BUFFER_SIZE];
+    
+    // 发送命令
+    printf("Client: %s\n", cmd);
+    if (send(sock, cmd, strlen(cmd), 0) < 0) {
+        perror("ERROR sending command");
+        return 0;
+    }
+    
+    // 接收响应
+    if (recv_response(sock, buffer, BUFFER_SIZE) < 0) {
+        return 0;
+    }
+    
+    // 验证响应码
+    if (!check_response(buffer, expected_code)) {
+        fprintf(stderr, "Unexpected response: %s\n", buffer);
+        return 0;
+    }
+    
+    return 1;
+}
+```
+
+### Step 4: SMTP认证流程
+
+```c
+/**
+ * 进行SMTP认证
+ * @param sock: socket描述符
+ * @param username: 用户名(需提前Base64编码)
+ * @param password: 密码(需提前Base64编码)
+ * @return: 成功返回1，失败返回0
+ */
+int smtp_auth(int sock, const char* username_b64, 
+              const char* password_b64) {
+    char buffer[BUFFER_SIZE];
+    
+    // 1. 发送AUTH LOGIN
+    if (!send_command(sock, "AUTH LOGIN\r\n", "334")) {
+        return 0;
+    }
+    
+    // 2. 发送用户名(Base64)
+    snprintf(buffer, BUFFER_SIZE, "%s\r\n", username_b64);
+    if (!send_command(sock, buffer, "334")) {
+        return 0;
+    }
+    
+    // 3. 发送密码(Base64)
+    snprintf(buffer, BUFFER_SIZE, "%s\r\n", password_b64);
+    if (!send_command(sock, buffer, "235")) {
+        return 0;
+    }
+    
+    return 1;
+}
+```
+
+### Step 5: 构造邮件内容
+
+```c
+/**
+ * 构造邮件内容
+ * @param from: 发件人
+ * @param to: 收件人
+ * @param subject: 主题
+ * @param body: 正文
+ * @param attachment_path: 附件路径(可为NULL)
+ * @param output: 输出缓冲区
+ * @param max_size: 缓冲区最大大小
+ * @return: 实际写入的字节数
+ */
+int construct_email(const char* from, const char* to, 
+                    const char* subject, const char* body,
+                    const char* attachment_path,
+                    char* output, int max_size) {
+    int len = 0;
+    
+    // 邮件头部
+    len += snprintf(output + len, max_size - len,
+        "From: %s\r\n"
+        "To: %s\r\n"
+        "Subject: %s\r\n"
+        "\r\n",  // 空行分隔头部和正文
+        from, to, subject);
+    
+    // 邮件正文
+    len += snprintf(output + len, max_size - len, "%s\r\n\r\n", body);
+    
+    // 附件处理
+    if (attachment_path != NULL) {
+        // 方法: 使用uuencode编码附件
+        char cmd[256];
+        char uue_buffer[8192];
+        FILE* fp;
+        
+        // 构造uuencode命令
+        snprintf(cmd, sizeof(cmd), 
+            "uuencode %s %s", 
+            attachment_path, 
+            attachment_path);
+        
+        // 执行命令并读取输出
+        fp = popen(cmd, "r");
+        if (fp != NULL) {
+            while (fgets(uue_buffer, sizeof(uue_buffer), fp) != NULL) {
+                len += snprintf(output + len, max_size - len, 
+                    "%s", uue_buffer);
+            }
+            pclose(fp);
+        }
+    }
+    
+    return len;
+}
+```
+
+### Step 6: 完整发送流程
+
+```c
+/**
+ * 发送邮件主函数
+ */
+int send_email(const char* smtp_server, int port,
+               const char* username_b64, const char* password_b64,
+               const char* from, const char* to,
+               const char* subject, const char* body,
+               const char* attachment) {
+    
+    char buffer[BUFFER_SIZE];
+    int sock;
+    int result = 0;
+    
+    // 1. 连接服务器
+    sock = connect_to_server(smtp_server, port);
+    if (sock < 0) return 0;
+    
+    // 2. 接收欢迎消息
+    if (recv_response(sock, buffer, BUFFER_SIZE) < 0 ||
+        !check_response(buffer, "220")) {
+        goto cleanup;
+    }
+    
+    // 3. EHLO
+    if (!send_command(sock, "EHLO client\r\n", "250")) goto cleanup;
+    
+    // 4. 认证
+    if (!smtp_auth(sock, username_b64, password_b64)) goto cleanup;
+    
+    // 5. 设置发件人
+    snprintf(buffer, BUFFER_SIZE, "MAIL FROM:<%s>\r\n", from);
+    if (!send_command(sock, buffer, "250")) goto cleanup;
+    
+    // 6. 设置收件人
+    snprintf(buffer, BUFFER_SIZE, "RCPT TO:<%s>\r\n", to);
+    if (!send_command(sock, buffer, "250")) goto cleanup;
+    
+    // 7. 开始数据传输
+    if (!send_command(sock, "DATA\r\n", "354")) goto cleanup;
+    
+    // 8. 构造并发送邮件内容
+    construct_email(from, to, subject, body, attachment, 
+                    buffer, BUFFER_SIZE);
+    
+    // 添加结束标记
+    strncat(buffer, "\r\n.\r\n", BUFFER_SIZE - strlen(buffer) - 1);
+    
+    if (send(sock, buffer, strlen(buffer), 0) < 0) {
+        perror("ERROR sending data");
+        goto cleanup;
+    }
+    
+    // 接收250确认
+    if (recv_response(sock, buffer, BUFFER_SIZE) < 0 ||
+        !check_response(buffer, "250")) {
+        goto cleanup;
+    }
+    
+    // 9. 结束会话
+    send_command(sock, "QUIT\r\n", "221");
+    result = 1;
+    
+cleanup:
+    close(sock);
+    return result;
+}
+```
+
+---
+
+## 四、代码框架
+
+### 4.1 完整lab.c结构
+
+```c
+/*
+ * lab.c - SMTP邮件发送客户端
+ * 实验要求: 实现带附件的邮件发送功能
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+
+#define BUFFER_SIZE 102400  // 100KB缓冲区
+#define SMTP_SERVER "smtphz.qiye.163.com"
+#define SMTP_PORT 25
+
+/* ==================== 函数声明 ==================== */
+
+// 网络连接
+int connect_server(const char* host, int port);
+int send_cmd(int sock, const char* cmd, char* resp, int resp_size);
+int recv_resp(int sock, char* resp, int resp_size);
+
+// SMTP协议
+int smtp_helo(int sock);
+int smtp_auth(int sock, const char* user_b64, const char* pass_b64);
+int smtp_from(int sock, const char* from);
+int smtp_to(int sock, const char* to);
+int smtp_data(int sock, const char* data);
+int smtp_quit(int sock);
+
+// 邮件构造
+int build_email(const char* from, const char* to, 
+                const char* subject, const char* body,
+                const char* attach_path, char* output, int max_len);
+
+// 工具函数
+int check_code(const char* resp, const char* code);
+void base64_encode(const char* input, char* output);
+
+/* ==================== 主函数 ==================== */
+
+int main(int argc, char* argv[]) {
+    // 参数检查
+    if (argc < 6) {
+        printf("Usage: %s <user_b64> <pass_b64> <from> <to> <subject> [body] [attachment]\n", 
+               argv[0]);
+        return 1;
+    }
+    
+    // 解析参数
+    char* username_b64 = argv[1];
+    char* password_b64 = argv[2];
+    char* from = argv[3];
+    char* to = argv[4];
+    char* subject = argv[5];
+    char* body = (argc > 6) ? argv[6] : "Test email from lab.c";
+    char* attachment = (argc > 7) ? argv[7] : NULL;
+    
+    // 执行发送
+    // TODO: 调用你的实现
+    
+    return 0;
+}
+
+/* ==================== 函数实现 ==================== */
+// TODO: 在此处完善所有函数实现
+```
+
+### 4.2 编译与运行
+
+```bash
+# 编译
+gcc -o lab lab.c -Wall
+
+# 运行(无附件)
+./lab <base64用户名> <base64密码> \
+      "sender@stu.pku.edu.cn" \
+      "recipient@qq.com" \
+      "Test Subject" \
+      "Email body text"
+
+# 运行(带附件)
+./lab <base64用户名> <base64密码> \
+      "sender@stu.pku.edu.cn" \
+      "recipient@qq.com" \
+      "Test with Attachment" \
+      "See attached file" \
+      "./photo.jpg"
+```
+
+---
+
+## 五、调试与测试
+
+### 5.1 手动测试SMTP交互
+
+```bash
+# 使用telnet测试连接
+telnet smtphz.qiye.163.com 25
+
+# 手动输入以下命令:
+EHLO test
+AUTH LOGIN
+# 输入Base64编码的用户名
+# 输入Base64编码的密码
+MAIL FROM:<your_email@stu.pku.edu.cn>
+RCPT TO:<test@qq.com>
+DATA
+Subject: Test
+
+This is a test.
+.
+QUIT
+```
+
+### 5.2 获取Base64编码
+
+```bash
+# 编码用户名
+echo -n "your_username@stu.pku.edu.cn" | base64
+
+# 编码密码
+echo -n "your_password" | base64
+
+# 注意: -n参数防止包含换行符
+```
+
+### 5.3 调试技巧
+
+| 问题 | 调试方法 |
+|------|---------|
+| 连接失败 | 检查网络、防火墙、端口25是否开放 |
+| 认证失败 | 确认Base64编码正确，用户名是完整邮箱地址 |
+| 邮件发送成功但收不到 | 检查垃圾箱，确认收件人地址正确 |
+| 附件损坏 | 检查UUencode格式，确认begin/end标记正确 |
+| 中文乱码 | 实验限制：正文和附件名使用英文 |
+
+---
+
+## 六、常见问题
+
+### Q1: 为什么使用QQ邮箱接收？
+**A:** ASCII格式邮件较旧，现代邮箱(如Gmail)可能无法正确解析附件。QQ邮箱兼容性较好，能直接显示UUencode编码的图片附件。
+
+### Q2: Base64和UUencode的区别？
+**A:** 
+- **Base64**: 用于SMTP认证，将任意二进制转为ASCII
+- **UUencode**: 用于附件传输， historically用于Unix系统间文件传输
+
+### Q3: 如何验证附件编码正确？
+**A:**
+```bash
+# 编码后解码测试
+uuencode test.jpg test.jpg > test.uue
+uudecode test.uue -o test_decoded.jpg
+diff test.jpg test_decoded.jpg  # 应无差异
+```
+
+### Q4: 邮件大小限制？
+**A:** 实验假设不超过100KB。如需发送大文件，需分片或考虑MIME格式(本实验不要求)。
+
+### Q5: 安全性考虑？
+**A:** 
+- 实验代码中不要硬编码账号密码
+- Base64只是编码不是加密
+- 提交代码时删除个人凭证
+
+---
+
+注意需要开启 POP/SMTP 服务，并且密码不一定是平时的账号密码。
+
+协议规定有些内容必须使用 base64 传输。注意 MAIL TO:后无空格
+
+uuencode, prepare_DATA 没有写 return
