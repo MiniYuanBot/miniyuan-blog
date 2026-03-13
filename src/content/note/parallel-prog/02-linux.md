@@ -34,7 +34,8 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 | `man <指令>` | **Manual** - 查看指令手册 |
 | `info <指令>` | **Information** - 查看指令详细信息 |
 | `help <指令>` | **Help** - 查看内置命令帮助 |
-| `clear` | **Clear** - 清空屏幕显示 |
+| `clear` | **Clear** - 清空终端显示 |
+| `reset` | **Reset** - 重启终端 |
 | `chmod` | **ch**ange **mod**e | 修改文件权限 |
 | `bc` | **B**asic **C**alculator | 命令行计算器，支持浮点运算 |
 
@@ -187,6 +188,8 @@ $ diff file1.txt file2.txt
 | `cat` | con**cat**enate | 连接文件并打印到标准输出 |
 | `echo` | echo | 打印变量或字符串 |
 
+**注**：`>` 和 `>>` 在文件不存在时都会创建一个新文件
+
 #### 示例
 
 ```bash
@@ -248,11 +251,8 @@ $ tar -xzvf archive.tar.gz -C new_folder/
 ```
 
 **注**：
-`.tar` 只是打包，文件大小约为原文件总和；`.tar.gz` 则是打包加压缩，相应的需要使用 `-z` 参数
-
----
-
-好的，收到您的请求。作为一名Linux系统工程师和助教，我将把您提供的课件内容，按照您的要求，整理成一份结构清晰、包含英文全称解析、示例丰富的Markdown格式学习笔记。
+- `.tar` 只是打包，文件大小约为原文件总和；`.tar.gz` 则是打包加压缩，相应的需要使用 `-z` 参数
+- 参数的排列顺序是重要的
 
 ---
 
