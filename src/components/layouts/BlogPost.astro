@@ -26,12 +26,13 @@ const {
 	<Card
 		hover={false}
 		padding="lg"
-		class="shadow-lg overflow-hidden max-w-none prose prose-md dark:prose-invert"
+		class="shadow-lg overflow-hidden max-w-none prose prose-md dark:prose-invert print-content"
 	>
-		<header>
+		<header class="print-header">
 			<div
-				class="flex flex-row items-center justify-start pt-2 gap-8 text-muted-foreground"
+				class="flex flex-row items-center justify-start pt-2 gap-8 text-muted-foreground print-hidden"
 			>
+				<!-- Won't print -->
 				<time
 					class="inline-flex items-center gap-2 text-base font-mono"
 					datetime={pubDate.toISOString()}
@@ -62,10 +63,77 @@ const {
 				{title}
 			</h1>
 
-			<hr class="my-6 md:my-8 border-t border-gray/20" />
+			<hr class="my-6 md:my-8 border-t border-gray/20 print-hidden" />
 		</header>
 
 		<!-- Article content, use prose style atomatically -->
 		<slot />
 	</Card>
 </BaseLayout>
+
+<style is:global>
+	@media print {
+		footer, nav, aside, .sidebar, .menu, 
+		.navbar, .giscus, .comments, .related-posts,
+		.share-buttons, .back-to-top, .print-hidden {
+			display: none !important;
+		}
+
+		body {
+			background: white !important;
+			padding: 0 !important;
+			margin: 0 !important;
+		}
+
+		main {
+			max-width: 100% !important;
+			padding: 0 !important;
+			margin: 0 !important;
+			min-height: auto !important;
+			background: white !important;
+		}
+
+		.print-content {
+			display: block !important;
+			padding: 2rem !important;
+			max-width: 100% !important;
+			background: white !important;
+			color: black !important;
+			box-shadow: none !important;
+			border: none !important;
+		}
+
+		.print-content.card,
+		.print-content [class*="card"] {
+			border: none !important;
+			box-shadow: none !important;
+		}
+
+		.print-header {
+			margin-top: 0 !important;
+			padding-top: 0 !important;
+		}
+		
+		.print-header h1 {
+			font-size: 24pt !important;
+			text-align: center !important;
+			margin: 0 0 1rem 0 !important;
+			color: black !important;
+		}
+
+		.prose {
+			color: black !important;
+			display: block !important;
+		}
+
+		.prose p, .prose h2, .prose h3, .prose ul, .prose ol {
+			color: black !important;
+			display: block !important;
+		}
+
+		a {
+			color: black !important;
+			text-decoration: underline !important;
+		}
+	}
+</style>
