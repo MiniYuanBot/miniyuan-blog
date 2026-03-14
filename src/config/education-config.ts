@@ -6,13 +6,13 @@ export const educationConfig: EducationConfig = [
         period: "August 2024 - Present",
         location: "Beijing",
         description: "College of Engineering",
-        logo: "/src/assets/images/PKU-logo.png",
+        logo: "/images/PKU-logo.png",
     },
     {
         school: "余杭高级中学",
         period: "April 2021 - July 2024",
         location: "Hangzhou",
         description: "High School",
-        logo: "/src/assets/images/yugao-logo.png",
+        logo: "/images/yugao-logo.png",
     },
 ]

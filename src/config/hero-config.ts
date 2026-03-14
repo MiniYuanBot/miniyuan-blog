@@ -1,7 +1,7 @@
 import type { HeroConfig } from '../schemas';
 
 export const heroConfig: HeroConfig = {
-    avatarSrc: "/src/assets/images/miniyuan.jpg",
+    avatarSrc: "/images/miniyuan.jpg",
     avatarAlt: "profile photo",
     name: "miniyuan",
     introduction: [
