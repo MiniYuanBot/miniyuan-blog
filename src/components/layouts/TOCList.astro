@@ -76,7 +76,7 @@ const totalHeadings = headingTree.reduce((count, heading) => {
     <div class={`toc-wrapper ${className}`} data-total-headings={totalHeadings}>
       {/* open TOC button */}
       <button
-        class="toc-trigger fixed right-6 top-1/5 translate-y-[-4rem] z-50 size-10 rounded-full shadow-md bg-gray/15 hover:shadow-lg hover:bg-gray/30 transition-base flex items-center justify-center group"
+        class="toc-trigger fixed z-50 size-10 rounded-full shadow-md bg-gray/15 hover:shadow-lg hover:bg-gray/30 transition-base flex items-center justify-center group"
         aria-label="open TOC"
         aria-expanded="false"
         aria-controls="toc-panel"
@@ -94,7 +94,7 @@ const totalHeadings = headingTree.reduce((count, heading) => {
       {/* TOC panel */}
       <div
         id="toc-panel"
-        class="toc-panel fixed right-6 top-1/5 z-40 w-80 max-h-[70vh] rounded-xl shadow-2xl border border-border/50 opacity-0 transition-base overflow-hidden flex flex-col hidden"
+        class="toc-panel fixed mt-15 z-40 md:w-50 lg:w-64 max-h-[70vh] rounded-xl shadow-2xl border border-border/50 opacity-0 transition-base overflow-hidden flex flex-col hidden"
         style="background-color: var(--toc-bg); backdrop-filter: var(--toc-blur);"
         role="dialog"
         aria-modal="true"
@@ -247,13 +247,13 @@ const totalHeadings = headingTree.reduce((count, heading) => {
     }
   }
 
-  @media (max-width: 640px) {
-    .toc-panel {
-      @apply right-4 left-4 w-auto bottom-20;
+  @media (max-width: 768px) {
+    .toc-trigger {
+      @apply right-10 bottom-10;
     }
 
-    .toc-trigger {
-      @apply right-4 bottom-4;
+    .toc-panel {
+      @apply right-10 bottom-30 min-w-56;
     }
   }
 
@@ -293,7 +293,7 @@ const totalHeadings = headingTree.reduce((count, heading) => {
 
     const tocTrigger = tocWrapper.querySelector(".toc-trigger");
     const tocPanel = tocWrapper.querySelector(".toc-panel");
-    const tocOverlay = tocWrapper.querySelector(".toc-overlay");
+    // const tocOverlay = tocWrapper.querySelector(".toc-overlay");
     const tocCloseBtn = tocWrapper.querySelector(".toc-close-btn");
     const tocLinks = tocWrapper.querySelectorAll(".toc-item a");
     const backToTopBtn = tocWrapper.querySelector(".back-to-top");
@@ -386,7 +386,7 @@ const totalHeadings = headingTree.reduce((count, heading) => {
 
       if (isOpen) {
         tocPanel?.classList.add("open");
-        tocOverlay?.classList.add("open");
+        // tocOverlay?.classList.add("open");
         tocTrigger?.classList.add("active");
         tocTrigger?.setAttribute("aria-expanded", "true");
         initialScrollY = window.scrollY;
@@ -394,7 +394,7 @@ const totalHeadings = headingTree.reduce((count, heading) => {
         updateScrollState();
       } else {
         tocPanel?.classList.remove("open");
-        tocOverlay?.classList.remove("open");
+        // tocOverlay?.classList.remove("open");
         tocTrigger?.classList.remove("active");
         tocTrigger?.setAttribute("aria-expanded", "false");
         tocPanel?.classList.remove("is-scrolled");
@@ -403,7 +403,7 @@ const totalHeadings = headingTree.reduce((count, heading) => {
 
     tocTrigger?.addEventListener("click", () => toggleToc());
     tocCloseBtn?.addEventListener("click", () => toggleToc(false));
-    tocOverlay?.addEventListener("click", () => toggleToc(false));
+    // tocOverlay?.addEventListener("click", () => toggleToc(false));
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && isOpen) {

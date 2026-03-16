@@ -49,70 +49,72 @@ const getTagCount = (tagName: string) => {
     title={`note tag: ${tag}`}
     description={`view ${noteCount} notes with tag ${tag}`}
 >
-    <Section title={tag} subtitle={`${noteCount} notes`} backhref="/tags">
+    <div slot="content">
+        <Section title={tag} subtitle={`${noteCount} notes`} backhref="/tags">
+            {
+                taggedNotes.length > 0 ? (
+                    <div class="space-y-6">
+                        {taggedNotes.map((note) => (
+                            <div class="animate-fade-in">
+                                <NoteCard
+                                    title={note.data.title}
+                                    pubDate={note.data.pubDate}
+                                    excerpt={note.data.excerpt}
+                                    author={note.data.author}
+                                    position={note.data.position}
+                                    tags={note.data.tags}
+                                    heroImageLight={note.data.heroImageLight}
+                                    heroImageDark={note.data.heroImageDark}
+                                    href={`/note/${note.id}/`}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <Card padding="xl" hover={false} class="text-center py-20">
+                        <Icon
+                            name="tag"
+                            class="size-10 mx-auto mb-4 text-muted-foreground"
+                        />
+                        <p class="text-xl text-muted-foreground mb-4">
+                            No notes under this tag
+                        </p>
+                        <Button
+                            as="a"
+                            href="/tags"
+                            variant="ahead"
+                            title="View other note tags"
+                        />
+                    </Card>
+                )
+            }
+        </Section>
+
         {
-            taggedNotes.length > 0 ? (
-                <div class="space-y-6">
-                    {taggedNotes.map((note) => (
-                        <div class="animate-fade-in">
-                            <NoteCard
-                                title={note.data.title}
-                                pubDate={note.data.pubDate}
-                                excerpt={note.data.excerpt}
-                                author={note.data.author}
-                                position={note.data.position}
-                                tags={note.data.tags}
-                                heroImageLight={note.data.heroImageLight}
-                                heroImageDark={note.data.heroImageDark}
-                                href={`/note/${note.id}/`}
-                            />
+            relatedTags.length > 0 && (
+                <Section title="Related Tags">
+                    <div class="mb-8">
+                        <div class="flex flex-wrap gap-2">
+                            {relatedTags.map((relatedTag) => {
+                                const count = getTagCount(relatedTag);
+                                return (
+                                    <Button
+                                        as="a"
+                                        href={`/tags/note/${encodeURIComponent(relatedTag)}`}
+                                        variant="pill"
+                                        class="group"
+                                    >
+                                        <span>{relatedTag}</span>
+                                        <span class="ml-1 text-xs opacity-60">
+                                            ({count})
+                                        </span>
+                                    </Button>
+                                );
+                            })}
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <Card padding="xl" hover={false} class="text-center py-20">
-                    <Icon
-                        name="tag"
-                        class="size-10 mx-auto mb-4 text-muted-foreground"
-                    />
-                    <p class="text-xl text-muted-foreground mb-4">
-                        No notes under this tag
-                    </p>
-                    <Button
-                        as="a"
-                        href="/tags"
-                        variant="ahead"
-                        title="View other note tags"
-                    />
-                </Card>
+                    </div>
+                </Section>
             )
         }
-    </Section>
-
-    {
-        relatedTags.length > 0 && (
-            <Section title="Related Tags">
-                <div class="mb-8">
-                    <div class="flex flex-wrap gap-2">
-                        {relatedTags.map((relatedTag) => {
-                            const count = getTagCount(relatedTag);
-                            return (
-                                <Button
-                                    as="a"
-                                    href={`/tags/note/${encodeURIComponent(relatedTag)}`}
-                                    variant="pill"
-                                    class="group"
-                                >
-                                    <span>{relatedTag}</span>
-                                    <span class="ml-1 text-xs opacity-60">
-                                        ({count})
-                                    </span>
-                                </Button>
-                            );
-                        })}
-                    </div>
-                </div>
-            </Section>
-        )
-    }
+    </div>
 </BaseLayout>

@@ -2,7 +2,7 @@
 // Define a consistent html layout for blog posts.
 
 import type { CollectionEntry } from "astro:content";
-import { type MarkdownHeading } from '@astrojs/markdown-remark';
+import { type MarkdownHeading } from "@astrojs/markdown-remark";
 import BaseLayout from "./BaseLayout.astro";
 import { FormattedDate } from "@/components/basic";
 import { Card, Icon } from "@/components/ui";
@@ -77,9 +77,9 @@ const {
 
 	{
 		!!headings.length && (
-			<div slot="sidebar">
+			<aside slot="sidebar">
 				<TOCList {headings} />
-			</div>
+			</aside>
 		)
 	}
 </BaseLayout>
@@ -90,29 +90,24 @@ const {
 		nav,
 		aside,
 		.sidebar,
-		.menu,
-		.navbar,
-		.giscus,
-		.comments,
-		.related-posts,
-		.share-buttons,
-		.back-to-top,
 		.print-hidden {
 			display: none !important;
 		}
 
-		body {
+		body,
+		main {
 			background: white !important;
 			padding: 0 !important;
 			margin: 0 !important;
+			max-width: 100% !important;
+			min-height: auto !important;
 		}
 
-		main {
+		[data-main-container] {
+			display: block !important;
+			width: 100% !important;
 			max-width: 100% !important;
-			padding: 0 !important;
-			margin: 0 !important;
-			min-height: auto !important;
-			background: white !important;
+			flex: none !important;
 		}
 
 		.print-content {
@@ -125,17 +120,6 @@ const {
 			border: none !important;
 		}
 
-		.print-content.card,
-		.print-content [class*="card"] {
-			border: none !important;
-			box-shadow: none !important;
-		}
-
-		.print-header {
-			margin-top: 0 !important;
-			padding-top: 0 !important;
-		}
-
 		.print-header h1 {
 			font-size: 24pt !important;
 			text-align: center !important;
@@ -143,11 +127,7 @@ const {
 			color: black !important;
 		}
 
-		.prose {
-			color: black !important;
-			display: block !important;
-		}
-
+		.prose,
 		.prose p,
 		.prose h2,
 		.prose h3,

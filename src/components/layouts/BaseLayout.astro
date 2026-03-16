@@ -23,17 +23,20 @@ const hasSidebar = Astro.slots.has("sidebar");
 			class="w-full mx-auto max-w-[70rem] min-h-[100dvh] px-6 py-8 flex-1"
 		>
 			<div
-				class={`flex flex-col lg:gap-8 xl:gap-12 relative ${!hasSidebar ? "justify-center md:flex-row" : ""}`}
+				class={`flex flex-col lg:gap-8 xl:gap-12 relative ${hasSidebar ? "justify-center md:flex-row" : ""}`}
+				data-main-container
 			>
 				{/* main content */}
-				<div class={hasSidebar ? "flex-1" : "w-full mx-4"}>
+				<div
+					class={hasSidebar ? "flex-1 min-w-0 w-full" : "w-full mx-4"}
+				>
 					<slot name="content" />
 				</div>
 
 				{/* side bar */}
 				{
 					hasSidebar && (
-						<div class="md:w-56 lg:w-72 flex-shrink-0 animate-fade-in">
+						<div class="w-full md:w-56 lg:w-64 mt-10 p-3 flex-shrink-0 animate-fade-in">
 							<slot name="sidebar" />
 						</div>
 					)
