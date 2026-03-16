@@ -3,26 +3,42 @@ import { BaseHead, Header, Footer, ThemeProvider } from "../basic";
 import { siteConfig } from "@/config";
 
 interface Props {
-	title: string
-	description: string
+	title: string;
+	description: string;
 }
 
-const { title, description } = Astro.props
+const { title, description } = Astro.props;
+const hasSidebar = Astro.slots.has("sidebar");
 ---
 
 <!doctype html>
 <html lang={siteConfig.lang}>
 	<head>
-		<BaseHead
-			title={title}
-			description={description}
-		/>
+		<BaseHead title={title} description={description} />
 		<ThemeProvider />
 	</head>
 	<body class="flex flex-col bg-background text-foreground">
 		<Header />
-		<main class="w-full mx-auto max-w-[70rem] min-h-[100dvh] px-4 py-8 flex-1">
-			<slot />
+		<main
+			class="w-full mx-auto max-w-[70rem] min-h-[100dvh] px-4 py-8 flex-1"
+		>
+			<div
+				class={`flex flex-col md:flex-row lg:gap-8 xl:gap-12 relative ${!hasSidebar ? "justify-center" : ""}`}
+			>
+				{/* main content */}
+				<div class={hasSidebar ? "flex-1" : "w-full mx-4"}>
+					<slot name="content" />
+				</div>
+
+				{/* side bar */}
+				{
+					hasSidebar && (
+						<div class="md:w-56 lg:w-72 flex-shrink-0 animate-fade-in">
+							<slot name="sidebar" />
+						</div>
+					)
+				}
+			</div>
 		</main>
 		<Footer />
 	</body>

@@ -6,7 +6,7 @@ import BaseLayout from "./BaseLayout.astro";
 import { FormattedDate } from "@/components/basic";
 import { Card, Icon } from "@/components/ui";
 
-import 'katex/dist/katex.min.css';
+import "katex/dist/katex.min.css";
 
 type Props = CollectionEntry<"blog">["data"];
 
@@ -23,59 +23,70 @@ const {
 ---
 
 <BaseLayout title={title} description={excerpt}>
-	<Card
-		hover={false}
-		padding="lg"
-		class="shadow-lg overflow-hidden max-w-none prose prose-md dark:prose-invert print-content"
-	>
-		<header class="print-header">
-			<div
-				class="flex flex-row items-center justify-start pt-2 gap-8 text-muted-foreground print-hidden"
-			>
-				<!-- Won't print -->
-				<time
-					class="inline-flex items-center gap-2 text-base font-mono"
-					datetime={pubDate.toISOString()}
+	<div slot="content">
+		<Card
+			hover={false}
+			padding="lg"
+			class="shadow-lg overflow-hidden max-w-none prose prose-md dark:prose-invert print-content"
+		>
+			<header class="print-header">
+				<div
+					class="flex flex-row items-center justify-start pt-2 gap-8 text-muted-foreground print-hidden"
 				>
-					<Icon name="calendar" class="size-5" />
-					<FormattedDate date={pubDate} />
-				</time>
+					<!-- Won't print -->
+					<time
+						class="inline-flex items-center gap-2 text-base font-mono"
+						datetime={pubDate.toISOString()}
+					>
+						<Icon name="calendar" class="size-5" />
+						<FormattedDate date={pubDate} />
+					</time>
 
-				{
-					updatedDate && (
-						<time
-							class="inline-flex items-center gap-2 text-base font-mono"
-							datetime={pubDate.toISOString()}
-						>
-							<Icon name="pencil" class="size-5" />
-							<FormattedDate date={updatedDate} />
-						</time>
-					)
-				}
+					{
+						updatedDate && (
+							<time
+								class="inline-flex items-center gap-2 text-base font-mono"
+								datetime={pubDate.toISOString()}
+							>
+								<Icon name="pencil" class="size-5" />
+								<FormattedDate date={updatedDate} />
+							</time>
+						)
+					}
 
-				<div class="inline-flex items-center gap-2 text-base">
-					<Icon name="user" class="size-5" />
-					<span>{author}</span>
+					<div class="inline-flex items-center gap-2 text-base">
+						<Icon name="user" class="size-5" />
+						<span>{author}</span>
+					</div>
 				</div>
-			</div>
 
-			<h1 class="mt-4 mb-0">
-				{title}
-			</h1>
+				<h1 class="mt-4 mb-0">
+					{title}
+				</h1>
 
-			<hr class="my-6 md:my-8 border-t border-gray/20 print-hidden" />
-		</header>
+				<hr class="my-6 md:my-8 border-t border-gray/20 print-hidden" />
+			</header>
 
-		<!-- Article content, use prose style atomatically -->
-		<slot />
-	</Card>
+			<!-- Article content, use prose style atomatically -->
+			<slot />
+		</Card>
+	</div>
 </BaseLayout>
 
 <style is:global>
 	@media print {
-		footer, nav, aside, .sidebar, .menu, 
-		.navbar, .giscus, .comments, .related-posts,
-		.share-buttons, .back-to-top, .print-hidden {
+		footer,
+		nav,
+		aside,
+		.sidebar,
+		.menu,
+		.navbar,
+		.giscus,
+		.comments,
+		.related-posts,
+		.share-buttons,
+		.back-to-top,
+		.print-hidden {
 			display: none !important;
 		}
 
@@ -113,7 +124,7 @@ const {
 			margin-top: 0 !important;
 			padding-top: 0 !important;
 		}
-		
+
 		.print-header h1 {
 			font-size: 24pt !important;
 			text-align: center !important;
@@ -126,7 +137,11 @@ const {
 			display: block !important;
 		}
 
-		.prose p, .prose h2, .prose h3, .prose ul, .prose ol {
+		.prose p,
+		.prose h2,
+		.prose h3,
+		.prose ul,
+		.prose ol {
 			color: black !important;
 			display: block !important;
 		}

@@ -25,83 +25,76 @@ const sidebarTags = uniqueTags.slice(0, sidebarTagMax);
 ---
 
 <BaseLayout title="Notes" description="The notes of miniyuan's blog">
-	<div class="flex flex-col md:flex-row lg:gap-8 xl:gap-12 relative">
-		{/* notes */}
-		<Section title="Notes">
-			<div class="w-full grid grid-cols-1 gap-6 p-0">
-				{
-					notes.map((note) => (
-						<NoteCard
-							title={note.data.title}
-							pubDate={note.data.pubDate}
-							excerpt={note.data.excerpt}
-							author={note.data.author}
-							position={note.data.position}
-							tags={note.data.tags}
-							heroImageLight={note.data.heroImageLight}
-							heroImageDark={note.data.heroImageDark}
-							href={`/note/${note.id}/`}
-						/>
-					))
-				}
-			</div>
-		</Section>
+	{/* notes */}
+	<Section title="Notes" slot="content">
+		<div class="w-full grid grid-cols-1 gap-6 p-0">
+			{
+				notes.map((note) => (
+					<NoteCard
+						title={note.data.title}
+						pubDate={note.data.pubDate}
+						excerpt={note.data.excerpt}
+						author={note.data.author}
+						position={note.data.position}
+						tags={note.data.tags}
+						heroImageLight={note.data.heroImageLight}
+						heroImageDark={note.data.heroImageDark}
+						href={`/note/${note.id}/`}
+					/>
+				))
+			}
+		</div>
+	</Section>
 
-		{/* sidebar */}
-		{
-			!!uniqueTags.length && (
-				<aside
-					class="
-					px-4
-					md:w-56 lg:w-72 flex-shrink-0 
-					mt-8 lg:mt-16 
-					order-last 
-					animate-fade-in
-				"
-					id="sidebar"
+	{/* sidebar */}
+	{
+		!!uniqueTags.length && (
+			<aside slot="sidebar">
+				<Card
+					padding="md"
+					hover={false}
+					class="shadow-md hover:cursor-pointer"
 				>
-					<Card padding="md" hover={false} class="shadow-md hover:cursor-pointer">
-						<h2
-							class="
+					<h2
+						class="
 						text-xl font-semibold 
 						flex items-center gap-2 
 						text-foreground
 						border-b border-muted-foreground/50 
 						pb-4 mb-4
 					"
-						>
-							<Icon name="tag" class="size-5" />
-							Tags
-						</h2>
+					>
+						<Icon name="tag" class="size-5" />
+						Tags
+					</h2>
 
-						<ul class="flex flex-wrap gap-2 mb-4">
-							{sidebarTags.map((tag) => (
-								<li>
-									<Button
-										as="a"
-										href={`/tags/note/${encodeURIComponent(tag)}`}
-										variant="pill"
-										title={`${tag} (${tagCounts[tag]})`}
-										aria-label={`View posts tagged with ${tag}`}
-									/>
-								</li>
-							))}
-						</ul>
-
-						{/* view all if tags to much */}
-						{uniqueTags.length > sidebarTags.length && (
-							<div class="text-right border-t border-muted-foreground/50 pt-4">
+					<ul class="flex flex-wrap gap-2 mb-4">
+						{sidebarTags.map((tag) => (
+							<li>
 								<Button
 									as="a"
-									variant="ahead"
-									title="View all tags"
-									href="/tags"
+									href={`/tags/note/${encodeURIComponent(tag)}`}
+									variant="pill"
+									title={`${tag} (${tagCounts[tag]})`}
+									aria-label={`View posts tagged with ${tag}`}
 								/>
-							</div>
-						)}
-					</Card>
-				</aside>
-			)
-		}
-	</div>
+							</li>
+						))}
+					</ul>
+
+					{/* view all if tags to much */}
+					{uniqueTags.length > sidebarTags.length && (
+						<div class="text-right border-t border-muted-foreground/50 pt-4">
+							<Button
+								as="a"
+								variant="ahead"
+								title="View all tags"
+								href="/tags"
+							/>
+						</div>
+					)}
+				</Card>
+			</aside>
+		)
+	}
 </BaseLayout>

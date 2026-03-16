@@ -86,7 +86,7 @@ export const typographyConfig: TypographyOptions = {
             'background-color': 'transparent',
             padding: '0',
             border: 'none',
-            'font-size': '0.9em',
+            'font-size': '1em',
             color: 'inherit',
         },
 
