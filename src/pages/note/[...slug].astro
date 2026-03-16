@@ -23,9 +23,9 @@ const noteWithDates = {
 	}
 };
 
-const { Content } = await render(noteWithDates);
+const { Content, headings } = await render(noteWithDates);
 ---
 
-<BlogPost {...noteWithDates.data}>
+<BlogPost {...noteWithDates.data} headings={headings}>
 	<Content />
 </BlogPost>

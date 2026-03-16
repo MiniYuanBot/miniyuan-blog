@@ -10,7 +10,7 @@ import TOCList from "./TOCList.astro";
 
 import "katex/dist/katex.min.css";
 
-type Props = CollectionEntry<"blog">["data"] & { headings: MarkdownHeading[] };
+type Props = CollectionEntry<"blog">["data"] & { headings?: MarkdownHeading[] };
 
 const {
 	title,
