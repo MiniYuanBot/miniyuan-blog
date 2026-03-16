@@ -76,7 +76,7 @@ const totalHeadings = headingTree.reduce((count, heading) => {
     <div class={`toc-wrapper ${className}`} data-total-headings={totalHeadings}>
       {/* open TOC button */}
       <button
-        class="toc-trigger fixed right-6 top-1/5 translate-y-[-4rem] z-50 size-10 rounded-full shadow-md bg-gray-light hover:shadow-lg hover:bg-gray/40 transition-base flex items-center justify-center group"
+        class="toc-trigger fixed right-6 top-1/5 translate-y-[-4rem] z-50 size-10 rounded-full shadow-md bg-gray/15 hover:shadow-lg hover:bg-gray/30 transition-base flex items-center justify-center group"
         aria-label="open TOC"
         aria-expanded="false"
         aria-controls="toc-panel"
@@ -94,7 +94,7 @@ const totalHeadings = headingTree.reduce((count, heading) => {
       {/* TOC panel */}
       <div
         id="toc-panel"
-        class="toc-panel fixed right-6 top-1/5 z-40 w-80 max-h-[70vh] rounded-xl shadow-2xl border border-border/50 opacity-0 transition-base overflow-hidden flex flex-col"
+        class="toc-panel fixed right-6 top-1/5 z-40 w-80 max-h-[70vh] rounded-xl shadow-2xl border border-border/50 opacity-0 transition-base overflow-hidden flex flex-col hidden"
         style="background-color: var(--toc-bg); backdrop-filter: var(--toc-blur);"
         role="dialog"
         aria-modal="true"
@@ -203,14 +203,18 @@ const totalHeadings = headingTree.reduce((count, heading) => {
     @apply bg-accent;
   }
 
+  .toc-panel {
+    visibility: hidden;
+  }
+
   .toc-panel.open {
     @apply opacity-100;
+    visibility: visible;
     --toc-bg: hsl(var(--card) / 0.95);
     --toc-blur: blur(8px);
   }
 
   .toc-panel.open.is-scrolled {
-    @apply opacity-100;
     --toc-bg: hsl(var(--card) / 0.8);
     --toc-blur: none;
   }
