@@ -20,10 +20,10 @@ const hasSidebar = Astro.slots.has("sidebar");
 	<body class="flex flex-col bg-background text-foreground">
 		<Header />
 		<main
-			class="w-full mx-auto max-w-[70rem] min-h-[100dvh] px-4 py-8 flex-1"
+			class="w-full mx-auto max-w-[70rem] min-h-[100dvh] px-6 py-8 flex-1"
 		>
 			<div
-				class={`flex flex-col md:flex-row lg:gap-8 xl:gap-12 relative ${!hasSidebar ? "justify-center" : ""}`}
+				class={`flex flex-col lg:gap-8 xl:gap-12 relative ${!hasSidebar ? "justify-center md:flex-row" : ""}`}
 			>
 				{/* main content */}
 				<div class={hasSidebar ? "flex-1" : "w-full mx-4"}>

@@ -2,13 +2,15 @@
 // Define a consistent html layout for blog posts.
 
 import type { CollectionEntry } from "astro:content";
+import { type MarkdownHeading } from '@astrojs/markdown-remark';
 import BaseLayout from "./BaseLayout.astro";
 import { FormattedDate } from "@/components/basic";
 import { Card, Icon } from "@/components/ui";
+import TOCList from "./TOCList.astro";
 
 import "katex/dist/katex.min.css";
 
-type Props = CollectionEntry<"blog">["data"];
+type Props = CollectionEntry<"blog">["data"] & { headings: MarkdownHeading[] };
 
 const {
 	title,
@@ -19,6 +21,7 @@ const {
 	updatedDate,
 	heroImageLight,
 	heroImageDark,
+	headings = [],
 } = Astro.props;
 ---
 
@@ -71,6 +74,14 @@ const {
 			<slot />
 		</Card>
 	</div>
+
+	{
+		!!headings.length && (
+			<div slot="sidebar">
+				<TOCList {headings} />
+			</div>
+		)
+	}
 </BaseLayout>
 
 <style is:global>

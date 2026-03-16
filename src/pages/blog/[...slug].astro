@@ -23,9 +23,9 @@ const postWithDates = {
 	}
 };
 
-const { Content } = await render(postWithDates);
+const { Content, headings } = await render(postWithDates);
 ---
 
-<BlogPost {...postWithDates.data}>
+<BlogPost {...postWithDates.data} headings={headings}>
 	<Content />
 </BlogPost>
