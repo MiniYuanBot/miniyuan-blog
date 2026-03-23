@@ -137,6 +137,23 @@ const {
 			display: block !important;
 		}
 
+		pre,
+		code,
+		pre[class*="language-"],
+		code[class*="language-"] {
+			white-space: pre-wrap !important;
+			word-break: break-all !important;
+			word-wrap: break-word !important;
+			overflow: visible !important;
+			max-width: 100% !important;
+		}
+
+		:not(pre) > code,
+		pre {
+			white-space: pre-wrap !important;
+			word-break: break-all !important;
+		}
+
 		a {
 			color: black !important;
 			text-decoration: underline !important;

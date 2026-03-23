@@ -38,6 +38,9 @@ importers:
       sharp:
         specifier: ^0.34.5
         version: 0.34.5
+      unist-util-visit:
+        specifier: ^5.1.0
+        version: 5.1.0
     devDependencies:
       '@astrojs/sitemap':
         specifier: ^3.7.0

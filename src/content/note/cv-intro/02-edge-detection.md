@@ -1,5 +1,5 @@
 ---
-title: '边缘提取'
+title: '边缘检测'
 excerpt: '26 春 计算机视觉导论 L02'
 author: 'miniyuan'
 position: 'Beijing'
@@ -148,7 +148,9 @@ $$
 
 ### The Definition of Edges
 
-**边缘**是图像中在某一方向上像素值显著变化，在其正交方向上变化较小的区域。通常使用**梯度**衡量。
+**边缘**是图像中在某一方向上像素值显著变化，在其正交方向上变化较小的区域。
+
+边缘的数学定义由**梯度**给出：边缘上，梯度的幅值应当在梯度方向上取得局部极大值，且在梯度的正交方向上基本不变。
 
 梯度向量：
 $$
@@ -162,8 +164,6 @@ $$
 $$
 \theta = \operatorname{atan2} \left(\frac{\partial f}{\partial y}, \frac{\partial f}{\partial x}\right)
 $$
-
-梯度指向强度增大的方向（黑到白），边缘的中轴处梯度幅值通常达到局部最大值。
 
 ### Criteria for Edge Detection
 
@@ -240,7 +240,7 @@ $$
 
 ### Post Processing
 
-实际上前一步结束时我们就已经完成了边缘的检测。但是我们需要进一步解决两个问题：一是边缘的 localization/single response，也即边缘最好是**单像素**的；二是边缘的 continuity，也即边缘最好是**连续**的。
+实际上前一步结束时我们就已经完成了梯度的计算。接下来需要进一步解决两个问题即可完成边缘检测：一是边缘的 localization/single response，也即边缘最好是**单像素**的；二是边缘的 continuity，也即边缘最好是**连续**的。
 
 #### Non-Maximal Suppression
 
@@ -263,8 +263,8 @@ $$
 本质上就是按照距离整点的距离比例进行加权。
 
 <div align="center">
-<a href="/images/cv-intro/classic-vision-01.jpg" target="_blank">
-<img src="/images/cv-intro/classic-vision-01.jpg" alt="双线性插值" width="80%">
+<a href="/images/note/cv-intro/02-edge-01.jpg" target="_blank">
+<img src="/images/note/cv-intro/02-edge-01.jpg" alt="双线性插值" width="80%">
 </a>
 <br>
 <em>图1：双线性插值</em>

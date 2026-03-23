@@ -7,6 +7,7 @@ import unocss from 'unocss/astro';
 import vercel from '@astrojs/vercel'
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
+import remarkImageCaption from './src/plugins/remark-image-caption.js';
 
 // https://astro.build/config
 export default defineConfig({
@@ -46,9 +47,9 @@ export default defineConfig({
 	],
 
 	markdown: {
-		remarkPlugins: [remarkMath],
+		remarkPlugins: [remarkMath, remarkImageCaption],
 		rehypePlugins: [
-			[rehypeKatex, {}],
+			rehypeKatex,
 			rehypeHeadingIds,
 			// [
 			// 	rehypeAutolinkHeadings,
