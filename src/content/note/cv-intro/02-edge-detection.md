@@ -262,13 +262,7 @@ $$
 
 本质上就是按照距离整点的距离比例进行加权。
 
-<div align="center">
-<a href="/images/note/cv-intro/02-edge-01.jpg" target="_blank">
-<img src="/images/note/cv-intro/02-edge-01.jpg" alt="双线性插值" width="80%">
-</a>
-<br>
-<em>图1：双线性插值</em>
-</div>
+![图1：双线性插值](/images/note/cv-intro/02-edge-01-bilinear-interpolation.jpg)
 
 **简化 NMS**：
 

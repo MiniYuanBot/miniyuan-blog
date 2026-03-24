@@ -76,7 +76,7 @@ class DigitalCircularity:
 
     @staticmethod
     def _polygon_area(verts: List[Tuple[int, int]]) -> float:
-        """多边形面积（鞋带公式）"""
+        """多边形面积"""
         s = 0
         n = len(verts)
         for i in range(n):
@@ -112,6 +112,7 @@ class DigitalCircularity:
 
     @staticmethod
     def _polygon_centroid(verts: List[Tuple[int, int]]) -> Tuple[float, float]:
+        """质心位置"""
         n = len(verts)
         if n == 0:
             return (0, 0)
@@ -138,7 +139,6 @@ class DigitalCircularity:
         cy /= (6 * area)
         return (cx, cy)
 
-    # ----- 核心功能：最优步长选择 -----
     def find_optimal_stride(self, max_stride: int = None) -> Tuple[int, float]:
         """
         寻找最优步长：使圆度最接近π的步长
