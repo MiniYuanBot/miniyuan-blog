@@ -73,7 +73,10 @@ git config --global --list         # 查看所有全局配置
 
 **注**：`--global` 表示全局配置，所有本地仓库均使用该信息。去掉 `--global` 即可为单个仓库配置作者信息。
 
-### 配置 SSH Key（可选但推荐）
+### 配置 SSH Key
+
+SSH 不是必需的，但是推荐进行配置以更稳定、更便捷（无需使用 PAT）地进行连接。
+
 ```bash
 # 生成 SSH Key
 ssh-keygen -t rsa -b 4096 -C "对密钥的描述"
@@ -103,6 +106,32 @@ Host your-host-name
 ssh your-host-name
 ```
 
+### 配置 PAT
+
+由于 GitHub 已停止支持密码验证，如果使用 HTTPS 方式连接 GitHub 的话需使用 **Personal Access Token (PAT)**。当然 ssh 连接就不需要了。
+
+**生成 Token 步骤**：
+1. 登录 GitHub → 右上角头像 → **Settings**
+2. 左侧菜单 → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+3. 点击 **Generate new token (classic)**
+4. 填写 Note（用途说明），选择过期时间
+5. 勾选权限（至少选择 `repo` 用于仓库操作）
+6. 点击 **Generate token**
+7. **立即复制保存**（只显示一次）
+
+**使用 Token**：
+```bash
+# HTTPS 方式克隆时，用 Token 代替密码
+git clone https://github.com/username/repo.git
+# 密码处输入 Token 而非 GitHub 密码
+
+# 或修改远程 URL 包含 Token（不推荐，不安全）
+git remote set-url origin https://<token>@github.com/username/repo.git
+
+# 推荐：配置 Git 凭证管理器缓存 Token
+git config --global credential.helper cache
+```
+
 ---
 
 ## Git 本地仓库操作
@@ -115,7 +144,7 @@ Git 本地操作围绕**三个区域**展开：
 
 ### 仓库创建与克隆
 
-#### 在 GitHub 上创建远程仓库
+#### 创建远程仓库
 1. 点击右上角 `+` → `New repository`
 2. 填写 `Repository name`（仓库名）
 3. 选择权限：`Public`（开源）/ `Private`（私有）
@@ -156,7 +185,7 @@ git clone repo-address
 
 ---
 
-### git add
+### 工作区到暂存区
 
 `git add` 负责将代码由工作区推入暂存区。
 
@@ -183,7 +212,7 @@ git status
 git rm --cached filename  # 将文件从暂存区退回工作区
 ```
 
-### git commit
+### 暂存区到本地仓库
 
 `git commit` 负责将代码由暂存区推入本地仓库。
 
@@ -199,7 +228,7 @@ git commit -m "statement"
 
 ---
 
-### git log
+### 查看历史记录
 
 `git log` 用于查看提交历史/版本记录
 
@@ -223,7 +252,7 @@ git log --author="username"
 git log --since="2025-03-01"
 ```
 
-### git diff
+### 查看文件差异
 
 `git diff` 用于查看文件差异
 
@@ -245,7 +274,7 @@ git diff filename
 
 ## Git 远程仓库交互
 
-### git remote
+### 管理远程仓库
 
 `git remote` 负责远程仓库关联与管理。
 
@@ -264,7 +293,7 @@ git remote rm origin
 
 ---
 
-### git push
+### 本地仓库到远程仓库
 
 `git push` 用于将本地仓库推送到远程仓库。
 
@@ -284,18 +313,14 @@ git push origin master
 
 ### 拉取远程代码
 
-#### git pull
-
-`git pull` 用于自动拉取并合并。可能产生**冲突**。
+- `git pull` 用于自动拉取并合并。可能产生**冲突**。
 
 ```bash
 # git pull 自动拉取并合并
 git pull origin master
 ```
 
-#### git fetch + git merge
-
-`git fetch` + `git merge` 用于精确拉取，用于解决使用自动合并时可能产生的冲突。
+- `git fetch` + `git merge` 用于精确拉取，用于解决使用自动合并时可能产生的冲突。
 
 ```bash
 # 拉取远程主机最新代码到本地（不自动合并）
@@ -335,7 +360,7 @@ git merge origin/develop
 
 ## Git 进阶功能
 
-### git stash
+### 临时存储
 
 `git stash` 用于临时存储。也即保存工作区未提交的修改（未 `git add` / 未 `git commit`），让工作区恢复干净，方便切换分支、紧急修复 bug 等多任务处理。
 
@@ -369,34 +394,365 @@ git stash drop
 
 ---
 
-### git reset
+### 精选提交
 
-`git reset` 用于版本回退。也即将 **HEAD 指针**（当前版本的指向）移动到指定的 commit ID，实现撤销提交、回退版本。
-
-**注**：`git reset` **仅适用于本地仓库未推送到远程的场景**，已推送时可能影响他人开发。
-
-`git reset --hard` 命令会**彻底覆盖工作区和暂存区**，未提交的修改（未 `git add` / 未 `git commit`）会被**永久删除，无法恢复**！
-
-**使用命令前务必**：
-```bash
-git status  # 确认工作区干净
-# 或用 git stash 保存修改
-```
-
-假设当前有提交历史：A → B → C → D，HEAD 指向 D（最新）。现在发现 C 和 D 是错误提交，需要回退到 B。
+`cherry-pick` 用于将指定提交的修改**复制**到当前分支，生成新的提交。
 
 ```bash
-# 查看提交历史，获取 B 的 commit ID（前几位即可，如 a0fvf8）
-git log --oneline
+# 将某分支的特定提交应用到当前分支
+git cherry-pick <commit-id>
 
-# 软回退（仅移动 HEAD 指针，保留工作区修改）
-git reset <commit-id-B>
+#  cherry-pick 多个提交，可能产生冲突
+git cherry-pick <commit-id-1> <commit-id-2>
 
-# 硬回退（彻底回退到 B 的状态，丢弃 C 和 D 的所有修改）
-# 未提交修改将丢失！
-git reset --hard <commit-id-B>
+# 遇到冲突时，解决后继续
+git add .
+git cherry-pick --continue
 ```
 
 ---
 
-4. 比较 `git reset --soft`、`git reset --mixed`（默认）和 `git reset --hard` 三者的区别，分别适用于什么场景？
+### 版本回退
+
+- `git reset` 用于本地版本回退。也即将 **HEAD 指针**（当前版本的指向）移动到指定的 commit ID，实现撤销提交、回退版本，**会改变提交历史**。
+   
+   **使用命令前建议**：
+   ```bash
+   git status  # 确认工作区干净
+   # 或用 git stash 保存修改
+   ```
+
+   **本地回退**：
+   ```bash
+   # 查看提交历史，获取希望回退版本的 commit ID（前几位即可，如 a0fvf8）
+   git log --oneline
+
+   # 软回退（仅移动 HEAD 指针，保留工作区和暂存区）
+   git reset -soft <commit-id>
+   # 或者以下命令
+   # git reset <commit-id>
+
+   # 混合回退（保留工作区，清空暂存区）
+   git reset -mixed <commit-id>
+
+   # 硬回退（彻底丢弃所有修改，包括未提交的！）
+   git reset --hard <commit-id>
+   ```
+
+   **远程回退**：
+   ```bash
+   # 本地 reset 后，远程仍为原版本，需强制推送
+   git push -f origin <branch-name>
+   ```
+
+   > **严禁在多人协作的公共分支（master/develop）使用 `git push -f`！** 强推会覆盖队友的修改，仅适用于自己的私有分支！
+
+   **误操作恢复**：
+   ```bash
+   # 查看所有操作记录（包括 reset）
+   git reflog
+
+   # 找到 reset 前的 commit ID，恢复回去
+   git reset --hard <commit-id>
+
+   # 恢复后仍需强制推送到远程仓库
+   git push -f origin <branch-name>
+   ```
+
+- `git revert` 更适合远程仓库版本回退。其会创建新的提交来**撤销**指定提交的修改（相当于把你的修改倒过来做一遍），**不改变历史**。
+
+   ```bash
+   # 撤销指定提交
+   git revert <commit-id>
+
+   # 撤销多个提交（依次 revert）
+   git revert <commit-id-D>
+   git revert <commit-id-C>
+   ```
+
+   例如，历史：A → B（错误）→ C（正确），需要保留 C 但撤销 B。
+
+   **操作流程**：
+   ```bash
+   # 先 revert C 和 B（生成 C' 和 B'）
+   git revert <commit-id-C>
+   git revert <commit-id-B>
+
+   # 再用 cherry-pick 重新应用 C
+   git cherry-pick <commit-id-C>
+
+   # 直接推送即可，不需要强制推送
+   git push origin <branch-name>
+   ```
+
+   操作后历史变为: A → B → C → C' → B' → C''
+
+---
+
+## Git 分支管理
+
+分支是 Git 的核心功能，用于**隔离开发任务**，互不影响。
+
+### 分支命名规范
+
+| 分支类型 | 命名格式 | 示例 |
+|----------|----------|------|
+| 稳定分支 | `master` / `main` | 存放正式版本，禁止直接开发 |
+| 开发分支 | `develop` | 团队协作开发 |
+| 功能分支 | `feature/xxx` | `feature/main-cpp`、`feature/score-calc` |
+| Bug修复分支 | `bugfix/xxx` | `bugfix/input-error`、`bugfix/crash` |
+| 发布分支 | `release/xxx` | `release/v1.0`、`release/v2.1` |
+| 临时分支 | `temp/xxx` | `temp/test`、`temp/debug` |
+
+### 分支操作命令
+
+```bash
+# 查看所有分支（* 表示当前分支）
+git branch
+
+# 查看远程分支
+git branch -r
+
+# 查看所有分支（本地+远程）
+git branch -a
+
+# 创建新分支
+git branch <new-branch>
+
+# 创建并切换到新分支
+git checkout -b <new-branch>
+
+# 切换到已有分支
+git checkout <branch-name>
+
+# 删除已合并的分支
+git branch -d <branch-name>
+
+# 强制删除未合并的分支
+git branch -D <branch-name>
+
+# 合并指定分支到当前分支
+git merge <branch-name>
+
+# 还原某个文件的修改（和 git reset --hard 一样不可恢复！）
+git checkout <file-name>
+```
+
+**注**：
+切换分支前必须保证工作区干净。
+- 方案1：`git add && git commit` 提交所有修改
+- 方案2：`git stash` 暂存修改
+- 方案3：`git reset --hard` 丢弃修改（不可恢复）
+
+---
+
+## Git 版本标记
+
+Tag 是**静态的版本标签**，用于标记里程碑（如 `v1.0`、`v3.6.0`），指向固定 commit，不随分支变化。本质上是创建了项目在某个时间点的快照。
+
+**命名规范**：`v` + 版本号，如 `v1.0`、`v2.1.3`（主版本.次版本.修订号）
+
+### 创建 Tag
+
+```bash
+# 轻量 tag（仅标记，无说明）
+git tag <tag-name>
+
+# 附注 tag（带说明，推荐）
+git tag -a <tag-name> -m "说明"
+
+# 为历史 commit 打 tag
+git tag -a <tag-name> <commit-id> -m "说明"
+
+# 查看所有 tag
+git tag
+```
+
+**注**：
+这些操作仅在本地创建 Tag，远程仓库不会自动同步。
+
+### 推送 Tag
+
+```bash
+# 推送单个 tag
+git push origin <tag-name>
+
+# 推送所有本地 tag
+git push origin --tags
+```
+
+### 拉取与切换 Tag
+
+```bash
+# 拉取远程所有 tag
+git fetch origin --tags
+
+# 切换到指定 tag（进入"分离头指针"状态）
+git checkout tags/<tag-name>
+
+# 基于 tag 创建新分支（推荐，可修改）
+git checkout -b <new-branch> tags/<tag-name>
+```
+
+### 删除 Tag
+
+```bash
+# 删除本地 tag
+git tag -d <tag-name>
+
+# 删除远程 tag
+git push origin --delete <tag-name>
+```
+
+---
+
+## Git 多人协同开发
+
+### 核心概念
+
+- **Fork（复刻）**：将他人仓库复制到自己的账号下，自由修改，不影响原仓库
+- **Pull Request（PR）**：向原仓库提交合并申请，审核通过后代码合并到原项目
+
+### 详细步骤
+
+1. **Fork 原仓库**
+
+进入他人仓库首页 → 点击右上角 **Fork** → 复制到自己的账号下
+
+2. **克隆到本地**
+```bash
+git clone https://github.com/你的账号/仓库名.git
+```
+
+3. **关联上游仓库（原仓库）**
+```bash
+# 进入本地仓库
+cd 仓库名
+
+# 添加 upstream 远程地址
+git remote add upstream https://github.com/原作者/仓库名.git
+
+# 查看远程地址
+git remote -v
+# 应显示：origin（你的仓库）和 upstream（原仓库）
+```
+
+4. **本地开发**
+```bash
+# 创建功能分支
+git checkout -b feature/xxx
+
+# 开发
+git add .
+git commit -m "实现 xxx 功能"
+
+# 推送到自己的远程仓库
+git push origin feature/xxx
+```
+
+5. **提交 Pull Request**
+- 进入自己的 Fork 仓库 → **Pull Request** → **New Pull Request**
+- 选择原仓库的目标分支 → 自己的开发分支
+- 填写 PR 说明（修改内容、修复的 bug / 实现的功能）
+- 点击 **Create Pull Request**
+
+6. **同步原仓库更新**
+```bash
+# 拉取原仓库最新代码
+git fetch upstream
+
+# 合并到本地分支
+git merge upstream/main
+
+# 推送到自己的远程仓库
+git push origin main
+```
+
+**注**：
+Fork 后的仓库不会自动同步原仓库，需手动 `fetch upstream`
+
+---
+
+## Git 命令速查表
+
+| 场景 | 命令 |
+|------|------|
+| **仓库初始化** | |
+| 克隆仓库 | `git clone <url>` |
+| 初始化本地仓库 | `git init` |
+| 关联远程仓库 | `git remote add origin <url>` |
+| **日常开发** | |
+| 查看状态 | `git status` |
+| 添加到暂存区 | `git add .` / `git add <file>` |
+| 提交到本地仓库 | `git commit -m "说明"` |
+| 推送到远程 | `git push` / `git push -u origin <branch>` |
+| 拉取并合并 | `git pull` |
+| 拉取不合并 | `git fetch` |
+| **分支管理** | |
+| 查看分支 | `git branch` / `git branch -a` |
+| 创建分支 | `git branch <name>` |
+| 切换分支 | `git checkout <name>` |
+| 创建并切换 | `git checkout -b <name>` |
+| 合并分支 | `git merge <name>` |
+| 删除分支 | `git branch -d <name>` |
+| **版本回退** | |
+| 查看历史 | `git log --oneline` |
+| 查看操作记录 | `git reflog` |
+| 软回退 | `git reset --soft <id>` |
+| 硬回退 | `git reset --hard <id>` |
+| 安全撤销 | `git revert <id>` |
+| 精选提交 | `git cherry-pick <id>` |
+| **临时存储** | |
+| 暂存修改 | `git stash save "说明"` |
+| 查看暂存列表 | `git stash list` |
+| 恢复并删除 | `git stash pop` |
+| 仅恢复 | `git stash apply` |
+| **标签管理** | |
+| 创建标签 | `git tag -a <name> -m "说明"` |
+| 推送标签 | `git push origin <name>` / `git push origin --tags` |
+| 删除标签 | `git tag -d <name>` |
+| **差异查看** | |
+| 工作区 vs 暂存区 | `git diff` |
+| 工作区 vs 本地仓库 | `git diff HEAD` |
+| 暂存区 vs 本地仓库 | `git diff --staged` |
+
+---
+
+## 完整工作流示例
+
+```bash
+# 1. 开始工作前同步最新代码
+git checkout main
+git pull origin main
+
+# 2. 创建功能分支
+git checkout -b feature/new-feature
+
+# 3. 开发过程中
+git add .
+git commit -m "实现新功能：xxx"
+
+# 4. 开发完成，推送到远程
+git push -u origin feature/new-feature
+
+# 5. 发现写错了，要回退（未 push 时）
+git log --oneline          # 找到要回退的版本
+git reset --hard <id>      # 硬回退
+
+# 6. 或已 push 到远程，安全回退
+git revert <id>            # 生成反提交
+git push                   # 推送到远程
+
+# 7. 临时要去修 bug
+git stash                  # 暂存当前工作
+git checkout -b bugfix/xxx # 创建 bug 分支
+# ... 修 bug ...
+git checkout feature/new-feature  # 切回原分支
+git stash pop              # 恢复工作
+
+# 8. 功能完成，合并到 main
+git checkout main
+git merge feature/new-feature
+git push origin main
+git branch -d feature/new-feature  # 删除功能分支
+```

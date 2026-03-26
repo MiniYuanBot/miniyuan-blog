@@ -80,7 +80,7 @@ $$
 
 假设 kernel/filter 尺寸为 $K \times K$，image 尺寸为 $H \times W$.
 1. Kernel Flattening：
-   将 $K \times K$ 的 kernel 展平为 $1 \times K^2$ 行向量。若有多个kernel，则形成 $num_{\text{kernels}} \times K^2$ 的权重矩阵。
+   将 $K \times K$ 的 kernel 展平为 $1 \times K^2$ 行向量。若有多个 kernel，则形成 $num_{\text{kernels}} \times K^2$ 的权重矩阵。
 2. im2col：对于输入图像，遍历每个 sliding window，将每个 $K \times K$ 的 patch 展平为长度 $K^2$ 的列向量，并把这些列向量按列拼接成一个 $K^2 \times N$ 的矩阵，其中 $N = H_{out} * W_{out}$，$H_{out}$、$W_{out}$ 来自计算得到的 output size。
 3. GEMM：将 flattening 的核矩阵与 im2col 得到的数据矩阵做矩阵乘法，得到 $num_{\text{kernels}} \times N$ 的结果矩阵。
 4. Output Reconstruction：将结果矩阵 reshape 为 $num_{\text{kernels}} \times H_{out} \times W_{out}$。

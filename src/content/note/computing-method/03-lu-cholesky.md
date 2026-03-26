@@ -1,11 +1,11 @@
 ---
 title: '解线性方程组的直接法（LU 分解、对称正定矩阵）'
-excerpt: '26 春 计算方法 L04'
+excerpt: '26 春 计算方法 L03'
 author: 'miniyuan'
 position: 'Beijing'
 tags:
 - '计算方法'
-- '线性代数'
+- '线性方程组'
 pubDate: 'March 17 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
@@ -402,7 +402,7 @@ for k in range(n - 1): # 递归的第 k 步，最后一步不用计算
 
 当 $n \gg p,q$ 时，运算量约为 $npq$ 次乘除法和 $npq$ 次加减法，也即时间复杂度 $O(npq)$
 
-## 正定矩阵与 Cholesky 分解
+## 正定矩阵的 Cholesky 分解
 
 ### 数学基础：正定矩阵
 
@@ -561,7 +561,7 @@ for k in range(n):
    # 求解对角元
    L[k, k] = A[k, k]
    for j in range(k):
-      L[k, k] = L[k, k] - L[k, j] ** 2
+      L[k, k] = L[k, k] - L[k, j] * L[k, j]
    L[k, k] = np.sqrt(L[k, k])
    # 求解对角元下侧（右侧）的剩余元
    for i in range(k + 1, n):
@@ -769,7 +769,7 @@ for k in range(n):
    # 计算 D 中对角元 d_k
    D[k] = A[k, k]
    for j in range(k):
-      D[k] = D[k] - L[k, j] ** 2 * D[j]
+      D[k] = D[k] - L[k, j] * L[k, j] * D[j]
     
    # 计算 L 中第 k 列严格下三角部分
    for i in range(k + 1, n):

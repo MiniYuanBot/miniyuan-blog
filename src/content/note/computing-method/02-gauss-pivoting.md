@@ -1,11 +1,11 @@
 ---
 title: '解线性方程组的直接法（Gauss 消去法、列主元消去法）'
-excerpt: '26 春 计算方法 L03'
+excerpt: '26 春 计算方法 L02'
 author: 'miniyuan'
 position: 'Beijing'
 tags:
 - '计算方法'
-- '线性代数'
+- '线性方程组'
 pubDate: 'March 16 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
