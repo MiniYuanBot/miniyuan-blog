@@ -22,6 +22,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 $$(\mathbf{A}+\delta\mathbf{A})(\mathbf{x}+\delta\mathbf{x}) = \mathbf{b}+\delta\mathbf{b}$$
 
 **病态与良态的定义：**
+
 - **病态方程组**：$\mathbf{A}$ 或 $\mathbf{b}$ 的微小扰动引起解 $\mathbf{x}$ 的巨大变化
 - **良态方程组**：扰动对解的影响与扰动同量级
 - **病态矩阵/良态矩阵**：对应系数矩阵的性质
@@ -41,11 +42,13 @@ $$\begin{bmatrix} 1 & 1 \\ 1 & 1.0001 \end{bmatrix}\begin{bmatrix} x_1 \\ x_2 \e
 
 **定义 4.1（向量范数）：**  
 映射 $\|\cdot\|:\mathbb{R}^n\to\mathbb{R}$ 满足：
+
 1. **正定性**：$\|\mathbf{x}\|\geq 0$，且 $\|\mathbf{x}\|=0 \Leftrightarrow \mathbf{x}=\mathbf{0}$
 2. **齐次性**：$\|\alpha\mathbf{x}\| = |\alpha|\|\mathbf{x}\|$，$\forall \alpha\in\mathbb{R}$
 3. **三角不等式**：$\|\mathbf{x}+\mathbf{y}\| \leq \|\mathbf{x}\|+\|\mathbf{y}\|$
 
 > **注：三角不等式的重要性**  
+>
 > - 保证极限唯一性：若 $\mathbf{x}_n\to\mathbf{a}$ 且 $\mathbf{x}_n\to\mathbf{b}$，则 $\|\mathbf{a}-\mathbf{b}\|\leq \|\mathbf{x}_n-\mathbf{a}\|+\|\mathbf{x}_n-\mathbf{b}\|\to 0$，故 $\mathbf{a}=\mathbf{b}$
 > - 保证连续性：线性运算在范数拓扑下连续
 
@@ -76,6 +79,7 @@ $$\|\mathbf{x}\|_\infty \leq \|\mathbf{x}\|_1 \leq n\|\mathbf{x}\|_\infty$$
 
 **定义 4.4（矩阵范数）：**  
 映射 $\|\cdot\|:\mathbb{R}^{n\times n}\to\mathbb{R}$ 满足：
+
 1. **正定性**：$\|\mathbf{A}\|\geq 0$，且 $\|\mathbf{A}\|=0 \Leftrightarrow \mathbf{A}=\mathbf{0}$
 2. **齐次性**：$\|\alpha\mathbf{A}\| = |\alpha|\|\mathbf{A}\|$
 3. **三角不等式**：$\|\mathbf{A}+\mathbf{B}\| \leq \|\mathbf{A}\|+\|\mathbf{B}\|$
@@ -101,6 +105,7 @@ $$\|\mathbf{A}\| \equiv \max_{\mathbf{x}\neq\mathbf{0}} \frac{\|\mathbf{Ax}\|}{\
 $$\rho(\mathbf{A}) = \max_{1\leq i\leq n} |\lambda_i|$$
 
 **关键定理：**
+
 - **定理 4.3**：诱导范数与向量范数相容：$\|\mathbf{Ax}\| \leq \|\mathbf{A}\|\|\mathbf{x}\|$
 - **定理 4.4**：对任意矩阵范数，$\rho(\mathbf{A}) \leq \|\mathbf{A}\|$
 
@@ -113,6 +118,7 @@ $$\rho(\mathbf{A}) = \max_{1\leq i\leq n} |\lambda_i|$$
 扰动方程：$\mathbf{A}(\mathbf{x}+\delta\mathbf{x}) = \mathbf{b}+\delta\mathbf{b}$
 
 推导步骤：
+
 1. 由原方程 $\mathbf{Ax}=\mathbf{b}$，得 $\mathbf{A}\delta\mathbf{x} = \delta\mathbf{b}$
 2. 两边取范数：$\|\delta\mathbf{x}\| = \|\mathbf{A}^{-1}\delta\mathbf{b}\| \leq \|\mathbf{A}^{-1}\|\|\delta\mathbf{b}\|$
 3. 由原方程：$\|\mathbf{b}\| = \|\mathbf{Ax}\| \leq \|\mathbf{A}\|\|\mathbf{x}\|$，故 $\frac{1}{\|\mathbf{x}\|} \leq \frac{\|\mathbf{A}\|}{\|\mathbf{b}\|}$
@@ -127,13 +133,14 @@ $$\frac{\|\delta\mathbf{x}\|}{\|\mathbf{x}\|} \leq \|\mathbf{A}\|\|\mathbf{A}^{-
 扰动方程：$(\mathbf{A}+\delta\mathbf{A})(\mathbf{x}+\delta\mathbf{x}) = \mathbf{b}$
 
 推导步骤：
+
 1. 展开并忽略二阶小量 $\delta\mathbf{A}\delta\mathbf{x}$：
    $$\mathbf{A}\delta\mathbf{x} \approx -\delta\mathbf{A}\mathbf{x}$$
    （严格推导应保留二阶项后移项处理）
-   
+
 2. 完整推导：
    $$\delta\mathbf{x} = -\mathbf{A}^{-1}\delta\mathbf{A}\mathbf{x} - \mathbf{A}^{-1}\delta\mathbf{A}\delta\mathbf{x}$$
-   
+
 3. 取范数并利用三角不等式：
    $$\|\delta\mathbf{x}\| \leq \|\mathbf{A}^{-1}\|\|\delta\mathbf{A}\|\|\mathbf{x}\| + \|\mathbf{A}^{-1}\|\|\delta\mathbf{A}\|\|\delta\mathbf{x}\|$$
 
@@ -153,6 +160,7 @@ $$\text{Cond}(\mathbf{A}) \equiv \|\mathbf{A}\|\|\mathbf{A}^{-1}\|$$
 $$\frac{\|\delta\mathbf{x}\|}{\|\mathbf{x}\|} \leq \frac{\text{Cond}(\mathbf{A})}{1-\text{Cond}(\mathbf{A})\frac{\|\delta\mathbf{A}\|}{\|\mathbf{A}\|}} \left(\frac{\|\delta\mathbf{A}\|}{\|\mathbf{A}\|} + \frac{\|\delta\mathbf{b}\|}{\|\mathbf{b}\|}\right)$$
 
 **条件数的性质：**
+
 1. **下界**：$\text{Cond}(\mathbf{A}) \geq 1$（因为 $\|\mathbf{I}\| = \|\mathbf{AA}^{-1}\| \leq \|\mathbf{A}\|\|\mathbf{A}^{-1}\|$）
 2. **正交矩阵**：若 $\mathbf{A}$ 正交，则 $\text{Cond}(\mathbf{A})_2 = 1$（最良态）
 3. **齐次性**：$\text{Cond}(\alpha\mathbf{A}) = \text{Cond}(\mathbf{A})$，$\forall \alpha\neq 0$
@@ -163,6 +171,7 @@ $$\frac{\|\delta\mathbf{x}\|}{\|\mathbf{x}\|} \leq \frac{\text{Cond}(\mathbf{A})
 
 > **注：行列式与条件数的关系**  
 > 行列式大小**不能**反映病态程度！
+>
 > - 反例1：$\mathbf{B}=\begin{bmatrix}1&-1&\cdots&-1\\0&1&\cdots&-1\\\vdots&\vdots&\ddots&\vdots\\0&0&\cdots&1\end{bmatrix}$，$\det(\mathbf{B})=1$，但 $\text{Cond}(\mathbf{B})_\infty = n2^{n-1}$（随 $n$ 指数增长，严重病态）
 > - 反例2：$\mathbf{C}=\text{diag}\{10^{-1},\dots,10^{-1}\}$，$\det(\mathbf{C})=10^{-n}$ 很小，但 $\text{Cond}(\mathbf{C})=1$（良态）
 
@@ -171,6 +180,7 @@ $$\frac{\|\delta\mathbf{x}\|}{\|\mathbf{x}\|} \leq \frac{\text{Cond}(\mathbf{A})
 ### 条件数的估计与几何意义
 
 #### 估计方法
+
 直接计算 $\|\mathbf{A}^{-1}\|$ 成本为 $\mathcal{O}(n^3)$（已接近求解成本），实际中通过求解线性方程组 $\mathbf{Ay}=\mathbf{d}$ 估计：
 $$\|\mathbf{A}^{-1}\| \geq \frac{\|\mathbf{y}\|}{\|\mathbf{d}\|}$$
 选择适当的 $\mathbf{d}$（如使 $\|\mathbf{y}\|$ 尽可能大）来逼近 $\|\mathbf{A}^{-1}\|$。
@@ -182,6 +192,7 @@ $$\|\mathbf{A}^{-1}\| \geq \frac{\|\mathbf{y}\|}{\|\mathbf{d}\|}$$
 $$\frac{1}{\text{Cond}(\mathbf{A})} = \min_{\mathbf{A}+\delta\mathbf{A}\in\mathcal{S}} \frac{\|\delta\mathbf{A}\|}{\|\mathbf{A}\|}$$
 
 > **注：深刻含义**  
+>
 > - **条件数的倒数** = **矩阵到最近奇异矩阵的相对距离**
 > - 病态矩阵 $\Leftrightarrow$ 距离奇异矩阵"很近"（相对意义下）
 > - 良态矩阵 $\Leftrightarrow$ 与所有奇异矩阵保持"安全距离"
@@ -207,6 +218,7 @@ $$F(\mathbf{x}) = \mathbf{r}^T\mathbf{r} = \|\mathbf{b}-\mathbf{A}\mathbf{x}\|_2
 寻找 $\mathbf{x}$ 使得 $\mathbf{A}\mathbf{x}$ 是 $\mathbf{b}$ 在 $\mathbf{A}$ 的列空间 $\mathcal{R}(\mathbf{A})$ 上的**正交投影**。
 
 > **注：为什么用2-范数？**  
+>
 > 1. **解析可解**：导出线性方程组（正规方程）
 > 2. **统计解释**：在高斯-马尔可夫假设下（误差独立同分布、零均值、等方差），最小二乘估计等价于最大似然估计
 > 3. **几何直观**：对应欧几里得空间中的"垂直距离"最小化
@@ -222,11 +234,13 @@ $$\frac{\partial F}{\partial \mathbf{x}} = 2\mathbf{A}^T(\mathbf{A}\mathbf{x}-\m
 $$\mathbf{A}^T\mathbf{A}\mathbf{x} = \mathbf{A}^T\mathbf{b}$$
 
 **解的存在性与唯一性：**
+
 - $\mathbf{A}^T\mathbf{A}\in\mathbb{R}^{n\times n}$ 为对称矩阵
 - 若 $\text{rank}(\mathbf{A})=n$（列满秩），则 $\mathbf{A}^T\mathbf{A}$ **对称正定**，存在唯一解：
   $$\mathbf{x} = (\mathbf{A}^T\mathbf{A})^{-1}\mathbf{A}^T\mathbf{b}$$
 
 > **注：计算考量**  
+>
 > - 直接求解正规方程会将条件数平方：$\text{Cond}(\mathbf{A}^T\mathbf{A})_2 = [\text{Cond}(\mathbf{A})_2]^2$，可能引入数值不稳定性
 > - 实际计算中，QR分解或SVD是更稳定的算法，但正规方程在理论分析中非常重要
 
@@ -243,12 +257,14 @@ $$\mathbf{A}^T\mathbf{A}\mathbf{x} = \mathbf{A}^T\mathbf{b}$$
 | **最小二乘** | $\min\|\mathbf{b}-\mathbf{A}\mathbf{x}\|_2^2$ | 解满足正规方程 $\mathbf{A}^T\mathbf{A}\mathbf{x}=\mathbf{A}^T\mathbf{b}$ | 超定系统的最优解 |
 
 **病态 vs 良态快速判断：**
+
 - 计算 $\text{Cond}(\mathbf{A})$：
   - $1 \sim 10^3$：良态
   - $10^3 \sim 10^7$：中等病态
   - $> 10^7$：严重病态（可能失去精度）
 
 **学习要点：**
+
 1. 范数是误差分析的"语言"，掌握等价性可在不同范数间转换
 2. 条件数是核心指标，反映问题的固有敏感性，与算法无关
 3. 最小二乘将不相容方程转化为优化问题，正规方程提供了理论解

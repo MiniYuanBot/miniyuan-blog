@@ -18,6 +18,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 说一些废话喵~
 
 ### 什么是 GitHub
+
 GitHub 是利用 Git 进行代码存储、管理和协作用的。事实上是 Git 先被开发，而后催生了 GitHub。
 
 本质上，Git（以及基于它的GitHub）实现的是基于快照的存储模型，每次提交都会保存文件的完整副本。但在后台，Git 会通过自动打包机制将多个完整文件进行增量压缩，以平衡存储效率和访问性能。
@@ -25,6 +26,7 @@ GitHub 是利用 Git 进行代码存储、管理和协作用的。事实上是 G
 当然，国内还有 Gitee，和 GitHub 一样都是基于 Git 开发的。
 
 ### Git 与 GitHub 的关系
+
 - **Git**：分布式的版本控制系统，负责本地代码管理
 - **GitHub**：基于 Git 的云端托管服务平台
 - 简单理解：Git 是工具，GitHub 是使用这个工具的服务平台
@@ -34,7 +36,7 @@ GitHub 是利用 Git 进行代码存储、管理和协作用的。事实上是 G
 总的来说就是很有意义喵~
 
 | 核心价值 | 说明 |
-|----------|------|
+| ---------- | ------ |
 | **保障团队协作** | 多人并行开发时避免代码覆盖丢失，支持大规模团队协同 |
 | **完整历史追溯** | 记录每一次提交内容，便于定位 Bug、审计与代码审查 |
 | **安全回滚与风险控制** | 出现严重问题时可快速回退到稳定版本，降低风险 |
@@ -46,14 +48,17 @@ GitHub 是利用 Git 进行代码存储、管理和协作用的。事实上是 G
 ## 环境准备
 
 ### 注册 GitHub 账号
+
 略
 
 ### 安装 Git
+
 - **Windows**：下载 [Git for Windows](https://git-scm.com/download/win)
 - **macOS**：`brew install git` 或下载安装包
 - **Linux**：`sudo apt-get install git`（Ubuntu/Debian）
 
 ### 配置 Git 用户信息
+
 在 Git 中提交代码时标注的作者信息，本质上与 GitHub 的用户信息无关。但建议与 GitHub 保持一致（否则你会看到另一个名字的自己提交了代码）。
 
 ```bash
@@ -65,6 +70,7 @@ git config --global user.email "你的邮箱"
 ```
 
 **验证配置**：
+
 ```bash
 git config --global user.name      # 查看全局用户名
 git config --global user.email     # 查看全局邮箱
@@ -84,6 +90,7 @@ ssh-keygen -t rsa -b 4096 -C "对密钥的描述"
 # 查看公钥
 cat ~/.ssh/id_rsa.pub
 ```
+
 将对应你的密钥描述的公钥添加到 GitHub：Settings → SSH and GPG keys → New SSH key，后续即可直接使用 ssh 连接 GitHub 并推拉代码
 
 ```bash
@@ -111,6 +118,7 @@ ssh your-host-name
 由于 GitHub 已停止支持密码验证，如果使用 HTTPS 方式连接 GitHub 的话需使用 **Personal Access Token (PAT)**。当然 ssh 连接就不需要了。
 
 **生成 Token 步骤**：
+
 1. 登录 GitHub → 右上角头像 → **Settings**
 2. 左侧菜单 → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
 3. 点击 **Generate new token (classic)**
@@ -120,6 +128,7 @@ ssh your-host-name
 7. **立即复制保存**（只显示一次）
 
 **使用 Token**：
+
 ```bash
 # HTTPS 方式克隆时，用 Token 代替密码
 git clone https://github.com/username/repo.git
@@ -145,6 +154,7 @@ Git 本地操作围绕**三个区域**展开：
 ### 仓库创建与克隆
 
 #### 创建远程仓库
+
 1. 点击右上角 `+` → `New repository`
 2. 填写 `Repository name`（仓库名）
 3. 选择权限：`Public`（开源）/ `Private`（私有）
@@ -155,30 +165,34 @@ Git 本地操作围绕**三个区域**展开：
 5. 点击 `Create repository`
 
 #### 克隆远程仓库到本地
+
 ```bash
 git clone repo-address
 ```
 
 其中 `repo-address` 有以下几种格式：
-1. https 地址: https://github.com/ownr-name/repo-name.git
-2. ssh: git@github.com:owner-name/repo-name.git
+
+1. https 地址: <https://github.com/ownr-name/repo-name.git>
+2. ssh: <git@github.com>:owner-name/repo-name.git
 3. 如果你配置了 SSH 别名: your-host-name:owner-name/repo-name.git
 4. 如果你想的话，还可以配置 Git 别名
 
 **克隆方式对比**：
 
 | 方式 | 认证方式 | 适用场景 |
-|------|----------|----------|
+| ------ | ---------- | ---------- |
 | **HTTPS** | 用户名和密码（或令牌） | 适合新手快速访问 |
 | **SSH** | 密钥对认证 | 一次配置长期有效，适合高频操作和自动化 |
 | **GitHub CLI** | 官方命令行工具 | 可管理仓库、Issue 等全流程 |
 
 #### Fork 他人仓库
+
 - 在他人仓库页面点击 "Fork" 按钮
 - 将副本复制到自己的 GitHub 账号下
 - 可以自由修改并提交 Pull Request
 
 #### 仓库基本设置
+
 - **Settings**：修改仓库名称、删除仓库、设置合作者
 - **Branches**：设置保护分支规则
 - **Collaborators**：添加项目协作者
@@ -201,6 +215,7 @@ git status
 ```
 
 **状态说明**：
+
 - **Untracked files**：未跟踪，也即未执行 `git add`
 - **Changes to be committed**：已暂存，也即已执行 `git add`，但是未执行 `git commit`
 - **modified**：已修改，也即已执行 `git add` 和 `git commit`，但未重新 `git add`
@@ -208,6 +223,7 @@ git status
 **注**：执行 `git add` 后若对文件做了新修改，需**重新执行** `git add`，否则新修改不会被加入暂存区。
 
 **撤销暂存**：
+
 ```bash
 git rm --cached filename  # 将文件从暂存区退回工作区
 ```
@@ -345,13 +361,17 @@ git merge origin/develop
 ```
 
 **解决步骤**：
+
 1. 打开冲突文件，根据需求修改内容：
    删除冲突标记 `<<<<<<<` / `=======` / `>>>>>>>`，保留正确代码
 2. 标记冲突已解决：
+
    ```bash
    git add 冲突文件名
    ```
+
 3. 提交合并结果：
+
    ```bash
    git commit -m "解决合并冲突，合并 xxx 分支"
    ```
@@ -367,6 +387,7 @@ git merge origin/develop
 例如，你正在 `master` 分支开发 feature 功能（未完成，未提交），突然发现线上 bug，需要切换到 `bugfix` 分支紧急修复，但你不想提交未完成的代码。
 
 **操作流程**：
+
 ```bash
 # 保存当前未提交修改
 git stash save "开发 feature 功能，main.cpp 未完成"
@@ -415,14 +436,16 @@ git cherry-pick --continue
 ### 版本回退
 
 - `git reset` 用于本地版本回退。也即将 **HEAD 指针**（当前版本的指向）移动到指定的 commit ID，实现撤销提交、回退版本，**会改变提交历史**。
-   
+
    **使用命令前建议**：
+
    ```bash
    git status  # 确认工作区干净
    # 或用 git stash 保存修改
    ```
 
    **本地回退**：
+
    ```bash
    # 查看提交历史，获取希望回退版本的 commit ID（前几位即可，如 a0fvf8）
    git log --oneline
@@ -440,6 +463,7 @@ git cherry-pick --continue
    ```
 
    **远程回退**：
+
    ```bash
    # 本地 reset 后，远程仍为原版本，需强制推送
    git push -f origin <branch-name>
@@ -448,6 +472,7 @@ git cherry-pick --continue
    > **严禁在多人协作的公共分支（master/develop）使用 `git push -f`！** 强推会覆盖队友的修改，仅适用于自己的私有分支！
 
    **误操作恢复**：
+
    ```bash
    # 查看所有操作记录（包括 reset）
    git reflog
@@ -473,6 +498,7 @@ git cherry-pick --continue
    例如，历史：A → B（错误）→ C（正确），需要保留 C 但撤销 B。
 
    **操作流程**：
+
    ```bash
    # 先 revert C 和 B（生成 C' 和 B'）
    git revert <commit-id-C>
@@ -496,7 +522,7 @@ git cherry-pick --continue
 ### 分支命名规范
 
 | 分支类型 | 命名格式 | 示例 |
-|----------|----------|------|
+| ---------- | ---------- | ------ |
 | 稳定分支 | `master` / `main` | 存放正式版本，禁止直接开发 |
 | 开发分支 | `develop` | 团队协作开发 |
 | 功能分支 | `feature/xxx` | `feature/main-cpp`、`feature/score-calc` |
@@ -540,6 +566,7 @@ git checkout <file-name>
 
 **注**：
 切换分支前必须保证工作区干净。
+
 - 方案1：`git add && git commit` 提交所有修改
 - 方案2：`git stash` 暂存修改
 - 方案3：`git reset --hard` 丢弃修改（不可恢复）
@@ -619,12 +646,14 @@ git push origin --delete <tag-name>
 
 进入他人仓库首页 → 点击右上角 **Fork** → 复制到自己的账号下
 
-2. **克隆到本地**
+1. **克隆到本地**
+
 ```bash
 git clone https://github.com/你的账号/仓库名.git
 ```
 
-3. **关联上游仓库（原仓库）**
+1. **关联上游仓库（原仓库）**
+
 ```bash
 # 进入本地仓库
 cd 仓库名
@@ -637,7 +666,8 @@ git remote -v
 # 应显示：origin（你的仓库）和 upstream（原仓库）
 ```
 
-4. **本地开发**
+1. **本地开发**
+
 ```bash
 # 创建功能分支
 git checkout -b feature/xxx
@@ -650,13 +680,15 @@ git commit -m "实现 xxx 功能"
 git push origin feature/xxx
 ```
 
-5. **提交 Pull Request**
+1. **提交 Pull Request**
+
 - 进入自己的 Fork 仓库 → **Pull Request** → **New Pull Request**
 - 选择原仓库的目标分支 → 自己的开发分支
 - 填写 PR 说明（修改内容、修复的 bug / 实现的功能）
 - 点击 **Create Pull Request**
 
-6. **同步原仓库更新**
+1. **同步原仓库更新**
+
 ```bash
 # 拉取原仓库最新代码
 git fetch upstream
@@ -676,7 +708,7 @@ Fork 后的仓库不会自动同步原仓库，需手动 `fetch upstream`
 ## Git 命令速查表
 
 | 场景 | 命令 |
-|------|------|
+| ------ | ------ |
 | **仓库初始化** | |
 | 克隆仓库 | `git clone <url>` |
 | 初始化本地仓库 | `git init` |

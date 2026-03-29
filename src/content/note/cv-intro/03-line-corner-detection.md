@@ -19,6 +19,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 **卷积**与**互相关**的核心思想相同：滑动一个核（kernel）在输入图像上，在每个位置计算对应元素乘积的和。
 
 #### 1D
+
 卷积：
 $$
 (f * g)[n] = \sum_{m=-\infty}^{\infty} f[m] \, g[n - m]
@@ -29,6 +30,7 @@ $$
 $$
 
 #### 2D
+
 卷积：
 $$
 (f * g)[i, j] = \sum_{m=-\infty}^{\infty} \sum_{n=-\infty}^{\infty} f[i - m, j - n] \, g[m, n]
@@ -42,17 +44,19 @@ $$
 
 也即卷积在滑动前会将核翻转（flip），在一维中是时间反转；互相关不翻转核。我们一般使用的是互相关运算，但是库函数称之为 `convolution`，实际上两者不同。
 
-|   | Convolution | Correlation |
-|---|---|---|
-||||
+| a | Convolution | Correlation |
+| --- | --- | --- |
+| | | |
 
 ### Padding
 
 #### Importance
+
 - 防止输出空间尺寸缩小（spatial shrinkage），在深网络中保持尺寸一致很重要。
 - 保留边缘信息。若不 padding，图像边缘像素被卷积核覆盖次数少，信息利用率低。
 
 #### Padding Types
+
 - Zero padding：以 0 填充。
 - Replicate padding：以边缘像素复制填充。
 
@@ -64,6 +68,7 @@ $$
 W_{out} = \left\lfloor \frac{W_{in} + 2P - K}{S} \right\rfloor + 1
 $$
 其中：
+
 - $W_{in}$：该方向的输入宽度。
 - $P$：该方向每侧的填充像素数，假设两侧填充一致。
 - $K$：该方向的卷积核宽度。
@@ -76,16 +81,20 @@ $$
 
 用循环实现卷积在 CPU/GPU 上效率低。想办法将卷积转化为矩阵乘法并使用并行可以大大提高速率。
 
-#### Step
+#### Step of Convolution
 
 假设 kernel/filter 尺寸为 $K \times K$，image 尺寸为 $H \times W$.
+
 1. Kernel Flattening：
    将 $K \times K$ 的 kernel 展平为 $1 \times K^2$ 行向量。若有多个 kernel，则形成 $num_{\text{kernels}} \times K^2$ 的权重矩阵。
-2. im2col：对于输入图像，遍历每个 sliding window，将每个 $K \times K$ 的 patch 展平为长度 $K^2$ 的列向量，并把这些列向量按列拼接成一个 $K^2 \times N$ 的矩阵，其中 $N = H_{out} * W_{out}$，$H_{out}$、$W_{out}$ 来自计算得到的 output size。
+2. im2col：
+   对于输入图像，遍历每个 sliding window，将每个 $K \times K$ 的 patch 展平为长度 $K^2$ 的列向量，
+   并把这些列向量按列拼接成一个 $K^2 \times N$ 的矩阵，其中 $N = H_{out} * W_{out}$，$H_{out}$、$W_{out}$ 来自计算得到的 output size。
 3. GEMM：将 flattening 的核矩阵与 im2col 得到的数据矩阵做矩阵乘法，得到 $num_{\text{kernels}} \times N$ 的结果矩阵。
 4. Output Reconstruction：将结果矩阵 reshape 为 $num_{\text{kernels}} \times H_{out} \times W_{out}$。
 
 **注**：
+
 - 还可以使用 Toplitz 的方式实现（16:13）
 - im2col 把许多重叠 patch 展示为独立列，内存开销较大。实现时需权衡内存与速度（例如分块实现、使用 cuDNN 优化或直接使用卷积算法）。
 - GEMM 高度向量化并在 GPU 上有专门加速（BLAS/cuBLAS），所以比逐点循环快很多。
@@ -96,6 +105,7 @@ $$
 
 直线可以描述许多目标，因此线检测是经典任务。仅仅做边缘检测并不能直接得到直线，因为可能受到遮挡、非直线结构、多条线如何选择等。
 两种思路：
+
 - 先检测边缘，再做拟合。
 - 使用投票方法（Hough Transform）或鲁棒拟合（RANSAC）。
 
@@ -110,7 +120,8 @@ $$
 $$
 矩阵形式：
 $$
-\min_{\boldsymbol{\theta}} \| A\boldsymbol{\theta} - \boldsymbol{y} \|_2^2 \Leftrightarrow \min_{\boldsymbol{\theta}} (A\boldsymbol{\theta} - \boldsymbol{y})^T (A\boldsymbol{\theta} - \boldsymbol{y})
+\min_{\boldsymbol{\theta}} \| A\boldsymbol{\theta} - \boldsymbol{y} \|_2^2
+\Leftrightarrow \min_{\boldsymbol{\theta}} (A\boldsymbol{\theta} - \boldsymbol{y})^T (A\boldsymbol{\theta} - \boldsymbol{y})
 $$
 其中
 $$
@@ -146,7 +157,9 @@ $$
 $$
 A_{n\times 3} = U_{n\times n} D_{n\times 3} V_{3\times 3}^\top
 $$
-其中 $U$ 为 $n \times n$ 正交阵，$V = \begin{bmatrix} \boldsymbol{v}_1^T \\ \boldsymbol{v}_2^T \\ \boldsymbol{v}_3^T \end{bmatrix}$ 为 $3 \times 3$ 正交阵，$D = \begin{bmatrix} diag\{\lambda_1, \lambda_2, \lambda_3\} \\ O_{(n-3) \times 3} \end{bmatrix}$ 为类对角矩阵，包含奇异值 $|\lambda_1| \ge |\lambda_2| \ge |\lambda_3|$。
+其中 $U$ 为 $n \times n$ 正交阵，$V = \begin{bmatrix} \boldsymbol{v}_1^T \\ \boldsymbol{v}_2^T \\ \boldsymbol{v}_3^T \end{bmatrix}$
+为 $3 \times 3$ 正交阵，$D = \begin{bmatrix} diag\{\lambda_1, \lambda_2, \lambda_3\} \\ O_{(n-3) \times 3} \end{bmatrix}$
+为类对角矩阵，包含奇异值 $|\lambda_1| \ge |\lambda_2| \ge |\lambda_3|$。
 将 $h$ 分解到 $V$ 的正交标架下：
 $$
 \boldsymbol{h} = \alpha_1 \boldsymbol{v}_1 + \alpha_2 \boldsymbol{v}_2 + \alpha_3 \boldsymbol{v}_3
@@ -154,7 +167,9 @@ $$
 由于 $ \|\boldsymbol{h}\| = 1 $ 从而 $\alpha_1^2 + \alpha_2^2 + \alpha_3^2 = 1$ ：
 $$
 \| Ah \| = \| U D V^T h \| = \| D V^T h \| \\
-= \| D \begin{bmatrix} \alpha_1 \\ \alpha_2 \\ \alpha_3 \end{bmatrix} \| = \| \begin{bmatrix} \lambda_1 \alpha_1 \\ \lambda_2 \alpha_2 \\ \lambda_3 \alpha_3 \\ O^T \end{bmatrix} \| = (\lambda_1 \alpha_1)^2 + (\lambda_2 \alpha_2)^2 + (\lambda_3 \alpha_3)^2
+= \| D \begin{bmatrix} \alpha_1 \\ \alpha_2 \\ \alpha_3 \end{bmatrix} \|
+= \| \begin{bmatrix} \lambda_1 \alpha_1 \\ \lambda_2 \alpha_2 \\ \lambda_3 \alpha_3 \\ O^T \end{bmatrix} \|
+= (\lambda_1 \alpha_1)^2 + (\lambda_2 \alpha_2)^2 + (\lambda_3 \alpha_3)^2
 $$
 从而解析解为 $\boldsymbol{h} = \pm \boldsymbol{v}_3$. 几何直观即：解为最小伸缩的方向。
 
@@ -165,7 +180,7 @@ $$
 随机采样一致性算法（**RAN**dom **SA**mple **C**onsensus）可以解决这个问题。
 思想是通过大量随机采样最小样本集，生成候选模型并统计内点，最终选择支持内点最多的模型。
 
-#### Step
+#### Step of RANSAC
 
 1. 确定构成模型所需的最小样本数 $s$、残差阈值 $\delta$、期望成功概率 $p$（或最大迭代次数 $N$）。
 2. 从数据集中随机选择 $s$ 个样本。
@@ -215,6 +230,7 @@ $$
 ### RANSAC VS Hough
 
 对比：
+
 - 本质上两者都可以视作一种 voting，但是 RANSAC 是在原始图像空间中进行 vote，而 Hough  Transform 是在参数空间中进行 vote。
 - RANSAC 适合单模态（single mode）问题（一般检测一条直线）；而 Hough Transform 对多模态效果好（能同时检测多个直线）。
 - RANSAC 鲁棒性更好，而 Hough Transform 对噪声不够鲁棒。
@@ -227,6 +243,7 @@ $$
 ### Corners as Keypoints
 
 图像的关键点应具有如下**性质**：
+
 - Saliency（显著性）：与周围区域有明显区别。
 - Repeatability（可重复性）：在不同视角/光照/尺度下能被稳定检测。
 - Accurate localization（精准定位）：不能是一个大范围区域。
@@ -261,7 +278,8 @@ M(x_0,y_0)
 $$
 其中
 $$
-M(x_0,y_0) = \sum_{(x,y)\in N(x_0,y_0)} \begin{bmatrix} I_x^2(x,y) & I_x(x,y) I_y(x,y) \\ I_x(x,y) I_y(x,y) & I_y^2(x,y) \end{bmatrix}
+M(x_0,y_0)
+= \sum_{(x,y)\in N(x_0,y_0)} \begin{bmatrix} I_x^2(x,y) & I_x(x,y) I_y(x,y) \\ I_x(x,y) I_y(x,y) & I_y^2(x,y) \end{bmatrix}
 $$
 也可以表示为卷积形式：
 $$
@@ -286,6 +304,7 @@ $$
 其中 $\begin{bmatrix} u' \\ v' \end{bmatrix} = Q \begin{bmatrix} u \\ v \end{bmatrix}$.
 
 由此可见 $E(u, v)$ 是一个抛物面，两个特征值分别对应抛物面在主轴方向上的曲率。依据 $\lambda_1, \lambda_2$ 的大小可判定点的类型：
+
 - 平坦区域（Flat）：能量在任方向都很小，也即 $\lambda_1 \approx 0, \lambda_2 \approx 0$。
 - 边缘（Edge）：沿边缘方向平移能量变化小，垂直方向平移变化大，也即一个特征值大，另一个接近 0。
 - 角点（Corner）：沿任意方向平移都会引起能量较大变化，也即两个特征值都大。
@@ -303,7 +322,8 @@ $$
 令
 $$
 \theta
-= \frac{1}{2} \underbrace{(\lambda_1 \lambda_2 - 2 \alpha (\lambda_1 + \lambda_2)^2)}_{(1)} + \frac{1}{2} \underbrace{(\lambda_1 \lambda_2 - 2t)}_{(2)} \\
+= \frac{1}{2} \underbrace{(\lambda_1 \lambda_2 - 2 \alpha (\lambda_1 + \lambda_2)^2)}_{(1)}
++ \frac{1}{2} \underbrace{(\lambda_1 \lambda_2 - 2t)}_{(2)} \\
 = \lambda_1 \lambda_2 - \alpha (\lambda_1 + \lambda_2)^2 - t \\
 = \det{M} - \alpha (\mathbb{tr}M)^2 - t
 $$
@@ -314,6 +334,7 @@ $$
 #### Window Function
 
 两类窗口：
+
 - Rectangle window：窗函数对窗内均匀加权，不具旋转不变性。
 - Gaussian window：用高斯核加权，具有旋转不变性和平滑性。
 
@@ -322,9 +343,10 @@ $$
 g_\sigma(x,y) = \frac{1}{2\pi\sigma^2} \exp \big(-\frac{x^2+y^2}{2\sigma^2}\big)
 $$
 
-#### Step
+#### Step of Harris
 
 Harris Detector 在实际实现中通常步骤为：
+
 1. 计算图像梯度 $I_x, I_y$，并计算 $I_x^2, I_y^2, I_x I_y$，得到与原图像同维度的三张梯度图。
 2. 对上述三图用高斯滤波 $g_\sigma$ 卷积得到三张与原图像同维度的高斯图。
 3. 对于像素点 $(x_0, y_0)$，使用三张高斯图对应位置的三个数构成二阶对称阵，计算 $\theta$，并进行阈值二值化 $\theta > 0$。
@@ -343,7 +365,6 @@ Harris Detector 在实际实现中通常步骤为：
     - 等变：$T[f(X)] = f(T(X))$。
     - 不变：$f(X) = f(T(X))$。
 
-💡 常见疑问与解答
 - Q: “Harris 为什么对尺度不不变？”  
   A: 因为窗口大小与滤波尺度固定，若图像缩放，窗口覆盖不同的结构尺度，M 的统计会变化，从而影响 R。
 - Q: “非极大值抑制窗口应多大？”  

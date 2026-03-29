@@ -40,9 +40,10 @@ $$
 
 通过初等行变换将 $A$ 化为上三角矩阵 $U$，再回代求解 $x$。
 
-### 思想
+### GAUSS 消去法思想
 
 按列逐步消元。
+
 - 在第 k 步，用第 k 行消去第 k 列下面的元素，使得第 k 列除对角元外均为 0。
 - 重复 $k=1,2,\dots,n-1$，最终得到上三角矩阵 $U$ 与相应的右端项 $\tilde b$，再通过回代得到解。
 
@@ -104,7 +105,7 @@ $$
 M_{1, 1}^{-1} = A^{-1} - A^{-1} U (I + V^T A^{-1} U)^{-1} V^T A^{-1} \quad \Box
 $$
 
-### 矩阵视角
+### 矩阵视角下的 GAUSS 消去法
 
 消元可以用矩阵乘法描述。定义第 $k$ 步的消元矩阵：
 $$
@@ -157,9 +158,10 @@ $$
 
 ---
 
-### 算法
+### GAUSS 消去法代码
 
 假设 $A \in \mathbb{R}^{n \times n}$ 存储于 `A[i, j]`，$b \in \mathbb{R}^{n}$ 存储于 `b[i]`
+
 ```python
 # 消去算法
 for k in range(n - 1): # 枚举列
@@ -181,7 +183,7 @@ for i in range(n - 1, -1, -1): # 逆序回代
 
 ---
 
-### 复杂度分析
+### GAUSS 消去法复杂度分析
 
 - 除法数：约 $\frac{n(n-1)}{2}$；
 - 乘法数：约 $\frac{n(n-1)(n+1)}{3}$；
@@ -193,7 +195,7 @@ for i in range(n - 1, -1, -1): # 逆序回代
 
 ## 列主元消去法
 
-### 思想
+### 列主元消去法思想
 
 考虑下面问题：
 $$
@@ -224,10 +226,11 @@ $$
 其中 $e_k$ 是第 $k$ 个标准基向量。
 
 **性质**：
+
 1. $ P_{ij}^T = P_{ij} $
 2. $ P_{ij}^{-1} = P_{ij} $
 
-### 矩阵视角
+### 矩阵视角下的列主元消去法
 
 这一部分对于算法设计用处不大，但还是看一眼喵~在列主元消去法中，每一步消元前需要先进行行交换。设第 $k$ 步选择第 $p$ 行（$p \geq k$）作为主元行，则完整的变换过程为：
 $$
@@ -246,7 +249,8 @@ $$
 从 $\mathbf{A}^{(n)} = \mathbf{M}_{n-1}\mathbf{P}_{n-1}\cdots\mathbf{M}_1\mathbf{P}_1\mathbf{A}$ 出发，可得：
 
 $$
-\overline{\mathbf{M}}_1^{-1}\overline{\mathbf{M}}_2^{-1}\cdots\overline{\mathbf{M}}_{n-2}^{-1}\mathbf{M}_{n-1}^{-1}\mathbf{U} = \underbrace{\mathbf{P}_{n-1}\mathbf{P}_{n-2}\cdots\mathbf{P}_2\mathbf{P}_1}_{\equiv \mathbf{P}}\mathbf{A}
+\overline{\mathbf{M}}_1^{-1}\overline{\mathbf{M}}_2^{-1}\cdots\overline{\mathbf{M}}_{n-2}^{-1}\mathbf{M}_{n-1}^{-1}\mathbf{U}
+= \underbrace{\mathbf{P}_{n-1}\mathbf{P}_{n-2}\cdots\mathbf{P}_2\mathbf{P}_1}_{\equiv \mathbf{P}}\mathbf{A}
 $$
 
 即 **带列主元的 LU 分解**：
@@ -255,15 +259,17 @@ $$
 $$
 
 其中：
+
 - $\mathbf{P}$ 为**排列矩阵**（permutation matrix），满足 $\mathbf{P}^{-1} = \mathbf{P}^T$
 - $\mathbf{L} = \overline{\mathbf{M}}_1^{-1}\cdots\overline{\mathbf{M}}_{n-2}^{-1}\mathbf{M}_{n-1}^{-1}$ 为单位下三角矩阵
 - $\mathbf{U}$ 为上三角矩阵
 
 ---
 
-### 算法
+### 列主元消去法代码
 
-假设 $A \in \mathbb{R}^{n \times n}$ 存储于 `A[i, j]`，$b \in \mathbb{R}^{n}$ 存储于 `b[i]` 
+假设 $A \in \mathbb{R}^{n \times n}$ 存储于 `A[i, j]`，$b \in \mathbb{R}^{n}$ 存储于 `b[i]`
+
 ```python
 # 消去算法
 # 排列向量 p[i] = j 表示当前的第 i 行对应原始的第 j 行
@@ -293,6 +299,6 @@ for i in range(n - 1, -1, -1): # 逆序回代
 
 ---
 
-### 复杂度分析
+### 列主元消去法复杂度分析
 
 时间复杂度、空间复杂度与 Gauss 消元法量级相同，但是在时间复杂度上会多 $O(n^2)$ 的比较成本，空间复杂度上会多 $O(n)$ 的排列向量成本。

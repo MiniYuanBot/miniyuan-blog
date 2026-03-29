@@ -12,9 +12,9 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-## 一、基础操作
+## 基础操作
 
-### 1.1 Linux 指令标准格式
+### Linux 指令标准格式
 
 一个完整的 Linux 指令通常遵循以下格式（当然不完全是如此，事实上指令的规范比较混乱）：
 
@@ -26,16 +26,16 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 - **操作对象**：Linux 文件（当然由于 Linux **一切皆文件**，实际上包含 regular file, directory, socket 等等类型）
 - **可组合**：选项和操作对象都可以有多个
 
-### 1.2 常用辅助操作
+### 常用辅助操作
 
-| 快捷键/命令 | 功能说明 |
-|-------------|----------|
-| `Ctrl + C` | **中止**当前运行的命令 |
-| `man <指令>` | **Manual** - 查看指令手册 |
-| `info <指令>` | **Information** - 查看指令详细信息 |
-| `help <指令>` | **Help** - 查看内置命令帮助 |
-| `clear` | **Clear** - 清空终端显示 |
-| `reset` | **Reset** - 重启终端 |
+| 快捷键/命令 | 全称 | 功能说明 |
+| -------- | ------- | ---------- |
+| `Ctrl + C` | - | **中止**当前运行的命令 |
+| `man <指令>` | **Manual** | 查看指令手册 |
+| `info <指令>` | **Information** | 查看指令详细信息 |
+| `help <指令>` | **Help** | 查看内置命令帮助 |
+| `clear` | **Clear** | 清空终端显示 |
+| `reset` | **Reset** | 重启终端 |
 | `chmod` | **ch**ange **mod**e | 修改文件权限 |
 | `bc` | **B**asic **C**alculator | 命令行计算器，支持浮点运算 |
 
@@ -48,9 +48,9 @@ $ chmod 755 script.sh
 
 ---
 
-## 二、文件与目录操作
+## 文件与目录操作
 
-### 2.1 查看目录内容：`ls`（**L**i**s**t）
+### 查看目录内容：`ls`（**L**i**s**t）
 
 **功能**：列出指定目录下的文件和文件夹。
 
@@ -91,10 +91,10 @@ $ ls -ltR
 
 ---
 
-### 2.2 目录导航
+### 目录导航
 
 | 命令 | 英文全称 | 功能说明 |
-|------|----------|----------|
+| ------ | ---------- | ---------- |
 | `pwd` | **P**rint **W**orking **D**irectory | 打印当前工作目录的**绝对路径** |
 | `cd` | **C**hange **D**irectory | 切换目录 |
 | `mkdir` | **M**a**k**e **Dir**ectory | 创建新目录 |
@@ -104,7 +104,7 @@ $ ls -ltR
 #### 路径类型
 
 | 路径类型 | 说明 | 示例 |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | **绝对路径** | 从根目录 `/` 开始的完整路径 | `/media/qianrui/work/LQR/mohan_HW/1` |
 | **相对路径 `.`** | 当前目录（可省略） | `ls ./1` 或 `ls 1` |
 | **相对路径 `..`** | 上级目录 | `cd ..` |
@@ -143,7 +143,7 @@ $ rm -rf directory_name
 ### 2.3 文件操作
 
 | 命令 | 英文全称 | 功能说明 |
-|------|----------|----------|
+| ------ | ---------- | ---------- |
 | `touch` | touch | 创建空文件或**修改文件时间戳**（可用于防止超算清理长期未动文件） |
 | `cp` | **C**o**p**y | 复制文件或目录 |
 | `mv` | **M**o**v**e | 移动或**重命名**文件/目录 |
@@ -182,7 +182,7 @@ $ diff file1.txt file2.txt
 ### 2.4 输出与重定向
 
 | 命令/符号 | 英文全称 | 功能说明 |
-|-----------|----------|----------|
+| ----------- | ---------- | ---------- |
 | `>` | redirect | **覆盖**输出重定向 |
 | `>>` | append redirect | **追加**输出重定向 |
 | `cat` | con**cat**enate | 连接文件并打印到标准输出 |
@@ -220,7 +220,7 @@ $ grep -r "root" /etc/ 2>/dev/null
 ### 2.5 压缩与解压缩
 
 | 命令 | 格式 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `zip` / `unzip` | `.zip` | 跨平台压缩格式 |
 | `tar` | `.tar.gz` | Linux 常用打包压缩格式 |
 
@@ -251,6 +251,7 @@ $ tar -xzvf archive.tar.gz -C new_folder/
 ```
 
 **注**：
+
 - `.tar` 只是打包，文件大小约为原文件总和；`.tar.gz` 则是打包加压缩，相应的需要使用 `-z` 参数
 - 参数的排列顺序是重要的
 
@@ -265,7 +266,7 @@ $ tar -xzvf archive.tar.gz -C new_folder/
 #### 示例：词频统计
 
 ```bash
-$ cat words.txt | tr ' ' '\n' | sort | uniq -c | sort -nr
+cat words.txt | tr ' ' '\n' | sort | uniq -c | sort -nr
 ```
 
 - `cat words.txt`：读取文件内容。
@@ -279,6 +280,7 @@ $ cat words.txt | tr ' ' '\n' | sort | uniq -c | sort -nr
 `xargs` （**Extended Arguments**）的作用就是将管道传过来的文本数据，转换成指令能接收的**参数**，因为有些命令（如 `rm`，`cp`，`mkdir`）只接受命令行参数。
 
 #### 示例：批量删除文件
+
 ```bash
 # 错误：rm 不理解管道传过来的文件名
 $ cat filenames.txt | rm
@@ -294,7 +296,8 @@ $ cat filenames.txt | xargs rm
 
 ### 4.1 命令概述
 
-`grep` 用于在文件中查找匹配指定模式的行，并将这些行打印出来。英文全称为 **G**lobally search for a **R**egular **E**xpression and **P**rint matching lines（当然它总是让人联想到 grasp）
+`grep` 用于在文件中查找匹配指定模式的行，并将这些行打印出来。
+英文全称为 **G**lobally search for a **R**egular **E**xpression and **P**rint matching lines（当然它总是让人联想到 grasp）
 
 ### 4.2 常用选项
 
@@ -314,6 +317,7 @@ $ cat filenames.txt | xargs rm
 
 **注**：
 `-w` 认为以下字符是单词边界
+
 - 空格、制表符、换行
 - 标点符号（`-` 和 `_` 除外，`_` 被视为单词的一部分）
 - 数字与字母的分界
@@ -321,6 +325,7 @@ $ cat filenames.txt | xargs rm
 ### 4.3 示例
 
 #### 示例1：日志分析
+
 ```bash
 # 统计日志中 "error" 出现的行数
 $ grep -c "error" app.log
@@ -336,6 +341,7 @@ grep -w "app" test.txt
 ```
 
 #### 示例2：上下文显示
+
 ```bash
 # 显示包含 "error" 的行及其后3行（After）
 grep -A 3 "error" app.log
@@ -348,6 +354,7 @@ grep -C 5 "timeout" app.log
 ```
 
 #### 示例3：代码检索
+
 ```bash
 # 在当前目录下所有 .py 文件中查找 "TODO" 字符串，并显示行号
 $ grep -n "TODO" *.py
@@ -390,7 +397,7 @@ $ ls /usr/bin | xargs grep -l "python"
 | `grep .er WishYou` | `.` 匹配任意单个字符，所以会匹配 `_er` 模式的词 | 匹配 `isher`, `pudding` (包含 `er`)，`cheer` 等 |
 | `grep [Ww]e WishYou` | `[Ww]` 匹配 **W** 或 **w** 中的任意一个 | 匹配以 `We` 或 `we` 开头的行中的单词 |
 | `grep -n ^[W] WishYou` | `^` 匹配行首，所以匹配以 **W** 开头的行 | 打印所有以 `W` 开头的行，并显示行号 (`-n`) |
-| `grep -E "[0-9]+@[a-z]+"` | `[0-9]+` 匹配一个或多个数字，`[a-z]+` 匹配一个或多个小写字母 | 匹配简单的邮箱格式（如 `123@qq`）|
+| `grep -E "[0-9]+@[a-z]+"` | `[0-9]+` 匹配一个或多个数字，`[a-z]+` 匹配一个或多个小写字母 | 匹配简单的邮箱格式（如 `123@qq`） |
 
 ---
 
@@ -407,6 +414,7 @@ $ ls /usr/bin | xargs grep -l "python"
 - `-type`：按文件类型查找
 
 #### 示例
+
 ```bash
 # 按文件名查找（在当前目录递归查找以 stress 开头的文件）
 $ find . -name "stress*"
@@ -425,6 +433,7 @@ $ find . -name "stress*" -size 2k
 - `$1`/`$2`: 第1/2列
 
 #### 示例
+
 ```bash
 # 文件 1.dat 内容：
 # 1  1.1
@@ -476,6 +485,7 @@ sed [选项] '脚本' 文件
 | `p` | 打印 | 打印替换的行 | `'s/old/new/p'` |
 
 #### 示例
+
 ```bash
 # 删除文件的第二行（d: delete）
 $ sed '2d' example.txt
@@ -503,10 +513,10 @@ $ mv filename_tmp filename
 
 #### 常用环境变量
 
-| 变量名               | 说明        |
+| 变量名 | 说明 |
 | :---------------- | :-------- |
-| `PATH`            | 可执行文件搜索路径 |
-| `LD_LIBRARY_PATH` | 动态库搜索路径   |
+| `PATH` | 可执行文件搜索路径 |
+| `LD_LIBRARY_PATH` | 动态库搜索路径 |
 
 #### 示例
 
@@ -523,9 +533,11 @@ $ export PATH=/usr/local/bin:$PATH
 
 ### 7.2 配置文件 `~/.bashrc`
 
-`.bashrc`（**B**ourne **A**gain **Sh**ell **R**un **C**ommands）是用户个人的Shell配置文件。每次启动新的终端时，bash 都会自动执行此文件中的命令。可以将 `export`、`alias` 等设置写入该文件，实现**永久生效**的个性化配置。
+`.bashrc`（**B**ourne **A**gain **Sh**ell **R**un **C**ommands）是用户个人的Shell配置文件。
+每次启动新的终端时，bash 都会自动执行此文件中的命令。可以将 `export`、`alias` 等设置写入该文件，实现**永久生效**的个性化配置。
 
 #### 示例
+
 ```bash
 # 1. 用 vim 或 nano 编辑文件
 $ vim ~/.bashrc
@@ -542,6 +554,7 @@ alias 3='cd /home/mohan/3_Work/'
 $ source ~/.bashrc
 # 或重启终端
 ```
+
 - `alias`：**Alias**（别名），为长命令创建快捷方式。
 - `source`：**Source**（执行），使当前Shell重新读取并执行配置文件。
 
@@ -550,6 +563,7 @@ $ source ~/.bashrc
 ## 八、其他常用命令
 
 ### 8.1 远程连接与文件传输
+
 | 命令 | 英文全称/含义 | 功能说明 |
 | :--- | :--- | :--- |
 | `ssh user@ip -p port` | **S**ecure **Sh**ell | 安全地远程登录到另一台Linux服务器 |
@@ -558,6 +572,7 @@ $ source ~/.bashrc
 | `nohup command &` | **No** **H**ang**Up** | 让命令在后台持续运行，**即使关闭终端/断网/断开SSH连接也不受影响** |
 
 ### 8.2 系统管理与资源查看
+
 | 命令 | 英文全称/含义 | 功能说明 |
 | :--- | :--- | :--- |
 | `df -h` | **D**isk **F**ree | 查看磁盘分区**总容量和使用情况** (`-h`: **h**uman-readable) |

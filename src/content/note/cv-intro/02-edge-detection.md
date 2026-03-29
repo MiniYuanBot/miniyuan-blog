@@ -23,6 +23,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 ## Filters and Convolution
 
 以下只考虑线性、时不变的系统/滤波器，也即：
+
 1. 线性性：
    - 齐次性：输入 $ a \cdot x(t) $ $\to$ 输出 $ a \cdot y(t) $
    - 可加性：输入 $ x_1(t) + x_2(t) $ $\to$ 输出 $ y_1(t) + y_2(t) $
@@ -51,7 +52,7 @@ $$
 
 ### Convolution and Flourier Transformer
 
-**Discrete Signal**
+**Discrete Signal**：
 
 离散卷积：
 $$
@@ -63,7 +64,7 @@ $$
 \mathcal{F}\{f\}(\omega) = \sum_{n=-\infty}^{\infty} f[n]\, e^{-i2\pi\omega n}
 $$
 
-**Continuous Signal**
+**Continuous Signal**：
 
 连续卷积：
 $$
@@ -75,7 +76,7 @@ $$
 \mathcal{F}\{f\}(\omega) = \int_{-\infty}^\infty f(t)\, e^{-i2\pi \omega t}\, dt
 $$
 
-**Convolution Theory**
+**Convolution Theory**：
 
 $$
 \mathcal{F}\{f * g\} = \mathcal{F}\{f\} \cdot \mathcal{F}\{g\}
@@ -141,10 +142,11 @@ $$
 ### Causes of Edges
 
 边缘的判断标准：
-  - 深度（Depth）不连续
-  - 表面颜色（Surface color）不连续
-  - 表面朝向（Surface orientation）不连续
-  - 光照（Illumination）不连续
+
+- 深度（Depth）不连续
+- 表面颜色（Surface color）不连续
+- 表面朝向（Surface orientation）不连续
+- 光照（Illumination）不连续
 
 ### The Definition of Edges
 
@@ -178,19 +180,20 @@ $$
 
 由此定义两个核心指标：
 
-**精确率**
+**精确率**：
 $$
 \text{Precision} = \frac{TP}{TP + FP}
 $$
 也即检测出的边缘中，有多少是真正的边缘
 
-**召回率**
+**召回率**：
 $$
 \text{Recall} = \frac{TP}{TP + FN}
 $$
 也即真实边缘中，有多少被成功检测出来
 
 三个重要准则：
+
 1. **Good Detection**：
  尽可能检测出所有真实边缘，尽量避免把噪声检测为边缘。也即**精确率**和**召回率**尽量高
 2. **Good Localization**：
@@ -203,14 +206,15 @@ $$
 ### Finite Difference Approximation
 
 连续偏导数在数字图像上用差分近似：
-  - 中心差分（2阶准确）：
+
+- 中心差分（2阶准确）：
     $$
     \frac{\partial f}{\partial x}\bigg|_{(m,n)} \approx \frac{f(m+1, n)   - f(m-1,n)}{2}
     $$
     $$
     \frac{\partial f}{\partial y}\bigg|_{(m,n)} \approx \frac{f(m, n+1)   - f(m,n-1)}{2}
     $$
-  - 前向/后向差分也可用，但精度稍差：
+- 前向/后向差分也可用，但精度稍差：
     $$
     \frac{\partial f}{\partial x}\bigg|_{(m,n)} \approx f(m+1,n)   - f(m,n)
     $$
@@ -247,6 +251,7 @@ $$
 非极大值抑制（NMS）算法，用以形成**单像素**边缘。
 
 步骤：
+
 1. 对每个像素 $q$ 计算梯度 $g(q)$ 以及梯度幅值 $M(q)$。
 2. 沿梯度方向向两侧移动到点 $q_1 = q + g_{dir}(q)$，$q_2 = q   - g_{dir}(q)$，其中 $g_{dir}$ 是归一化梯度向量。
 3. 使用双线性插值在 $q_1$、$q_2$ 处计算幅值 $M(q_1)$、$M(q_2)$。
@@ -279,11 +284,13 @@ minVal = 0.1 × average
 $$
 
 对于像素点 $q$，幅值 $M(q)$：
-  - 若 $M(q) \gt maxVal$：强边缘，保留并允许连接。
-  - 若 $M(q) \lt maxVal$：非边缘，抛弃。
-  - 若 $minVal \le M(q) \le maxVal$：弱边缘，仅在与强边缘连通时保留。
+
+- 若 $M(q) \gt maxVal$：强边缘，保留并允许连接。
+- 若 $M(q) \lt maxVal$：非边缘，抛弃。
+- 若 $minVal \le M(q) \le maxVal$：弱边缘，仅在与强边缘连通时保留。
 
 边缘增长（Edge Linking）步骤：
+
 1. 遍历图像，遇到强边缘开始增长；
 2. 对当前边缘像素，检查在边缘方向（垂直梯度方向）上的两个相邻像素，若任一像素方向与该像素 bin 相同、幅值足够、通过 NMS 判定，则将其也标记为边缘，并继续增长；
 3. 循环直到不能继续增长为止。
@@ -291,11 +298,13 @@ $$
 ### Canny Edge Detector
 
 上述流程即使标准的 Canny 算法：
+
 1. 用导数 Gaussian 计算梯度分量 $G_x$、$G_y$。
 2. 计算梯度幅值和方向。
 3. 非极大值抑制（NMS）将响应细化到单像素宽。
 4. 使用滞后阈值并做边缘连接（Hysteresis + Edge Linking）产生最终的边缘线条。
 
 **注**：
+
 - Canny 算法涉及很多 Hyper Parameter，如 $\sigma$、$maxVal$、$minVal$. 其中尺度选择（$\sigma$）是关键。$\sigma$ 大时噪声更少但定位差；$\sigma$ 小时定位好但对噪声敏感。通常对同一图像做多尺度检测以获得更稳健结果。
 - 对颜色图像通常先将颜色图像转换为灰度。也可以使用基于颜色梯度的扩展方法（多通道合并或向量梯度）。
