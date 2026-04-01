@@ -62,7 +62,7 @@ $p$-范数族。
 
 | 范数名称 | 记号 | 表达式 | 几何意义 |
 | :---: | :---: | :---: | :---: |
-| 1-范数 | $\|\mathbf{x}\|_1$ | $\sum_{i=1}^n \|x_i\|$ | 曼哈顿距离 |
+| 1-范数 | $\|\mathbf{x}\|_1$ | $\sum_{i=1}^n \vert x_i\vert$ | 曼哈顿距离 |
 | 2-范数 | $\|\mathbf{x}\|_2$ | $\sqrt{\sum_{i=1}^n x_i^2} = \sqrt{\mathbf{x}^T\mathbf{x}}$ | 欧几里得距离 |
 | $\infty$-范数 | $\|\mathbf{x}\|_\infty$ | $\max_{1\leq i\leq n} \vert x_i\vert$ | 最大分量幅度 |
 | $p$-范数 | $\|\mathbf{x}\|_p$ | $\left(\sum_{i=1}^n \vert x_i\vert ^p\right)^{1/p}$ | 统一框架 |

@@ -42,11 +42,15 @@ $$
 
 #### Difference
 
-也即卷积在滑动前会将核翻转（flip），在一维中是时间反转；互相关不翻转核。我们一般使用的是互相关运算，但是库函数称之为 `convolution`，实际上两者不同。
+卷积在滑动前会将核翻转（flip），在一维中是时间反转；互相关不翻转核。我们一般使用的是互相关运算，但是库函数称之为 `convolution`，实际上两者不同。
 
-| a | Convolution | Correlation |
-| --- | --- | --- |
-| | | |
+| | **卷积 (Convolution)** | **互相关 (Correlation)** |
+| :--- | :--- | :--- |
+| **直观理解** | 滤波 (Filter) | 模板匹配 (Template matching) |
+| **交换律** | Y | N |
+| **结合律** | Y | N |
+| **分配律** | Y | N |
+| **卷积定理** | $\mathcal{F}(f * g) = \mathcal{F}(f) \cdot \mathcal{F}(g)$ <br>（时域卷积 = 频域乘积） | $\mathcal{F}(f \star g) = \mathcal{F}(f) \cdot \overline{\mathcal{F}(g)}$ <br>（频域包含复共轭） |
 
 ### Padding
 
@@ -75,29 +79,121 @@ $$
 - $S$：该方向的步幅。
 - $W_{out}$：该方向的输出宽度。
 
-**注**：一般定义 $P$ 表示每侧（左右/上下）的填充像素数。
-
 ### Implementation of Convolution
 
 用循环实现卷积在 CPU/GPU 上效率低。想办法将卷积转化为矩阵乘法并使用并行可以大大提高速率。
 
-#### Step of Convolution
+#### im2col
 
-假设 kernel/filter 尺寸为 $K \times K$，image 尺寸为 $H \times W$.
+**符号定义**：
 
-1. Kernel Flattening：
-   将 $K \times K$ 的 kernel 展平为 $1 \times K^2$ 行向量。若有多个 kernel，则形成 $num_{\text{kernels}} \times K^2$ 的权重矩阵。
-2. im2col：
-   对于输入图像，遍历每个 sliding window，将每个 $K \times K$ 的 patch 展平为长度 $K^2$ 的列向量，
-   并把这些列向量按列拼接成一个 $K^2 \times N$ 的矩阵，其中 $N = H_{out} * W_{out}$，$H_{out}$、$W_{out}$ 来自计算得到的 output size。
-3. GEMM：将 flattening 的核矩阵与 im2col 得到的数据矩阵做矩阵乘法，得到 $num_{\text{kernels}} \times N$ 的结果矩阵。
-4. Output Reconstruction：将结果矩阵 reshape 为 $num_{\text{kernels}} \times H_{out} \times W_{out}$。
+| 符号 | 含义 | 维度 |
+| :--- | :--- | :--- |
+| $\mathbf{X} \in \mathbb{R}^{C_{in} \times H \times W}$ | 输入特征图 | $(C_{in}, H, W)$ |
+| $\mathbf{K} \in \mathbb{R}^{C_{out} \times C_{in} \times K \times K}$ | 卷积核权重 | $(C_{out}, C_{in}, K, K)$ |
+| $\mathbf{b} \in \mathbb{R}^{C_{out}}$ | 偏置向量 | $(C_{out},)$ |
+| $\mathbf{Y} \in \mathbb{R}^{C_{out} \times H_{out} \times W_{out}}$ | 输出特征图 | $(C_{out}, H_{out}, W_{out})$ |
+| $(s_h, s_w)$ | 步长 | - |
+| $(p_h, p_w)$ | 填充 | - |
+
+其中输出空间尺寸：
+$$
+H_{out} = \left\lfloor \frac{H + 2p_h - K}{s_h} \right\rfloor + 1,
+\quad W_{out} = \left\lfloor \frac{W + 2p_w - K}{s_w} \right\rfloor + 1
+$$
+
+令 $N = H_{out} \cdot W_{out}$ 表示输出位置的总数。
+
+**Kernel Flattening**：
+
+将每个输出通道的卷积核**展平为行向量**：
+
+$$
+\mathbf{W}_{i} = \text{vec}\left(\mathbf{K}_{i, :, :, :}\right)^\top \in \mathbb{R}^{1 \times (C_{in} \cdot K^2)}
+$$
+
+其中 $\text{vec}(\cdot)$ 表示按通道优先顺序展平：
+$$
+\text{vec}\left(\mathbf{K}_{i, :, :, :}\right)
+= \left[ \text{vec}\left(\mathbf{K}_{i, 0, :, :}\right)^\top, \text{vec}\left(\mathbf{K}_{i, 1, :, :}\right)^\top,
+\ldots, \text{vec}\left(\mathbf{K}_{i, C_{in}-1, :, :}\right)^\top \right]^\top
+$$
+
+堆叠所有输出通道形成**权重矩阵**：
+$$
+\mathbf{W} = \begin{bmatrix} \mathbf{W}_0 \\ \mathbf{W}_1 \\ \vdots \\ \mathbf{W}_{C_{out}-1} \end{bmatrix}
+\in \mathbb{R}^{C_{out} \times (C_{in} \cdot K^2)}
+$$
+
+**Patch Flattening**：
+
+对于每个输出位置 $(i, j)$，$i \in [0, H_{out})$, $j \in [0, W_{out})$，定义对应的输入感受野：
+
+$$
+\mathcal{P}_{i,j} = \left\{ (c, h, w) \,\middle|\, c \in [0, C_{in}),\, h \in [h_0, h_0+K),\, w \in [w_0, w_0+K) \right\}
+$$
+其中 $(h_0, w_0) = (i \cdot s_h - p_h, j \cdot s_w - p_w)$。
+
+提取 patch 并**展平为列向量**：
+$$
+\mathbf{x}_{i,j} = \text{vec}\left(\mathbf{X}_{:, h_0:h_0+K, w_0:w_0+K}\right) \in \mathbb{R}^{C_{in} \cdot K^2}
+$$
+
+**im2col**：
+
+将所有输出位置对应的列向量按列拼接，形成 **im2col 矩阵**：
+$$
+\mathbf{X}_{col} =
+\begin{bmatrix} \mathbf{x}_{0,0} & \cdots & \mathbf{x}_{0,W_{out}-1} & \mathbf{x}_{1,0} & \cdots
+& \mathbf{x}_{H_{out}-1,W_{out}-1} \end{bmatrix} \in \mathbb{R}^{(C_{in} \cdot K^2) \times N}
+$$
+
+其中列索引 $t = i \cdot W_{out} + j$ 对应输出位置 $(i, j)$。
+
+**GEMM**：
+
+执行矩阵乘法并加上偏置：
+$$
+\mathbf{Y}_{mat}
+= \mathbf{W} \cdot \mathbf{X}_{col} + \mathbf{b} \cdot \mathbf{1}_N^\top \in \mathbb{R}^{C_{out} \times N}
+$$
+
+其中 $\mathbf{1}_N \in \mathbb{R}^{N}$ 为全 1 向量，偏置通过广播机制相加。
+
+**Reconstruction**：
+
+将结果矩阵 reshape 回张量形式：
+
+$$
+\mathbf{Y} = \text{reshape}\left(\mathbf{Y}_{mat}, (C_{out}, H_{out}, W_{out})\right)
+$$
+
+具体地，对于每个输出通道 $c_{out}$ 和空间位置 $(i, j)$：
+$$
+\begin{aligned}
+\mathbf{Y}_{c_{out}, i, j}
+&= \left[\mathbf{Y}_{mat}\right]_{c_{out},\, i \cdot W_{out} + j} \\
+&= \sum_{d=0}^{C_{in} \cdot K^2 - 1} \mathbf{W}_{c_{out}, d} \cdot
+\left[\mathbf{X}_{col}\right]_{d, i \cdot W_{out} + j} + \mathbf{b}_{c_{out}} \\
+&= \mathbf{W}_{c_{out}} \cdot \mathbf{x}_{i, j} + \mathbf{b}_{c_{out}}
+\end{aligned}
+$$
+
+**全过程**：
+
+$$
+\mathbf{X}
+\xrightarrow{\text{im2col}} \mathbf{X}_{col}
+\xrightarrow{\mathbf{W} \cdot (\cdot) + \mathbf{b}} \mathbf{Y}_{mat}
+\xrightarrow{\text{reshape}} \mathbf{Y}
+$$
 
 **注**：
 
-- 还可以使用 Toplitz 的方式实现（16:13）
 - im2col 把许多重叠 patch 展示为独立列，内存开销较大。实现时需权衡内存与速度（例如分块实现、使用 cuDNN 优化或直接使用卷积算法）。
 - GEMM 高度向量化并在 GPU 上有专门加速（BLAS/cuBLAS），所以比逐点循环快很多。
+
+#### Toplitz
 
 ---
 
@@ -108,8 +204,6 @@ $$
 
 - 先检测边缘，再做拟合。
 - 使用投票方法（Hough Transform）或鲁棒拟合（RANSAC）。
-
-matrix cookbook
 
 ### Least Squares
 
@@ -166,10 +260,12 @@ $$
 $$
 由于 $ \|\boldsymbol{h}\| = 1 $ 从而 $\alpha_1^2 + \alpha_2^2 + \alpha_3^2 = 1$ ：
 $$
+\begin{aligned}
 \| Ah \| = \| U D V^T h \| = \| D V^T h \| \\
 = \| D \begin{bmatrix} \alpha_1 \\ \alpha_2 \\ \alpha_3 \end{bmatrix} \|
 = \| \begin{bmatrix} \lambda_1 \alpha_1 \\ \lambda_2 \alpha_2 \\ \lambda_3 \alpha_3 \\ O^T \end{bmatrix} \|
 = (\lambda_1 \alpha_1)^2 + (\lambda_2 \alpha_2)^2 + (\lambda_3 \alpha_3)^2
+\end{aligned}
 $$
 从而解析解为 $\boldsymbol{h} = \pm \boldsymbol{v}_3$. 几何直观即：解为最小伸缩的方向。
 
@@ -257,12 +353,12 @@ $$
 
 #### The Definition fo Energy
 
-定义窗口大小为 $ (2b+1) \times (2b+1) $，位于 $(x_0,y_0)$，平移量为 $(u,v)$，考虑如下**能量**：
+考虑一个以 $(x_0,y_0)$ 为中心的窗口 $N(x_0,y_0)$，平移 $(u,v)$，窗口内像素强度的变化程度定义为该点处的**能量**：
 $$
 E_{x_0,y_0}(u,v) = \sum_{(x,y)\in N(x_0,y_0)} [I(x+u,y+v) - I(x,y)]^2
 $$
-其中 $I(\cdot,\cdot)$ 为图像强度，$N(x_0,y_0)$ 为以 $(x_0,y_0)$ 为中心的窗口。
-使用一阶泰勒展开（假设 $u$，$v$ 很小）可得：
+其中 $I(\cdot,\cdot)$ 为图像强度。
+使用一阶泰勒展开（假设 $u, \; v$ 很小）可得：
 $$
 I(x+u,y+v) - I(x,y) \approx I_x(x,y) u + I_y(x,y) v
 $$
@@ -281,14 +377,48 @@ $$
 M(x_0,y_0)
 = \sum_{(x,y)\in N(x_0,y_0)} \begin{bmatrix} I_x^2(x,y) & I_x(x,y) I_y(x,y) \\ I_x(x,y) I_y(x,y) & I_y^2(x,y) \end{bmatrix}
 $$
-也可以表示为卷积形式：
+
+#### Window Function
+
+我们可以进一步将二次型 $M$ 表示为卷积形式。常见的有以下两种窗口：
+
+- Rectangle window：窗函数对窗内均匀加权，不具旋转不变性。
+
+  $$
+  M(x_0,y_0)
+  =
+  \begin{bmatrix}
+  w(x_0,y_0) * I_x^2 & w(x_0,y_0) * I_x I_y \\
+  w(x_0,y_0) * I_x I_y & w(x_0,y_0) * I_y^2
+  \end{bmatrix}
+  $$
+  其中 $w(x_0, y_0) = \begin{cases} 1, \quad if (x, y) \in N(x_0, y_0) \\ 0, \quad otherwise\end{cases}$
+
+- Gaussian window：用高斯核加权，具有旋转不变性和平滑性。
+
+  $$
+  M(x_0,y_0)
+  =
+  \begin{bmatrix}
+  g_\sigma(x_0,y_0) * I_x^2 & g_\sigma(x_0,y_0) * I_x I_y \\
+  g_\sigma(x_0,y_0) * I_x I_y & g_\sigma(x_0,y_0) * I_y^2
+  \end{bmatrix}
+  $$
+  其中高斯窗口：
+  $$
+  g_\sigma(x_0,y_0) = \frac{1}{2\pi\sigma^2} \exp \big(-\frac{x_0^2+y_0^2}{2\sigma^2}\big)
+  $$
+
+当然由于卷积是一种线性变换，我们可以统一写为：
 $$
-M(x_0,y_0) = \begin{bmatrix}
-w(x_0,y_0) * I_x^2 & w(x_0,y_0) * I_x I_y \\
-w(x_0,y_0) * I_x I_y & w(x_0,y_0) * I_y^2
+M(x_0,y_0)
+=
+\begin{bmatrix}
+\mathcal{F}^{(x_0, y_0)}(I_x^2) & \mathcal{F}^{(x_0, y_0)}(I_x I_y) \\
+\mathcal{F}^{(x_0, y_0)}(I_x I_y) & \mathcal{F}^{(x_0, y_0)}(I_y^2)
 \end{bmatrix}
 $$
-其中 $w(x_0, y_0) = \begin{cases} 1, \quad if (x, y) \in N(x_0, y_0) \\ 0, \quad otherwise\end{cases}$
+其中 $\mathcal{F}^{(x_0, y_0)}: \mathbb{R}^{n \times n} \rightarrow \mathbb{R}$
 
 #### Eigenvalues for Classification
 
@@ -321,27 +451,19 @@ $$
 $$
 令
 $$
+\begin{aligned}
 \theta
-= \frac{1}{2} \underbrace{(\lambda_1 \lambda_2 - 2 \alpha (\lambda_1 + \lambda_2)^2)}_{(1)}
+&= \frac{1}{2} \underbrace{(\lambda_1 \lambda_2 - 2 \alpha (\lambda_1 + \lambda_2)^2)}_{(1)}
 + \frac{1}{2} \underbrace{(\lambda_1 \lambda_2 - 2t)}_{(2)} \\
-= \lambda_1 \lambda_2 - \alpha (\lambda_1 + \lambda_2)^2 - t \\
-= \det{M} - \alpha (\mathbb{tr}M)^2 - t
+&= \lambda_1 \lambda_2 - \alpha (\lambda_1 + \lambda_2)^2 - t \\
+&= \det{M} - \alpha (\mathbb{tr}M)^2 - t \\
+&= (\mathcal{F}(I_x^2) \mathcal{F}(I_y^2) - \mathcal{F}(I_x I_y)^2)
+- \alpha (\mathcal{F}(I_x^2) + \mathcal{F}(I_y^2))^2 - t
+\end{aligned}
 $$
 即为 Harris 响应。若 $\theta$ 大且为正则为角点；若 $\theta$ 负并且绝对值大则为边缘；若 $\theta$ 接近 0 则为平坦区域。
 
-**注**：其中 $\alpha$，$t$ 均为超参数
-
-#### Window Function
-
-两类窗口：
-
-- Rectangle window：窗函数对窗内均匀加权，不具旋转不变性。
-- Gaussian window：用高斯核加权，具有旋转不变性和平滑性。
-
-其中高斯窗口：
-$$
-g_\sigma(x,y) = \frac{1}{2\pi\sigma^2} \exp \big(-\frac{x^2+y^2}{2\sigma^2}\big)
-$$
+**注**：其中 $\alpha, \; t$ 均为超参数。
 
 #### Step of Harris
 
@@ -354,20 +476,111 @@ Harris Detector 在实际实现中通常步骤为：
 
 #### Equivariance & Invariance
 
-- 概念区分：
-  - Equivariance（等变）：若对输入做变换 $T$，输出也按某方式变化：$T[f(X)] = f(T(X))$。例如像素坐标平移会导致检测结果平移（等变）。
-  - Invariance（不变）：若对输入做变换 $T$，输出不变：$f(X) = f(T(X))$。
-- Harris Detector 的性质：
-  - 对图像平移（Translation）和图像旋转（Rotation）是等变（equivariant）：即检测到的角点在经过平移/旋转后会相应地平移/旋转到新位置（检测器依旧能检测到）。
-  - 对尺度（Scale）不具不变性（not scale-invariant）：尺度改变会导致角点检测结果变化（需要使用尺度不变检测器，如 SIFT 的 DoG 检测）。
-- PPT 中对等变/不变的形式写法：
-  - 若 $T$ 是变换，$f$ 是检测函数，
-    - 等变：$T[f(X)] = f(T(X))$。
-    - 不变：$f(X) = f(T(X))$。
+设输入信号空间 $\mathbb{V}$，输出表示空间 $\mathbb{W}$，信号检测函数 $f: \mathbb{V} \rightarrow \mathbb{W}$。
 
-- Q: “Harris 为什么对尺度不不变？”  
-  A: 因为窗口大小与滤波尺度固定，若图像缩放，窗口覆盖不同的结构尺度，M 的统计会变化，从而影响 R。
-- Q: “非极大值抑制窗口应多大？”  
-  A: 常见是 3×3 或 5×5，窗口大小依关键点密度与精度要求选择；太大可能抑制真实邻近角点，太小可能导致密集重复点。
-- Q: “Harris 能不能直接替代 SIFT 的关键点检测？”  
-  A: 不行。Harris 主要对旋转和平移等变，但对尺度变化敏感；若需要尺度不变性，应使用 SIFT 的 DoG（Difference of Gaussians）或 SURF 等多尺度检测方法。
+记 $\mathcal{T}$ 为抽象变换集合（如平移 5 像素、旋转 $\pi/2$）。对每个 $\tau \in \mathcal{T}$，同时定义：
+
+- $T_{\mathbb{V}}^{(\tau)}: \mathbb{V} \rightarrow \mathbb{V}$（$\tau$ 在输入空间的实现）
+- $T_{\mathbb{W}}^{(\tau)}: \mathbb{W} \rightarrow \mathbb{W}$（$\tau$ 在输出空间的实现）
+
+**Equivariance**（等变性）：对输入信号做变换，输出表示也同样变换。
+$$
+T_{\mathbb{W}}^{(\tau)}[f(X)] = f(T_{\mathbb{V}}^{(\tau)}(X)), \quad \forall \tau \in \mathcal{T}
+$$
+
+**Invariance**（不变性）：对输入信号做变换，输出表示不变。
+$$
+f(X) = f(T_{\mathbb{V}}^{(\tau)}(X)), \quad \forall \tau \in \mathcal{T}
+$$
+
+**注**：上述性质都是检测函数 $f$ 的。
+
+**Harris Detector 的性质**：
+
+记输入图像为 $A \in \mathbb{R}^{n \times n}$。
+
+$$
+M(x_0,y_0)
+=
+\begin{bmatrix}
+\mathcal{F}^{(x_0, y_0)}(I_x^2) & \mathcal{F}^{(x_0, y_0)}(I_x I_y) \\
+\mathcal{F}^{(x_0, y_0)}(I_x I_y) & \mathcal{F}^{(x_0, y_0)}(I_y^2)
+\end{bmatrix}
+$$
+
+$$
+\theta
+= (\mathcal{F}(I_x^2) \mathcal{F}(I_y^2) - \mathcal{F}(I_x I_y)^2)
+- \alpha (\mathcal{F}(I_x^2) + \mathcal{F}(I_y^2))^2 - t
+$$
+
+$$
+\Theta(A) = [\theta(i, j)] \in \mathbb{R}^{n \times n}
+$$
+
+以下的讨论不考虑边缘处。
+
+- **所有**的 $\Theta$ 对图像**平移（Translation）等变**：
+
+  记 $T_{u, v}$ 表示平移 $(u, v)$ 个像素，也即 $(T_{u,v}(A))_{x, y} = A_{x-u, y-v}$。则有：
+  $$
+  T_{u, v}(\Theta(A)) = \Theta(T_{u, v}(A))
+  $$
+
+  **证明**：
+
+  只需证明以下三个引理，具体证略。
+
+  - 平移与梯度可交换
+    $$
+    T_{u,v}\left(\frac{\partial A}{\partial x}\right)
+    = \frac{\partial T_{u,v}(A)}{\partial x}, \quad
+    T_{u,v}\left(\frac{\partial A}{\partial y}\right)
+    = \frac{\partial T_{u,v}(A)}{\partial y}
+    $$
+  - 平移与代数运算可交换
+    $$
+    T_{u,v}(A \cdot B) = T_{u,v}(A) \cdot T_{u,v}(B)
+    $$
+  - 平移与卷积可交换
+    $$
+    T_{u,v}(g * A) = g * T_{u,v}(A)
+    $$
+
+- **各向同性（Isotropic）** 的 filter 产生的 $\Theta$ 对**图像旋转（Rotation）等变**：
+
+  记 $R_\phi$ 表示图像旋转 $\phi$ 角度，即 $(R_\phi(A))_{x,y} = A_{x',y'}$，其中 $(x', y')$ 是 $(x,y)$ 旋转 $-\phi$ 后的坐标。
+  filter 为各向同性的核 $g$。
+  则有：
+  $$
+  R_\phi(\Theta(A)) = \Theta(R_\phi(A))
+  $$
+
+  **证明**：
+
+  只需证明以下三个引理，具体证略。
+
+  - 旋转与梯度可交换
+    $$
+    R_\phi\left(\frac{\partial A}{\partial x}\right)
+    = \frac{\partial R_\phi(A)}{\partial x'}, \quad
+    R_\phi\left(\frac{\partial A}{\partial y}\right)
+    = \frac{\partial R_\phi(A)}{\partial y'}
+    $$
+  - 旋转与代数运算可交换
+    $$
+    R_\phi(A \cdot B) = R_\phi(A) \cdot R_\phi(B)
+    $$
+  - 旋转与卷积可交换
+    $$
+    R_\phi(g * A) \approx g * R_\phi(A)
+    $$
+
+  **注**：
+  - 约等于是因为在像素网格中考虑，旋转后必须采用插值方式计算像素值。
+  - kernel 的 rotation **invariant** 对应于 kernel convolution 的 rotation **equivariant**。
+
+- 对**尺度（Scale）不等变**：
+  放大缩小 viewpoint 会导致角点检测结果变化。
+  
+  **注**：SIFT 的 DoG 检测或 SURF 等是尺度不变的。
