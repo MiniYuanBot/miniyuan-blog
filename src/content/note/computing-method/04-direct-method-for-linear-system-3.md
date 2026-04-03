@@ -88,6 +88,54 @@ $$
 **注（等价性的意义）**：  
 序列收敛性不依赖于具体范数选择。在数值分析中，可根据计算便利选择范数（如 $\infty$-范数易计算，2-范数有几何直观）。
 
+### 向量范数的可逆变换
+
+设 $\|\cdot\|$ 是 $\mathbb{R}^n$ 上的一个向量范数，$\mathbf{M} \in \mathbb{R}^{n \times n}$ 可逆，则如下定义的映射：
+
+$$
+\|\mathbf{x}\|_{\mathbf{M}} := \|\mathbf{M}^{-1}\mathbf{x}\|
+$$
+
+也是 $\mathbb{R}^n$ 上的范数。
+
+**证明**：
+
+1. **正定性**：
+   $\|\mathbf{x}\|_{\mathbf{M}} \geq 0$ 显然。
+
+   若 $\|\mathbf{x}\|_{\mathbf{M}} = 0$，则
+   $$
+   \|\mathbf{M}^{-1}\mathbf{x}\| = 0
+   \Rightarrow \mathbf{M}^{-1}\mathbf{x} = \mathbf{0}
+   \Rightarrow \mathbf{x} = \mathbf{0}
+   $$
+2. **齐次性**：
+   $$
+   \|\alpha\mathbf{x}\|_{\mathbf{M}}
+   = \|\mathbf{M}^{-1}(\alpha\mathbf{x})\|
+   = |\alpha| \cdot \|\mathbf{M}^{-1}\mathbf{x}\|
+   = |\alpha| \cdot \|\mathbf{x}\|_{\mathbf{M}}
+   $$
+3. **三角不等式**：
+   $$
+   \begin{aligned}
+   \|\mathbf{x}+\mathbf{y}\|_{\mathbf{M}}
+   &= \|\mathbf{M}^{-1}\mathbf{x} + \mathbf{M}^{-1}\mathbf{y}\| \\
+   &\leq \|\mathbf{M}^{-1}\mathbf{x}\| + \|\mathbf{M}^{-1}\mathbf{y}\| \\
+   &= \|\mathbf{x}\|_{\mathbf{M}} + \|\mathbf{y}\|_{\mathbf{M}}
+   \end{aligned}
+   $$
+
+**几何直观**：
+
+原范数 $\|\cdot\|$ 的单位球是 $\{\mathbf{x} : \|\mathbf{x}\| \leq 1\}$，经 $\mathbf{M}^{-1}$ 变换后得到：
+$$
+\{\mathbf{M}^{-1}\mathbf{x} : \|\mathbf{x}\| \leq 1\} = \{\mathbf{y} : \|\mathbf{M}\mathbf{y}\| \leq 1\}
+$$
+这正是新范数 $\|\cdot\|_{\mathbf{M}}$ 的单位球。可逆线性变换将凸对称体映为凸对称体，因此保持范数结构。
+
+**应用**：常通过可逆变换将复杂范数转化为简单范数（如 $\|\cdot\|_\infty$）进行估计。例如[范数逼近引理](/note/computing-method/05-iterative-method-for-linear-system-1/#两个引理)中的构造。
+
 ---
 
 ## 矩阵范数
@@ -322,6 +370,43 @@ $$
 
 **注（本质）**：
 有限维线性空间上，任意两个范数等价。
+
+### 矩阵范数的相似变换
+
+设 $\|\cdot\|_v$ 是 $\mathbb{R}^n$ 上的向量范数，$\|\cdot\|_m$ 是由其诱导的矩阵范数：
+
+$$
+\|\mathbf{A}\|_m = \max_{\|\mathbf{x}\|_v = 1} \|\mathbf{A}\mathbf{x}\|_v
+$$
+
+对任意可逆矩阵 $\mathbf{M} \in \mathbb{R}^{n \times n}$，定义新的向量范数：
+
+$$
+\|\mathbf{x}\|_v' := \|\mathbf{M}^{-1}\mathbf{x}\|_v
+$$
+
+则 $\|\cdot\|_v'$ 诱导范数为：
+
+$$
+\|\mathbf{A}\|_m' = \|\mathbf{M}^{-1}\mathbf{A}\mathbf{M}\|_m
+$$
+
+**证明**：
+
+由诱导范数定义和变量替换 $\mathbf{y} = \mathbf{M}^{-1}\mathbf{x}$：
+
+$$
+\begin{aligned}
+\|\mathbf{A}\|_m' &= \max_{\|\mathbf{x}\|_v' = 1} \|\mathbf{A}\mathbf{x}\|_v' \\
+&= \max_{\|\mathbf{M}^{-1}\mathbf{x}\|_v = 1} \|\mathbf{M}^{-1}\mathbf{A}\mathbf{x}\|_v \\
+&= \max_{\|\mathbf{y}\|_v = 1} \|\mathbf{M}^{-1}\mathbf{A}\mathbf{M}\mathbf{y}\|_v \\
+&= \|\mathbf{M}^{-1}\mathbf{A}\mathbf{M}\|_m
+\end{aligned}
+$$
+
+**注**：该性质表明，通过改变坐标系的度量，原矩阵的新范数等价于相似变换后新矩阵的原范数。
+
+**应用**：下一节课的[范数逼近引理](/note/computing-method/05-iterative-method-for-linear-system-1/#两个引理)。
 
 ### 谱半径
 

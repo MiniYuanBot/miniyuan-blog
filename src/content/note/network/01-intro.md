@@ -83,13 +83,13 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 **客户端流程**：
 
-```code
+```plaintext
 socket() → getaddrinfo() → connect() [阻塞] → send() → recv() [阻塞] → close()
 ```
 
 **服务器端流程**：
 
-```code
+```plaintext
 socket() → getaddrinfo() → bind() → listen() → accept() [阻塞] → recv() → send() → close()
 ```
 
@@ -179,7 +179,7 @@ socket() → getaddrinfo() → bind() → listen() → accept() [阻塞] → rec
 
 综合OSI和TCP/IP的优点，采用**五层协议体系结构**：
 
-```code
+```plaintext
 +---------------------+
 |  5  Application     |  ← HTTP, FTP, SMTP, DNS
 +---------------------+
@@ -215,7 +215,7 @@ socket() → getaddrinfo() → bind() → listen() → accept() [阻塞] → rec
 
 **发送端（自上而下封装）**：
 
-```code
+```plaintext
 应用层数据
 ↓ + 应用层首部 = 应用层PDU
 传输层
@@ -231,7 +231,7 @@ socket() → getaddrinfo() → bind() → listen() → accept() [阻塞] → rec
 
 **接收端（自下而上解封装）**：
 
-```code
+```plaintext
 比特流
 ↓ 去除物理层信号
 数据链路层
