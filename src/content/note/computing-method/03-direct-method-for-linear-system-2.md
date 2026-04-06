@@ -1,5 +1,5 @@
 ---
-title: '解线性方程组的直接法（LU 分解、对称正定矩阵）'
+title: '解线性方程组的直接法（LU 分解、Cholesky 分解）'
 excerpt: '26 春 计算方法 L03'
 author: 'miniyuan'
 position: 'Beijing'
