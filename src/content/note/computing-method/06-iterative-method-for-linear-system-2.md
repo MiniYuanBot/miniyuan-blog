@@ -6,363 +6,618 @@ position: 'Beijing'
 tags:
 - '计算方法'
 - '线性方程组'
-pubDate: 'April 02 2026'
+pubDate: 'April 07 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-## 解线性方程组的迭代法：最速下降法与共轭梯度法
+## 迭代法的一般框架
 
-本讲义系统介绍了求解对称正定线性方程组 $Ax = b$ 的两类重要迭代法：**最速下降法**（Steepest Descent Method）与**共轭梯度法**（Conjugate Gradient Method）。二者均源于将线性方程组求解问题转化为二次函数极小化问题，并通过设计搜索方向与步长以加速收敛。核心思想是利用残差信息构造高效迭代格式，特别适用于大型稀疏矩阵系统。
+### Richardson 方法
 
----
-
-### 迭代法的统一框架：Richardson 方法
-
-#### 一般迭代格式
-
-对于线性方程组 $Ax = b$，将系数矩阵分解为：
+对于线性方程组 $\mathbf{A}\mathbf{x} = \mathbf{b}$，将系数矩阵分解为：
 $$
-A = P - Q
+\mathbf{A} = \mathbf{P} - \mathbf{Q}
 $$
-其中 $P$ 为可逆矩阵（通常取为 $A$ 的某种近似或对角/三角部分），则可建立迭代格式：
+其中 $\mathbf{P}$ 为可逆矩阵，则可建立迭代格式：
 $$
-Px^{(k+1)} = Qx^{(k)} + b \quad \Rightarrow \quad x^{(k+1)} = Mx^{(k)} + g
+\mathbf{P}\mathbf{x}^{(k+1)} = \mathbf{Q}\mathbf{x}^{(k)} + \mathbf{b} \quad
+\Rightarrow \quad \mathbf{x}^{(k+1)} = \mathbf{M}\mathbf{x}^{(k)} + \mathbf{g}
 $$
-其中：
-
-- $M = P^{-1}Q$ 为迭代矩阵，
-- $g = P^{-1}b$ 为常数项.
+其中 $\mathbf{M} = \mathbf{P}^{-1}\mathbf{Q}$ 为迭代矩阵，$\mathbf{g} = \mathbf{P}^{-1}\mathbf{b}$ 为常数项。
 
 进一步改写为：
 $$
-x^{(k+1)} = x^{(k)} + P^{-1}(b - Ax^{(k)}) = x^{(k)} + P^{-1}r^{(k)}
-\tag{6.3}
+\mathbf{x}^{(k+1)}
+= \mathbf{x}^{(k)} + \mathbf{P}^{-1}(\mathbf{b} - \mathbf{A}\mathbf{x}^{(k)})
+= \mathbf{x}^{(k)} + \mathbf{P}^{-1}\mathbf{r}^{(k)}
 $$
 其中 **残差向量** 定义为：
 $$
-r^{(k)} \equiv b - Ax^{(k)}
-\tag{6.2}
+\mathbf{r}^{(k)} \equiv \mathbf{b} - \mathbf{A}\mathbf{x}^{(k)}
 $$
 
 引入松弛因子 $\omega^{(k)}$，得到更一般的 **Richardson 迭代格式**：
 $$
-x^{(k+1)} = x^{(k)} + \omega^{(k)} P^{-1} r^{(k)}
-\tag{6.4}
+\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} + \omega^{(k)} \mathbf{P}^{-1} \mathbf{r}^{(k)}
 $$
 
-#### 分类
+### Richardson 方法分类
 
 - **平稳 Richardson 方法**：$\omega^{(k)} \equiv \omega$ 为常数（如 Jacobi、Gauss-Seidel、SOR 方法）；
 - **非平稳 Richardson 方法**：$\omega^{(k)}$ 依赖于迭代步 $k$（如最速下降法、共轭梯度法）。
 
-**注**：本讲聚焦于 $A$ 对称正定的情形，此时可将求解 $Ax = b$ 严格等价为极小化二次函数问题，为最速下降与共轭梯度法提供理论基础
+**注**：
 
----
+本讲聚焦于 $\mathbf{A}$ 对称正定的情形，此时可将求解 $\mathbf{A}\mathbf{x} = \mathbf{b}$ 严格等价为极小化二次函数问题，从而可以使用最速下降与共轭梯度法。
 
-### 二次函数极值问题与等价转化
+对于一般的方程 $\mathbf{A} \mathbf{x} = \mathbf{b}$，
+转化为 $\mathbf{A}^\top \mathbf{A} \mathbf{x} = \mathbf{A}^\top \mathbf{b}$ 即可同理求解。
 
-#### 问题等价性
+### 二次函数极值等价性
 
-设 $A \in \mathbb{R}^{n \times n}$ 为对称正定矩阵，则求解线性方程组 $Ax = b$ 等价于求解如下二次函数的极小值问题：
+设 $\mathbf{A} \in \mathbb{R}^{n \times n}$ 为对称正定矩阵，则求解线性方程组 $\mathbf{A}\mathbf{x} = \mathbf{b}$ 等价于求解如下二次函数的极小值问题：
 $$
-\phi(x) = \frac{1}{2} x^T A x - b^T x
-\tag{6.5}
+\phi(\mathbf{x}) = \frac{1}{2} \mathbf{x}^\top \mathbf{A} \mathbf{x} - \mathbf{b}^\top \mathbf{x}
 $$
 
-**定理 6.1**（极小值点等价性）  
-若 $A$ 对称正定，则 $\phi(x)$ 有唯一极小值点 $x^*$，且满足 $\nabla \phi(x^*) = 0 \Leftrightarrow Ax^* = b$。
+**证明**：
 
-#### 向量空间结构
+只需证明 $\phi(\mathbf{x})$ 的极小值点 $\mathbf{x}^*$ $\Leftrightarrow$ $\mathbf{A}\mathbf{x} = \mathbf{b}$ 的解 $\mathbf{x}^*$。
 
-为简化表达，引入以下记号：
+- $\Leftarrow$ 方向：
+
+    事实上，对任意向量 $\mathbf{x}, \mathbf{y} \in \mathbb{R}^n$，我们有如下恒等式：
+    $$
+    \frac{1}{2} \mathbf{x}^\top \mathbf{A} \mathbf{x} - \mathbf{b}^\top \mathbf{x}
+    = \frac{1}{2} (\mathbf{x} - \mathbf{y})^\top \mathbf{A} (\mathbf{x} - \mathbf{y})
+    - \frac{1}{2} \mathbf{y}^\top \mathbf{A} \mathbf{y}
+    + (\mathbf{A}\mathbf{y} - \mathbf{b})^\top \mathbf{x}
+    $$
+
+    对于 $\mathbf{A}\mathbf{x} = \mathbf{b}$ 的解 $\mathbf{x}^*$，在恒等式中取 $\mathbf{y} = \mathbf{x}^*$ 得：
+    $$
+    \phi(\mathbf{x})
+    = \frac{1}{2} (\mathbf{x} - \mathbf{x}^*)^\top \mathbf{A} (\mathbf{x}
+    - \mathbf{x}^*) - \frac{1}{2} (\mathbf{x}^*)^\top \mathbf{A} \mathbf{x}^*
+    $$
+    显然最小值点即为 $\mathbf{x} = \mathbf{x}^*$。
+
+- $\Rightarrow$ 方向：
+
+    设 $\mathbf{x}^*$ 是 $\phi(\mathbf{x})$ 的极小值点。由于 $\phi$ 可微，极小值点处梯度必为零：
+    $$
+    \nabla \phi(\mathbf{x}^*) = \mathbf{A} \mathbf{x}^* - \mathbf{b} = \mathbf{0}
+    $$
+
+    也即 $\mathbf{A} \mathbf{x}^* = \mathbf{b}$，因此 $\mathbf{x}^*$ 是原方程的解。
+
+**注**：
+
+若记误差向量为 $\mathbf{e} = \mathbf{x} - \mathbf{x}^*$，则我们有
+$$
+\phi(\mathbf{x}) = \frac{1}{2}\|\mathbf{e}\|_{\mathbf{A}} + C
+$$
+后续会用到。
+
+### 向量空间记号约定
+
+为简化表达，引入以下记号，其中 $\mathbf{A}$ 为对称正定阵：
 
 - **标准内积**：
-  $$
-  \langle x, y \rangle \equiv x^T y
-  \tag{6.6}
-  $$
+    $$
+    \langle \mathbf{x}, \mathbf{y} \rangle \equiv \mathbf{x}^\top \mathbf{y}
+    $$
 
 - **A-双线性形式（A-内积）**：
-  $$
-  B(x, y) \equiv x^T A y = \langle x, A y \rangle = \langle A x, y \rangle
-  \tag{6.7}
-  $$
-  > **注**：因 $A$ 对称正定，$B(\cdot,\cdot)$ 是 $\mathbb{R}^n$ 上的内积。
+    $$
+    B(\mathbf{x}, \mathbf{y}) \equiv \mathbf{x}^\top \mathbf{A} \mathbf{y}
+    = \langle \mathbf{x}, \mathbf{A} \mathbf{y} \rangle
+    = \langle \mathbf{A} \mathbf{x}, \mathbf{y} \rangle
+    $$
+    **注**：因 $\mathbf{A}$ 对称正定，$B(\cdot,\cdot)$ 是 $\mathbb{R}^n$ 上的内积。
 
 - **A-范数**：
-  $$
-  \|x\|_A \equiv \sqrt{B(x, x)} = \sqrt{x^T A x}
-  \tag{6.8}
-  $$
+    $$
+    \|\mathbf{x}\|_\mathbf{A} \equiv \sqrt{B(\mathbf{x}, \mathbf{x})} = \sqrt{\mathbf{x}^\top \mathbf{A} \mathbf{x}}
+    $$
 
 于是目标函数可简写为：
 $$
-\phi(x) = \frac{1}{2} B(x, x) - \langle b, x \rangle
-\tag{6.9}
+\phi(\mathbf{x}) = \frac{1}{2} B(\mathbf{x}, \mathbf{x}) - \langle \mathbf{b}, \mathbf{x} \rangle
 $$
 
-**几何意义**：$\phi(x)$ 是一个开口向上的抛物面（椭球面），其等高线为 $A$-椭球；最小值点即为“谷底”。
+**几何意义**：$\phi(\mathbf{x})$ 是一个开口向上的抛物面（椭球面），其等高线为 $A$-椭球。
 
 ---
 
-## 最速下降法（Steepest Descent Method）
+## 最速下降法
 
 最速下降法是梯度下降法在二次函数情形下的具体实现，其核心思想是在每一步沿**当前点处函数下降最快的方向**（即负梯度方向）进行一维搜索。
 
-### 方法原理
-
-设当前迭代点为 $x^{(k)}$，搜索方向为 $p^{(k)}$，步长为 $\alpha^{(k)}$，则：
+设当前迭代点为 $\mathbf{x}^{(k)}$，搜索方向为 $\mathbf{p}^{(k)}$，步长为 $\alpha^{(k)}$，则：
 $$
-x^{(k+1)} = x^{(k)} + \alpha^{(k)} p^{(k)}
-\tag{6.10}
+\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} + \alpha^{(k)} \mathbf{p}^{(k)}
 $$
 其中 $\alpha^{(k)}$ 满足：
 $$
-\phi(x^{(k)} + \alpha^{(k)} p^{(k)}) = \min_{\alpha \in \mathbb{R}} \phi(x^{(k)} + \alpha p^{(k)})
-\tag{6.11}
+\begin{aligned}
+\alpha^{(k)}
+&= \argmin_{\alpha \in \mathbb{R}} \phi(\mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)}) \\
+&= \argmin_{\alpha \in \mathbb{R}} \|\mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)} - \mathbf{x}^*\|_{\mathbf{A}}
+\end{aligned}
 $$
 
-#### 1. 步长 $\alpha^{(k)}$ 的确定
+### 搜索方向的确定
+
+函数 $\phi(\mathbf{x})$ 在 $\mathbf{x}^{(k)}$ 处的梯度为：
+$$
+\nabla \phi(\mathbf{x}^{(k)}) = \mathbf{A} \mathbf{x}^{(k)} - \mathbf{b} = -\mathbf{r}^{(k)}
+$$
+由于**负梯度方向即为下降最快方向**，故取搜索方向为：
+$$
+\mathbf{p}^{(k)} = -\nabla \phi(\mathbf{x}^{(k)}) = \mathbf{r}^{(k)}
+$$
+
+### 步长的确定
 
 定义单变量函数：
 $$
-f^{(k)}(\alpha) = \phi(x^{(k)} + \alpha p^{(k)})
+f^{(k)}(\alpha) = \phi(\mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)})
 $$
-代入 $\phi(x)$ 表达式（6.9）并展开，利用 $r^{(k)} = b - A x^{(k)}$，得：
+展开得：
 $$
-f^{(k)}(\alpha) = \phi(x^{(k)}) - \alpha \langle r^{(k)}, p^{(k)} \rangle + \frac{1}{2} \alpha^2 B(p^{(k)}, p^{(k)})
+\begin{aligned}
+f^{(k)}(\alpha)
+&= \frac{1}{2} B(\mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)}, \mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)})
+- \langle \mathbf{b}, \mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)} \rangle \\
+&= \frac{1}{2} \left[ B(\mathbf{x}^{(k)},\mathbf{x}^{(k)}) + 2\alpha B(\mathbf{x}^{(k)},\mathbf{p}^{(k)})
++ \alpha^2 B(\mathbf{p}^{(k)},\mathbf{p}^{(k)}) \right] \\
+&\quad - \langle \mathbf{b}, \mathbf{x}^{(k)} \rangle - \alpha \langle \mathbf{b}, \mathbf{p}^{(k)} \rangle \\
+&= \phi(\mathbf{x}^{(k)}) + \alpha B(\mathbf{x}^{(k)},\mathbf{p}^{(k)})
++ \frac{\alpha^2}{2} B(\mathbf{p}^{(k)},\mathbf{p}^{(k)}) - \alpha \langle \mathbf{b}, \mathbf{p}^{(k)} \rangle \\
+&= \phi(\mathbf{x}^{(k)}) - \alpha \langle \mathbf{r}^{(k)}, \mathbf{p}^{(k)} \rangle
++ \frac{\alpha^2}{2} B(\mathbf{p}^{(k)}, \mathbf{p}^{(k)})
+\end{aligned}
 $$
 
 这是一个关于 $\alpha$ 的二次函数，其最小值点为：
 $$
-\alpha^{(k)} = \frac{ \langle r^{(k)}, p^{(k)} \rangle }{ B(p^{(k)}, p^{(k)}) }
-= \frac{ (r^{(k)})^T p^{(k)} }{ (p^{(k)})^T A p^{(k)} }
-\tag{6.14}
+\alpha^{(k)}
+= \frac{ \langle \mathbf{r}^{(k)}, \mathbf{p}^{(k)} \rangle }{ B(\mathbf{p}^{(k)}, \mathbf{p}^{(k)}) }
+= \frac{ (\mathbf{r}^{(k)})^\top \mathbf{p}^{(k)} }{ (\mathbf{p}^{(k)})^\top \mathbf{A} \mathbf{p}^{(k)} }
 $$
 
-#### 2. 搜索方向 $p^{(k)}$ 的确定
-
-函数 $\phi(x)$ 在 $x^{(k)}$ 处的梯度为：
+代入 $\mathbf{p}^{(k)} = \mathbf{r}^{(k)}$ 得：
 $$
-\nabla \phi(x^{(k)}) = A x^{(k)} - b = -r^{(k)}
-\tag{6.15–6.16}
-$$
-因此，**负梯度方向即为下降最快方向**，取：
-$$
-p^{(k)} = -\nabla \phi(x^{(k)}) = r^{(k)}
-\tag{6.16}
+\alpha^{(k)} = \frac{ \|\mathbf{r}^{(k)}\|_2^2 }{ (\mathbf{r}^{(k)})^\top \mathbf{A} \mathbf{r}^{(k)} }
 $$
 
-代入步长公式（6.14）得：
+### 残差正交性
+
+最速下降法具有相邻残差正交的性质，也即：
 $$
-\alpha^{(k)} = \frac{ \langle r^{(k)}, r^{(k)} \rangle }{ B(r^{(k)}, r^{(k)}) }
-= \frac{ \|r^{(k)}\|_2^2 }{ (r^{(k)})^T A r^{(k)} }
-\tag{6.17}
+\langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k)} \rangle  = 0, \quad \forall k \ge 1
 $$
 
-最终迭代公式为：
-$$
-x^{(k+1)} = x^{(k)} + \alpha^{(k)} r^{(k)}
-\tag{6.18}
-$$
-
-#### 3. 残差正交性
-
-最速下降法具有重要性质：**相邻残差正交**：
-$$
-\langle r^{(k-1)}, r^{(k)} \rangle = 0, \quad \forall k \ge 1
-\tag{6.19}
-$$
-
-**证明**（简略）：
+**证明**：
 $$
 \begin{aligned}
-\langle r^{(k-1)}, r^{(k)} \rangle
-&= \langle r^{(k-1)}, b - A(x^{(k-1)} + \alpha^{(k-1)} r^{(k-1)}) \rangle \\
-&= \langle r^{(k-1)}, r^{(k-1)} - \alpha^{(k-1)} A r^{(k-1)} \rangle \\
-&= \|r^{(k-1)}\|_2^2 - \alpha^{(k-1)} (r^{(k-1)})^T A r^{(k-1)} \\
-&= \|r^{(k-1)}\|_2^2 - \frac{ \|r^{(k-1)}\|_2^2 }{ (r^{(k-1)})^T A r^{(k-1)} } \cdot (r^{(k-1)})^T A r^{(k-1)} = 0
+\langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k)} \rangle
+&= \langle \mathbf{r}^{(k-1)}, \mathbf{b} - \mathbf{A}(\mathbf{x}^{(k-1)} + \alpha^{(k-1)} \mathbf{r}^{(k-1)}) \rangle \\
+&= \langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k-1)} - \alpha^{(k-1)} \mathbf{A} \mathbf{r}^{(k-1)} \rangle \\
+&= \|\mathbf{r}^{(k-1)}\|_2^2 - \alpha^{(k-1)} (\mathbf{r}^{(k-1)})^\top \mathbf{A} \mathbf{r}^{(k-1)} \\
+&= \|\mathbf{r}^{(k-1)}\|_2^2
+- \frac{ \|\mathbf{r}^{(k-1)}\|_2^2 }{ (\mathbf{r}^{(k-1)})^\top \mathbf{A} \mathbf{r}^{(k-1)} }
+\cdot (\mathbf{r}^{(k-1)})^\top \mathbf{A} \mathbf{r}^{(k-1)} \\
+&= 0
 \end{aligned}
 $$
 
-> **注**：该性质仅对相邻步成立；非相邻步一般不正交（如 $\langle r^{(k-1)}, r^{(k+1)} \rangle \ne 0$），这是最速下降法收敛较慢的根本原因。
+**注**：该性质仅对相邻步成立；非相邻步一般不正交，这是最速下降法收敛较慢的根本原因（可能出现锯齿状）。
 
-### 算法步骤
+### 最速下降法代码
 
-**算法 6.1：最速下降法**
+**初始化**：给定初值 $\mathbf{x}^{(0)}$，计算残差 $\mathbf{r}^{(0)} = \mathbf{b} - \mathbf{A} \mathbf{x}^{(0)}$
 
-1. **初始化**：给定初值 $x^{(0)}$，计算残差 $r^{(0)} = b - A x^{(0)}$
-2. **循环**（$k = 0, 1, 2, \dots$）：
-   - 计算 $t = A r^{(k)}$
-   - 计算步长：$\alpha^{(k)} = \dfrac{ \langle r^{(k)}, r^{(k)} \rangle }{ \langle r^{(k)}, t \rangle }$
-   - 更新解：$x^{(k+1)} = x^{(k)} + \alpha^{(k)} r^{(k)}$
-   - 更新残差：$r^{(k+1)} = r^{(k)} - \alpha^{(k)} t$
-   - 若 $\|r^{(k+1)}\|_2 < \varepsilon$，终止；否则 $k \leftarrow k+1$
+**循环**：
 
-> **计算代价**：每步需 1 次矩阵-向量乘法 $A r^{(k)}$。若 $A$ 稀疏，则成本为 $O(\text{nnz}(A))$。
+- 计算 $\mathbf{t} = \mathbf{A} \mathbf{r}^{(k)}$
+- 计算步长：
+    $\alpha^{(k)} = \dfrac{ \langle \mathbf{r}^{(k)}, \mathbf{r}^{(k)} \rangle }
+    { \langle \mathbf{r}^{(k)}, \mathbf{t} \rangle }$
+- 更新解：$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} + \alpha^{(k)} \mathbf{r}^{(k)}$
+- 更新残差：$\mathbf{r}^{(k+1)} = \mathbf{r}^{(k)} - \alpha^{(k)} \mathbf{t}$
+- 若 $\|\mathbf{r}^{(k+1)}\|_2 < \varepsilon$，终止；否则继续循环
 
-### 收敛性分析
+```python
+k = 0
+r = b - A @ x
+while k < N:
+    t = A @ r
+    alpha = np.dot(r, r) / np.dot(r, t)  # 步长
+    x += alpha * r                       # 更新解
+    r -= alpha * t                       # 更新残差
+    if np.linalg.norm(r) < EPS:
+        break
+    k += 1
+```
 
-#### 特征值依赖的收敛速率
+**复杂度分析**：主要代价来自矩阵-向量乘法 $\mathbf{A} \mathbf{r}^{(k)}$。若 $\mathbf{A}$ 稀疏，则成本为 $\mathcal{O}(\text{nnz}(\mathbf{A}))$。  
 
-设 $A$ 的特征值满足 $0 < \lambda_1 \le \lambda_2 \le \cdots \le \lambda_n$，定义条件数 $\kappa(A) = \lambda_n / \lambda_1$。
+### 最速下降法收敛性分析
 
-**定理 6.3**（最速下降法误差估计）  
-对任意初始值 $x^{(0)}$，有：
+**引理**：设正定对称矩阵 $\mathbf{A} \in \mathbb{R}^{n \times n}$ 的特征值为 $0 < \lambda_1 \leqslant \cdots \leqslant \lambda_n$，
+$P(t)$ 是一个关于 $t$ 的多项式，则有：
 $$
-\|x^{(k)} - x^*\|_A \le \left( \frac{ \lambda_n - \lambda_1 }{ \lambda_n + \lambda_1 } \right)^k \|x^{(0)} - x^*\|_A
-= \left( \frac{ \kappa(A) - 1 }{ \kappa(A) + 1 } \right)^k \|x^{(0)} - x^*\|_A
-\tag{6.22}
+\|P(\mathbf{A})\mathbf{x}\|_{\mathbf{A}}
+\leqslant \max_{1 \leqslant i \leqslant n}|P(\lambda_i)|\|\mathbf{x}\|_{\mathbf{A}}, \quad \mathbf{x} \in \mathbb{R}^n
 $$
 
-**关键结论**：
+**引理的证明**：
 
-- 收敛速率由条件数 $\kappa(A)$ 决定；
-- 当 $\kappa(A) \gg 1$（如高长宽比椭球），收敛极慢（“之”字形路径）；
-- 理论上最多 $n$ 步精确收敛（因残差在 $n$ 维空间中正交），但实践中因舍入误差难以达到。
+由于 $\mathbf{A}$ 是正定对称矩阵，根据谱定理，存在正交矩阵 $\mathbf{Q}$ 使得：
+$$
+\mathbf{A} = \mathbf{Q}\mathbf{\Lambda}\mathbf{Q}^\top
+$$
 
-#### 数值实验对比（讲义表）
+其中 $\mathbf{\Lambda} = \mathrm{diag}(\lambda_1, \lambda_2, \ldots, \lambda_n)$，
+且 $0 < \lambda_1 \leqslant \lambda_2 \leqslant \cdots \leqslant \lambda_n$。
 
-| $n$   | 误差        | 迭代步数 | CPU 时间 (s) |
-|-------|-------------|----------|--------------|
-| 200   | $7.3 \times 10^{-13}$ | 34       | 0.00         |
-| 400   | $2.1 \times 10^{-13}$ | 35       | 0.00         |
-| 800   | $1.3 \times 10^{-13}$ | 36       | 0.00         |
-| 1600  | $8.6 \times 10^{-14}$ | 37       | 0.0625       |
-| 3200  | $1.3 \times 10^{-13}$ | 38       | 0.3125       |
+对于多项式 $P(t) = a_0 + a_1 t + a_2 t^2 + \cdots + a_m t^m$，有：
+$$
+P(\mathbf{A}) = a_0\mathbf{I} + a_1\mathbf{A} + a_2\mathbf{A}^2 + \cdots + a_m\mathbf{A}^m
+$$
 
-> 可见迭代步数增长极缓（近似常数），但这是由于测试矩阵条件数良好（如单位矩阵或对角矩阵）；若构造病态矩阵（如 Hilbert 矩阵），迭代步数将急剧增加。
+利用 $\mathbf{A} = \mathbf{Q}\mathbf{\Lambda}\mathbf{Q}^\top$，
+可得 $\mathbf{A}^k = \mathbf{Q}\mathbf{\Lambda}^k\mathbf{Q}^\top$，其中 $k = 0, 1, 2, \ldots$
+
+因此：
+$$
+P(\mathbf{A}) = \mathbf{Q}P(\mathbf{\Lambda})\mathbf{Q}^\top
+= \mathbf{Q}\,\mathrm{diag}(P(\lambda_1), P(\lambda_2), \ldots, P(\lambda_n))\,\mathbf{Q}^\top
+$$
+
+$\mathbf{A}$-范数定义为：
+$$
+\|\mathbf{x}\|_{\mathbf{A}} = \sqrt{\mathbf{x}^\top\mathbf{A}\mathbf{x}}
+$$
+
+令 $\mathbf{y} = \mathbf{Q}^\top\mathbf{x}$，即 $\mathbf{x} = \mathbf{Q}\mathbf{y}$。从而：
+$$
+\|\mathbf{x}\|_{\mathbf{A}}^2
+= \mathbf{x}^\top\mathbf{A}\mathbf{x}
+= \mathbf{y}^\top\mathbf{\Lambda}\mathbf{y}
+= \sum_{i=1}^n \lambda_i y_i^2
+$$
+
+$$
+\begin{aligned}
+\|P(\mathbf{A})\mathbf{x}\|_{\mathbf{A}}^2
+&= (P(\mathbf{A})\mathbf{x})^\top \mathbf{A} (P(\mathbf{A})\mathbf{x})
+= \mathbf{x}^\top P(\mathbf{A})^\top \mathbf{A} P(\mathbf{A})\mathbf{x} \\
+&= \mathbf{y}^\top P(\mathbf{\Lambda})\mathbf{\Lambda}P(\mathbf{\Lambda})\mathbf{y}
+= \sum_{i=1}^n \lambda_i [P(\lambda_i)]^2 y_i^2
+\end{aligned}
+$$
+
+设 $M = \max_{1 \leqslant i \leqslant n}|P(\lambda_i)|$，则有：
+$$
+\|P(\mathbf{A})\mathbf{x}\|_{\mathbf{A}}^2 = \sum_{i=1}^n \lambda_i [P(\lambda_i)]^2 y_i^2
+\leqslant M^2 \sum_{i=1}^n \lambda_i y_i^2 = M^2 \|\mathbf{x}\|_{\mathbf{A}}^2
+$$
+
+两边开方即证。
+
+**最速下降法误差估计**：
+
+设 $\mathbf{A}$ 的特征值满足 $0 < \lambda_1 \leqslant \lambda_2 \leqslant \cdots \leqslant \lambda_n$，则对任意初始值 $\mathbf{x}^{(0)}$，有：
+$$
+\|\mathbf{x}^{(k)} - \mathbf{x}^*\|_\mathbf{A} \leqslant
+\left( \frac{ \lambda_n - \lambda_1 }{ \lambda_n + \lambda_1 } \right)^k \|\mathbf{x}^{(0)} - \mathbf{x}^*\|_\mathbf{A}
+$$
+
+**证明**：
+
+设 $\mathbf{x}^*$ 是方程 $\mathbf{A}\mathbf{x} = \mathbf{b}$ 的精确解，定义误差向量 $\mathbf{e}^{(k)} = \mathbf{x}^{(k)} - \mathbf{x}^*$。
+
+则有：
+$$
+\mathbf{r}^{(k)} = \mathbf{b} - \mathbf{A} \mathbf{x}^{(k)} = - \mathbf{A} \mathbf{e}^{(k)}
+$$
+
+从而：
+$$
+\begin{aligned}
+\mathbf{e}^{(k+1)}
+&= \mathbf{x}^{(k+1)} - \mathbf{x}^*
+= \mathbf{x}^{(k)} + \alpha^{(k)} \mathbf{r}^{(k)} - \mathbf{x}^* \\
+&= \mathbf{e}^{(k)} - \alpha^{(k)} \mathbf{A} \mathbf{e}^{(k)}
+= (\mathbf{I} - \alpha^{(k)} \mathbf{A}) \mathbf{e}^{(k)}
+\end{aligned}
+$$
+
+我们还知道 $\alpha^{(k)} = \argmin_{\alpha \in \mathbb{R}} \|\mathbf{e}^{(k+1)}\|_{\mathbf{A}}$，从而：
+$$
+\|\mathbf{e}^{(k+1)}\|_{\mathbf{A}}
+= \|(\mathbf{I} - \alpha^{(k)} \mathbf{A}) \mathbf{e}^{(k)}\|_{\mathbf{A}}
+\leqslant \|(\mathbf{I} - \alpha \mathbf{A}) \mathbf{e}^{(k)}\|_{\mathbf{A}}
+$$
+
+考虑一次多项式 $P(t) = 1 - \alpha t$，则 $P(\mathbf{A}) = \mathbf{I} - \alpha \mathbf{A}$。
+
+根据引理：
+$$
+\|(\mathbf{I} - \alpha \mathbf{A})\mathbf{e}^{(k)}\|_{\mathbf{A}}
+\leqslant \max_{1 \leqslant i \leqslant n}
+|1 - \alpha \lambda_i| \cdot \|\mathbf{e}^{(k)}\|_{\mathbf{A}}
+$$
+
+因此：
+$$
+\|\mathbf{e}^{(k+1)}\|_{\mathbf{A}}
+\leqslant \min_{\alpha \in \mathbb{R}} \max_{1 \leqslant i \leqslant n}|1 - \alpha \lambda_i| \cdot \|\mathbf{e}^{(k)}\|_{\mathbf{A}}
+$$
+
+由于 $\{\lambda_i\}_{i=1}^n \subset [\lambda_1, \lambda_n]$，且 $|1-\alpha \lambda|$ 是 $\lambda$ 的线性函数，其最大值必在区间端点达到：
+$$
+\max_{1 \leqslant i \leqslant n}|1 - \alpha \lambda_i|
+\leqslant \max_{\lambda \in [\lambda_1, \lambda_n]}|1 - \alpha \lambda|
+= \max\{|1 - \alpha \lambda_1|, |1 - \alpha \lambda_n|\}
+$$
+
+最优的 $\alpha^*$ 应使得 $|1 - \alpha \lambda_1| = |1 - \alpha \lambda_n|$，且符号相反，也即 $1 - \alpha^* \lambda_1 = -(1 - \alpha^* \lambda_n)$
+
+解得 $\alpha^* = (\lambda_1 + \lambda_n)/2$。代入得：
+$$
+\max_{1 \leqslant i \leqslant n}|1 - \alpha^* \lambda_i|
+= 1 - \frac{2\lambda_1}{\lambda_1 + \lambda_n}
+= \frac{\lambda_n - \lambda_1}{\lambda_n + \lambda_1}
+$$
+
+综上，得到单步误差缩减 $\|\mathbf{e}^{(k+1)}\|_{\mathbf{A}} \leqslant \frac{\lambda_n - \lambda_1}{\lambda_n + \lambda_1} \|\mathbf{e}^{(k)}\|_{\mathbf{A}}$。
+递推 $k$ 次即证。
+
+**注**：
+
+- 收敛速率由特征值决定；
+- 当 $\lambda_n / \lambda_1 \gg 1$（如高长宽比椭球），收敛极慢（锯齿形路径）；
 
 ---
 
-## 共轭梯度法（Conjugate Gradient Method）
+## 共轭梯度法
 
-共轭梯度法是对最速下降法的根本性改进：**不再使用负梯度方向，而是构造一组 A-共轭（A-正交）搜索方向** $\{d^{(k)}\}$，使得在 $n$ 步内精确收敛（无舍入误差下），且避免“之”字形震荡。
+共轭梯度法是对最速下降法的根本性改进：**不再使用负梯度方向，而是构造一组 $\mathbf{A}$-正交搜索方向** $\{\mathbf{d}^{(k)}\}$，使得在 $n$ 步内精确收敛（无舍入误差下），避免震荡。
 
 ### A-正交性与共轭方向
 
-#### 定义
+**定义**：
 
-- **A-正交（A-共轭）**：对称正定矩阵 $A$ 下, 向量 $x, y$ 满足：
+- **$\mathbf{A}$-正交**：对称正定矩阵 $\mathbf{A}$ 下, 向量 $\mathbf{x}, \mathbf{y}$ 满足：
   $$
-  B(x, y) = x^T A y = 0
-  \tag{6.32}
+  B(\mathbf{x}, \mathbf{y}) = \mathbf{x}^\top \mathbf{A} \mathbf{y} = 0
   $$
-- **A-共轭向量组**：$\{d^{(0)}, d^{(1)}, \dots, d^{(m)}\}$ 满足：
+- **$\mathbf{A}$-正交向量组**：$\{\mathbf{d}^{(0)}, \mathbf{d}^{(1)}, \dots, \mathbf{d}^{(m)}\}$ 满足：
   $$
-  B(d^{(i)}, d^{(j)}) = 0, \quad \forall i \ne j
-  \tag{6.33}
+  B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = 0, \quad \forall i \ne j
   $$
 
 **性质**：
 
-- A-共轭向量组线性无关；
-- $\mathbb{R}^n$ 中最多存在 $n$ 个线性无关的 A-共轭向量；
-- 若 $\{d^{(i)}\}_{i=0}^{n-1}$ 构成 A-正交基，则任意向量（包括精确解 $x^*$）可唯一表示为：
-  $$
-  x^* = \sum_{i=0}^{n-1} \lambda_i d^{(i)}, \quad \lambda_i = \frac{ \langle d^{(i)}, b \rangle }{ B(d^{(i)}, d^{(i)}) }
-  \tag{6.37}
-  $$
+- $\mathbf{A}$-正交向量组线性无关；
+- $\mathbb{R}^n$ 中最多存在 $n$ 个线性无关的 $\mathbf{A}$-正交向量；
+- 若 $\{\mathbf{d}^{(i)}\}_{i=0}^{n-1}$ 构成 $\mathbf{A}$-正交基，则任意向量 $\mathbf{x}$ 可唯一投影表示为：
+    $$
+    \mathbf{x} = \sum_{i=0}^{n-1} \lambda_i \mathbf{d}^{(i)}, \quad
+    \lambda_i = \frac{ B(\mathbf{x}, \mathbf{d}^{(i)}) }{ B(\mathbf{d}^{(i)}, \mathbf{d}^{(i)}) }
+    $$
 
-> **几何意义**：A-共轭方向在“拉伸”后的坐标系下相互垂直（椭球主轴方向），沿这些方向搜索可避免重复修正。
+    特殊地，对于解 $\mathbf{x}^*$，有：
+    $$
+    \mathbf{x}^* = \sum_{i=0}^{n-1} \lambda_i \mathbf{d}^{(i)}, \quad
+    \lambda_i = \frac{ \langle \mathbf{b}, \mathbf{d}^{(i)} \rangle }{ B(\mathbf{d}^{(i)}, \mathbf{d}^{(i)}) }
+    $$
 
-### 构造共轭方向：递推公式
+**几何意义**：$\mathbf{A}$-正交方向在拉伸后的坐标系下相互垂直（椭球主轴方向），沿这些方向搜索更加高效。
 
-共轭梯度法采用如下递推构造：
+### 递推构造共轭方向
+
+共轭梯度法递推构造了一组 $\mathbf{A}$-正交基，并且一边构造一边进行求解（投影）。具体构造如下：
 $$
-d^{(0)} = r^{(0)}, \quad
-d^{(k)} = r^{(k)} + \beta^{(k-1)} d^{(k-1)}, \quad k \ge 1
-\tag{6.38}
+\mathbf{d}^{(0)} = \mathbf{r}^{(0)}, \quad
+\mathbf{d}^{(k)} = \mathbf{r}^{(k)} + \beta^{(k-1)} \mathbf{d}^{(k-1)}, \quad k \ge 1
 $$
-其中 $\beta^{(k-1)}$ 由 A-正交条件 $B(d^{(k-1)}, d^{(k)}) = 0$ 确定：
+其中 $\beta^{(k-1)}$ 由 $\mathbf{A}$-正交条件 $B(\mathbf{d}^{(k-1)}, \mathbf{d}^{(k)}) = 0$ 确定：
 $$
-\beta^{(k-1)} = - \frac{ B(r^{(k)}, d^{(k-1)}) }{ B(d^{(k-1)}, d^{(k-1)}) }
-\tag{6.39}
+\beta^{(k-1)} = - \frac{ B(\mathbf{r}^{(k)}, \mathbf{d}^{(k-1)}) }{ B(\mathbf{d}^{(k-1)}, \mathbf{d}^{(k-1)}) }
 $$
+
+步长仍由下式确定：
+$$
+\alpha^{(k)} = \frac{ \langle \mathbf{r}^{(k)}, \mathbf{d}^{(k)} \rangle }{ B(\mathbf{d}^{(k)}, \mathbf{d}^{(k)}) }
+$$
+
+**定理**：
+共轭梯度法递推构造的向量组 $\{\mathbf{d}^{(k)}\}$ 是 $\mathbf{A}$-正交基，即：
+$$
+B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = \mathbf{d}^{(i)\top}\mathbf{A}\mathbf{d}^{(j)} = 0, \quad \forall i \neq j
+$$
+
+**证明**：
+
+数学归纳法，同时证明以下三个性质对任意 $k \geqslant 0$ 成立：
+
+1. **$\mathbf{A}$-正交性**：$B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = 0$，对 $0 \leqslant j < i \leqslant k$
+2. **残差正交性**：$\langle \mathbf{r}^{(i)}, \mathbf{r}^{(j)} \rangle = 0$，对 $0 \leqslant j < i \leqslant k$  
+3. **残差与方向正交**：$\langle \mathbf{r}^{(i)}, \mathbf{d}^{(j)} \rangle = 0$，对 $0 \leqslant j < i \leqslant k$
+
+其中迭代关系为：
+$$
+\mathbf{r}^{(k+1)} = \mathbf{r}^{(k)} - \alpha^{(k)}\mathbf{A}\mathbf{d}^{(k)}, \quad
+\alpha^{(k)} = \frac{\langle \mathbf{r}^{(k)}, \mathbf{d}^{(k)} \rangle}{B(\mathbf{d}^{(k)}, \mathbf{d}^{(k)})}
+$$
+
+- **验证初值**：
+
+$B(\mathbf{d}^{(1)}, \mathbf{d}^{(0)}) = 0$ 显然。
+
+利用 $\mathbf{d}^{(0)} = \mathbf{r}^{(0)}$
+和 $\alpha^{(0)} = \dfrac{\|\mathbf{r}^{(0)}\|^2}{B(\mathbf{d}^{(0)}, \mathbf{d}^{(0)})}$ 得：
+$$
+\langle \mathbf{r}^{(1)}, \mathbf{r}^{(0)} \rangle
+= \langle \mathbf{r}^{(0)} - \alpha^{(0)}\mathbf{A}\mathbf{d}^{(0)}, \mathbf{r}^{(0)} \rangle
+= \|\mathbf{r}^{(0)}\|^2 - \alpha^{(0)}B(\mathbf{d}^{(0)}, \mathbf{d}^{(0)})
+= 0
+$$
+
+- **归纳假设**：
+
+假设对某个 $k \geqslant 1$，上述三性质对 $k$ 成立，即：
+
+- $\{\mathbf{d}^{(0)}, \ldots, \mathbf{d}^{(k)}\}$ 两两 $\mathbf{A}$-正交
+- $\{\mathbf{r}^{(0)}, \ldots, \mathbf{r}^{(k)}\}$ 两两欧几里得正交  
+- $\langle \mathbf{r}^{(k)}, \mathbf{d}^{(j)} \rangle = 0$ 对 $j = 0, \ldots, k-1$
+
+**先证** $\langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(j)} \rangle = 0$ 对 $j \leqslant k$：
+
+- **当 $j = k$**：
+    $$
+    \langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(k)} \rangle
+    = \langle \mathbf{r}^{(k)}, \mathbf{d}^{(k)} \rangle - \alpha^{(k)}B(\mathbf{d}^{(k)}, \mathbf{d}^{(k)})
+    = 0
+    $$
+
+- **当 $j < k$**：
+    $$
+    \begin{aligned}
+    \langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(j)} \rangle
+    &= \langle \mathbf{r}^{(k)}, \mathbf{d}^{(j)} \rangle
+    - \alpha^{(k)}\langle \mathbf{A}\mathbf{d}^{(k)}, \mathbf{d}^{(j)} \rangle \\
+    &= 0 - \alpha^{(k)}B(\mathbf{d}^{(k)}, \mathbf{d}^{(j)}) \\
+    &= 0
+    \end{aligned}
+    $$
+
+**再证** $\langle \mathbf{r}^{(k+1)}, \mathbf{r}^{(j)} \rangle = 0$ 对 $j \leqslant k$：
+
+- 利用关系 $\mathbf{r}^{(j)} = \mathbf{d}^{(j)} - \beta^{(j-1)}\mathbf{d}^{(j-1)}$（$j \geqslant 1$）：
+    $$
+    \langle \mathbf{r}^{(k+1)}, \mathbf{r}^{(j)} \rangle
+    = \langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(j)} \rangle
+    - \beta^{(j-1)}\langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(j-1)} \rangle
+    = 0 - 0
+    = 0
+    $$
+    对 $j=0$ 同理成立。
+
+**最后证明** $B(\mathbf{d}^{(k+1)}, \mathbf{d}^{(j)}) = 0$ 对 $j \leqslant k$：
+
+- **$j = k$**：由构造显然。
+
+- **$j < k$**：
+
+    $$
+    \begin{aligned}
+    B(\mathbf{d}^{(k+1)}, \mathbf{d}^{(j)})
+    &= B(\mathbf{r}^{(k+1)}, \mathbf{d}^{(j)}) + \beta^{(k)}B(\mathbf{d}^{(k)}, \mathbf{d}^{(j)}) \\
+    &= B(\mathbf{r}^{(k+1)}, \mathbf{d}^{(j)})
+    \end{aligned}
+    $$
+
+    利用 $\mathbf{A}\mathbf{d}^{(j)} = \dfrac{1}{\alpha^{(j)}}(\mathbf{r}^{(j)} - \mathbf{r}^{(j+1)})$：
+    $$
+    \begin{aligned}
+    B(\mathbf{r}^{(k+1)}, \mathbf{d}^{(j)})
+    &= \mathbf{r}^{(k+1)\top}\mathbf{A}\mathbf{d}^{(j)} \\
+    &= \frac{1}{\alpha^{(j)}}[\langle \mathbf{r}^{(k+1)}, \mathbf{r}^{(j)} \rangle
+    - \langle \mathbf{r}^{(k+1)}, \mathbf{r}^{(j+1)} \rangle] \\
+    &= 0
+    \end{aligned}
+    $$
+
+**证毕。**
 
 **注**：该 $\beta^{(k-1)}$ 有多种等价形式（Polak–Ribière, Fletcher–Reeves），此处为 Fletcher–Reeves 形式，适用于二次函数。
 
-步长仍由一维搜索确定：
-$$
-\alpha^{(k)} = \frac{ \langle r^{(k)}, d^{(k)} \rangle }{ B(d^{(k)}, d^{(k)}) }
-\tag{6.40}
-$$
+### 共轭梯度法代码
 
-### 算法步骤
+**初始化**：
+给定初值 $\mathbf{x}^{(0)}$，
+计算残差 $\mathbf{r}^{(0)} = \mathbf{b} - \mathbf{A}\mathbf{x}^{(0)}$，
+设搜索方向 $\mathbf{d}^{(0)} = \mathbf{r}^{(0)}$
 
-**算法 6.2：共轭梯度法**
+**循环**：
 
-1. **初始化**：$x^{(0)}$，$r^{(0)} = b - A x^{(0)}$，$d^{(0)} = r^{(0)}$
-2. **循环**（$k = 0, 1, 2, \dots$）：
-   - $t = A d^{(k)}$
-   - $s = \langle d^{(k)}, t \rangle$  （即 $B(d^{(k)}, d^{(k)})$）
-   - $\alpha^{(k)} = \dfrac{ \langle r^{(k)}, d^{(k)} \rangle }{ s }$
-   - $x^{(k+1)} = x^{(k)} + \alpha^{(k)} d^{(k)}$
-   - $r^{(k+1)} = r^{(k)} - \alpha^{(k)} t$
-   - 若 $\|r^{(k+1)}\|_2 < \varepsilon$，终止
-   - $\beta^{(k)} = \dfrac{ \langle r^{(k+1)}, t \rangle }{ s }$  （注意：此处为 $\langle r^{(k+1)}, A d^{(k)} \rangle$）
-   - $d^{(k+1)} = r^{(k+1)} + \beta^{(k)} d^{(k)}$
+- 计算 $\mathbf{t} = \mathbf{A}\mathbf{d}^{(k)}$
+- 计算 $s = \langle \mathbf{d}^{(k)}, \mathbf{t} \rangle$（即 $B(\mathbf{d}^{(k)}, \mathbf{d}^{(k)})$）
+- 计算步长：
+    $\alpha^{(k)} = \dfrac{ \langle \mathbf{r}^{(k)}, \mathbf{d}^{(k)} \rangle }{ s }$
+- 更新解：$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} + \alpha^{(k)} \mathbf{d}^{(k)}$
+- 更新残差：$\mathbf{r}^{(k+1)} = \mathbf{r}^{(k)} - \alpha^{(k)} \mathbf{t}$
+- 若 $\|\mathbf{r}^{(k+1)}\|_2 < \varepsilon$，终止
+- 计算 $\beta^{(k)}$（两种等价形式）：
+  - 形式一（A-正交条件）：$\beta^{(k)} = -\dfrac{ \langle \mathbf{r}^{(k+1)}, \mathbf{t} \rangle }{ s }$
+  - 形式二（Fletcher–Reeves）：$\beta^{(k)} = \dfrac{ \|\mathbf{r}^{(k+1)}\|_2^2 }{ \|\mathbf{r}^{(k)}\|_2^2 }$（推荐，避免额外内积）
+- 更新搜索方向：$\mathbf{d}^{(k+1)} = \mathbf{r}^{(k+1)} + \beta^{(k)} \mathbf{d}^{(k)}$
 
-> **关键技巧**：利用 $r^{(k+1)} = r^{(k)} - \alpha^{(k)} A d^{(k)}$，可推导出 $\beta^{(k)}$ 的等价形式：
-> $$
-> \beta^{(k)} = \frac{ \|r^{(k+1)}\|_2^2 }{ \|r^{(k)}\|_2^2 }
-> $$
-> （仅在精确算术下成立，称 *Fletcher–Reeves* 形式；实际中常用此式避免额外矩阵乘法）
+```python
+k = 0
+r = b - A @ x
+d = r.copy()
+r_norm_sq = np.dot(r, r)       # 存储 ||r^(k)||^2
 
-### 收敛性质
+while k < N:
+    t = A @ d
+    s = np.dot(d, t)
+    alpha = np.dot(r, d) / s   # 步长
+    x += alpha * d             # 更新解
+    r -= alpha * t             # 更新残差
+    
+    if np.linalg.norm(r) < EPS:
+        break
+    
+    r_norm_sq_new = np.dot(r, r)
+    beta = r_norm_sq_new / r_norm_sq
+    r_norm_sq = r_norm_sq_new
+    
+    d = r + beta * d           # 更新搜索方向
+    k += 1
+```
 
-**定理 6.4**（共轭梯度法正交性）  
-在无舍入误差下，共轭梯度法生成的序列满足：
+**复杂度分析**：
+与最速下降法相同，每步主要代价为一次矩阵-向量乘法 $\mathbf{A}\mathbf{d}^{(k)}$，稀疏矩阵下成本为 $\mathcal{O}(\text{nnz}(\mathbf{A}))$。
+但共轭梯度法在精确算术下至多 $n$ 步收敛，实际中通常远少于 $n$ 步即可达到精度要求，收敛速度显著优于最速下降法。
 
-- 残差正交：$\langle r^{(i)}, r^{(j)} \rangle = 0, \; i \ne j$
-- 搜索方向 A-共轭：$B(d^{(i)}, d^{(j)}) = 0, \; i \ne j$
+### 共轭梯度法收敛性分析
 
-**核心结论**：
-
-- 在 $n$ 步内精确收敛（即 $x^{(n)} = x^*$）；
+- 在 $n$ 步内精确收敛（即 $\mathbf{x}^{(n)} = \mathbf{x}^*$）；
 - 实际中因舍入误差，通常在 $k \ll n$ 步即达到所需精度；
-- 收敛速率依赖于特征值分布，但远优于最速下降法（尤其对条件数大的矩阵）。
-
-#### 数值实验对比（讲义表）
-
-| $n$   | 误差        | 迭代步数 | CPU 时间 (s) |
-|-------|-------------|----------|--------------|
-| 200   | $2.5 \times 10^{-13}$ | 20       | 0.00         |
-| 400   | $1.2 \times 10^{-13}$ | 20       | 0.00         |
-| 800   | $1.1 \times 10^{-13}$ | 21       | 0.00         |
-| 1600  | $7.0 \times 10^{-14}$ | 21       | 0.03125      |
-| 3200  | $1.3 \times 10^{-13}$ | 21       | 0.15625      |
-
-> 对比最速下降法：相同问题下 CG 迭代步数稳定在 20–21 步（≈ $\sqrt{n}$ 量级），而最速下降需 34–38 步；计算成本优势显著。
+- 收敛速率依赖于特征值分布，但远优于最速下降法。
 
 ---
 
 ## 方法对比与总结
 
-| 特性                | 最速下降法 (SD)               | 共轭梯度法 (CG)                     |
-|---------------------|-------------------------------|--------------------------------------|
-| **搜索方向**        | $p^{(k)} = r^{(k)}$（负梯度） | $d^{(k)} = r^{(k)} + \beta^{(k-1)} d^{(k-1)}$（A-共轭） |
-| **步长公式**        | $\alpha^{(k)} = \dfrac{\|r^{(k)}\|^2}{r^{(k)T} A r^{(k)}}$ | $\alpha^{(k)} = \dfrac{r^{(k)T} d^{(k)}}{d^{(k)T} A d^{(k)}}$ |
-| **方向正交性**      | $\langle r^{(k-1)}, r^{(k)} \rangle = 0$（仅相邻） | $B(d^{(i)}, d^{(j)}) = 0, \; i \ne j$（全局 A-共轭） |
-| **理论收敛步数**    | $\le n$（但实践中远多于 $n$） | **精确 $n$ 步**（无舍入误差下）     |
-| **实际收敛速度**    | 慢，依赖 $\kappa(A)$，$\sim \left(\frac{\kappa-1}{\kappa+1}\right)^k$ | 快，对良态/病态矩阵均稳健         |
-| **存储需求**        | $O(n)$（存 $x, r$）          | $O(n)$（存 $x, r, d$）             |
-| **每步计算量**      | 1 × matvec ($A r$)           | 1 × matvec ($A d$)                 |
-| **适用问题**        | 教学演示、预处理粗略迭代     | 大型稀疏 SPD 系统（主流选择）       |
+### 对比
 
-### 为什么 CG 更优？
+| 特性 | 最速下降法 (SD) | 共轭梯度法 (CG) |
+| ------ | -------------- | ---------------- |
+| **搜索方向** | $\mathbf{p}^{(k)} = \mathbf{r}^{(k)}$（负梯度） | $\mathbf{d}^{(k)} = \mathbf{r}^{(k)} + \beta^{(k-1)} \mathbf{d}^{(k-1)}$（$\mathbf{A}$-正交基） |
+| **步长公式** | $\alpha^{(k)} = \dfrac{\|\mathbf{r}^{(k)}\|^2}{\mathbf{r}^{(k)T} \mathbf{A} \mathbf{r}^{(k)}}$ | $\alpha^{(k)} = \dfrac{\mathbf{r}^{(k)T} \mathbf{d}^{(k)}}{\mathbf{d}^{(k)T} \mathbf{A} \mathbf{d}^{(k)}}$ |
+| **方向正交性** | $\langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k)} \rangle = 0$（相邻） | $B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = 0, \; i \ne j$（全局 $\mathbf{A}$-正交） |
+| **实际收敛速度** | 慢，$\sim \left(\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1}\right)^k$ | 快，理论上 $n$ 步得到精确解，对良态/病态矩阵均稳健 |
+| **空间复杂度** | $O(n)$（存 $\mathbf{x}, \mathbf{r}$） | $O(n)$（存 $\mathbf{x}, \mathbf{r}, \mathbf{d}$） |
+| **时间复杂度** | 1 × matvec ($\mathbf{A} \mathbf{r}$) | 1 × matvec ($\mathbf{A} \mathbf{d}$) |
 
-- **最速下降法的缺陷**：负梯度方向在“狭长”椭球中会反复在主轴间震荡，每次修正仅消除一个方向误差，效率低下。
-- **CG 的优势**：通过 A-共轭性，确保每次搜索方向“独立”修正一个主轴方向的误差，相当于在 A-内积下进行正交化搜索，极大提升效率。
-- **本质**：CG 是 Lanczos 过程的隐式实现，将问题投影到 Krylov 子空间 $\mathcal{K}_k(A, r^{(0)}) = \text{span}\{r^{(0)}, A r^{(0)}, \dots, A^{k-1} r^{(0)}\}$ 上求最优解。
+- **最速下降法的缺陷**：负梯度方向在狭长椭球中会反复在主轴间震荡，每次修正仅消除一个方向误差，效率低下。
+- **CG 的优势**：通过 $\mathbf{A}$-正交性，确保每次搜索方向独立修正一个主轴方向的误差，相当于在 A-内积下进行正交化搜索，极大提升效率。
+- **本质**：CG 是 Lanczos 过程的隐式实现，
+  将问题投影到 Krylov 子空间 $\mathcal{K}_k(A, r^{(0)}) = \text{span}\{r^{(0)}, A r^{(0)}, \dots, A^{k-1} r^{(0)}\}$ 上求最优解。
 
----
+### 预处理共轭梯度法
 
-### 补充：预处理共轭梯度法（PCG）
-
-实际应用中，为加速 CG 收敛, 常引入**预处理矩阵** $M \approx A$（对称正定），求解等价系统：
+预处理共轭梯度法（PCG）。实际应用中，为加速 CG 收敛, 常引入**预处理矩阵** $M \approx A$（对称正定），求解等价系统：
 $$
 M^{-1} A x = M^{-1} b
 $$
@@ -375,16 +630,3 @@ $$
 - 对角预处理（Jacobi）：$M = \text{diag}(A)$
 - 不完全 Cholesky 分解（IC）
 - 代数多重网格（AMG）
-
-> **注**：本讲未展开，但 PCG 是工业级求解器（如 PETSc, Trilinos）的核心算法。
-
----
-
-### 小结
-
-- 迭代法统一于 Richardson 框架，非平稳形式（$\omega^{(k)}$ 可变）为优化提供自由度；
-- 对 SPD 矩阵，$Ax = b$ 与 $\min \phi(x)$ 等价，为梯度类方法奠定基础；
-- 最速下降法简单直观，但收敛慢；共轭梯度法通过 A-共轭方向实现快速收敛，是现代科学计算的基石算法；
-- 实践中，CG 配合合适预处理是求解大型 SPD 线性系统的首选方法。
-
-> **学习建议**：手推 $n=2$ 情形下 SD 与 CG 的迭代路径，直观理解“之”字形 vs 直线收敛；编程实现两种算法并对比收敛曲线。
