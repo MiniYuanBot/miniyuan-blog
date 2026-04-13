@@ -154,9 +154,9 @@ h(x; \theta, b) = \sigma(z) = \frac{1}{1+e^{-z}}
 $$
 其中参数 $\theta \in \mathbb{R}^{784}$，$b\in\mathbb{R}$。
 
-#### MLP
+#### MLP Neural Network
 
-多层感知器，非线性模型，可以处理非线性可分问题。
+多层感知器（MLP），非线性模型，可以处理非线性可分问题。
 
 若干**线性层**（矩阵乘法）与**非线性激活函数**交替堆叠。
 
@@ -164,24 +164,50 @@ $$
 
 通过施加多层**非线性变换**， MLP 可以把原来**线性不可分**的点集映射到一个新的特征空间中，使其**更线性可分**。
 
-**训练流程**：
+设网络共有 $L$ 层（含输入输出层）。记：
 
-1. **Forward**（前向传播）：由输入计算输出概率与 Loss。
-2. **Backpropagation**（反向传播）：计算参数梯度。
-3. **Gradient Descent**（梯度下降）：如 SGD / Mini-batch。
-4. 重复直到收敛或达到训练轮次。
+- 输入：$\mathbf{x} \in \mathbb{R}^{n_1}$
+- 第 $\ell$ 层的神经元数：$n_\ell$
+- 第 $\ell$ 层的权重矩阵：
+   $\mathbf{W}^{(\ell)} \in \mathbb{R}^{n_\ell \times n_{\ell-1}}$，
+   $w_{ij}^{(\ell)}$ 元代表边 $a_j^{(\ell)} \rightarrow a_i^{(\ell+1)}$ 的权重
+- 第 $\ell$ 层的偏置向量：$\mathbf{b}^{(\ell)} \in \mathbb{R}^{n_\ell}$
 
-**常用策略**：
+其中 $\ell = 1, 2, \ldots, L$。
 
-- 初始化：
-    Xavier/Glorot、He 初始化，根据激活函数选择，避免初始时梯度消失/爆炸。
-- 正则化：
-  - L2 正则化：在损失中加入 $$\frac{\lambda}{2}\|\theta\|^2$$。
-  - Dropout：MLP 时常用。
-- 输出层选择：
-  - 二分类用 sigmoid + NLL。
-  - 多分类用 softmax + cross-entropy。
-- 批归一化（BatchNorm）：对深层 MLP 重要。
+**前向传播递推关系**：
+
+$$
+\mathbf{z}^{(\ell)} = \mathbf{W}^{(\ell)} \mathbf{a}^{(\ell-1)} + \mathbf{b}^{(\ell)}, \quad \ell = 1, 2, \ldots, L
+$$
+$$
+\mathbf{a}^{(\ell)} = g_\ell(\mathbf{z}^{(\ell)})
+$$
+
+其中：
+
+- $\mathbf{a}^{(1)} = \mathbf{x}$
+- $\mathbf{a}^{(\ell)}$ 为第 $\ell$ 层输出，第 $\ell + 1$ 层输入，$\ell = 1, 2, \ldots, L-1$
+- $\mathbf{a}^{(L)}$ 为最终输出
+- $g_\ell: \mathbb{R}^{n_\ell} \to \mathbb{R}^{n_\ell}$ 是逐元素激活函数
+
+![图 1：神经网络示意图](/images/note/cv-intro/04-deep-learning-1-01-neural-network.jpg)
+
+**紧凑形式**：
+
+MLP 整体可视为一个复合函数：
+$$
+h(\mathbf{x}; \Theta) = \left( g_L \circ \tau_L \circ g_{L-1} \circ \tau_{L-1} \circ \cdots \circ g_1 \circ \tau_1 \right)(\mathbf{x})
+$$
+
+其中 $\tau_\ell(\mathbf{a}) = \mathbf{W}^{(\ell)} \mathbf{a} + \mathbf{b}^{(\ell)}$ 为仿射变换，$\circ$ 表示函数复合。
+
+参数集合：
+$$
+\Theta =
+\left\{ \mathbf{W}^{(1)}, \mathbf{b}^{(1)}, \mathbf{W}^{(2)}, \mathbf{b}^{(2)},
+\ldots, \mathbf{W}^{(L)}, \mathbf{b}^{(L)} \right\}
+$$
 
 ### Define the Loss Function
 
@@ -239,11 +265,9 @@ $$
 
 ### Perform Fitting
 
-训练等价于最小化损失函数。下面详细推导梯度并给出常用优化方法。
+训练等价于最小化损失函数。我们分别推导 Logistic Regression 和 MLP 的反向传播过程。
 
-#### GD
-
-梯度下降（Gradient Descent）。
+#### Logistic Gradient Descent
 
 设 Logistic Regression 模型为：
 
@@ -288,7 +312,96 @@ $$
 $h(x^{(i)}; \theta) - y^{(i)}$ 是模型的**预测误差**（残差），乘以输入 $x^{(i)}$ 得到该样本对梯度的贡献。
 误差的绝对值越大，说明在该样本上的预测越差，该样本对参数更新的影响越大，从而引导模型向减小该误差的方向调整。
 
-### Method
+#### MLP Backpropagation
+
+对于多层神经网络，我们需要计算损失函数对每一层参数的梯度。反向传播算法通过链式法则高效地完成这一计算。
+
+前向传播过程中有：
+$$
+\begin{aligned}
+\mathbf{z}^{(\ell)} &= \mathbf{W}^{(\ell)} \mathbf{a}^{(\ell-1)} + \mathbf{b}^{(\ell)} \\
+\mathbf{a}^{(\ell)} &= g_\ell(\mathbf{z}^{(\ell)})
+\end{aligned}
+$$
+
+其中 $\mathbf{a}^{(1)} = \mathbf{x}$，$\mathbf{a}^{(L)} = h(\mathbf{x}; \Theta)$ 为最终输出。
+
+定义**误差信号**：
+$$
+\boldsymbol{\delta}^{(\ell)} = \frac{\partial \mathcal{L}}{\partial \mathbf{z}^{(\ell)}}
+$$
+表示损失函数对第 $\ell$ 层线性输出 $\mathbf{z}^{(\ell)}$ 的梯度。
+
+1. **输出层误差**：
+
+   对于二分类问题，输出层使用 Sigmoid 激活 $g_L(z) = \sigma(z)$，损失为二元交叉熵：
+
+   $$
+   \boldsymbol{\delta}^{(L)} = \mathbf{a}^{(L)} - \mathbf{y}
+   $$
+
+   其中 $\mathbf{y}$ 是标签向量。
+
+   **证明**：以一维为例。
+   $$
+   \begin{aligned}
+   \delta^{(L)} &= \frac{\partial \mathcal{L}}{\partial z^{(L)}}
+   = \frac{\partial \mathcal{L}}{\partial a^{(L)}} \cdot \frac{\partial a^{(L)}}{\partial z^{(L)}} \\
+   &= \left(-\frac{y}{a^{(L)}} + \frac{1-y}{1-a^{(L)}}\right) \cdot a^{(L)}(1-a^{(L)}) \\
+   &= a^{(L)} - y
+   \end{aligned}
+   $$
+
+2. **误差反向传播**：
+
+   对于隐藏层 $\ell = L-1, L-2, \ldots, 2$：
+
+   $$
+   \boldsymbol{\delta}^{(\ell)} = \left( (\mathbf{W}^{(\ell+1)})^\top \boldsymbol{\delta}^{(\ell+1)} \right) \odot g_\ell'(\mathbf{z}^{(\ell)})
+   $$
+
+   其中 $\odot$ 表示逐元素相乘，$g_\ell'$ 为激活函数的导数。
+
+   **证明**：
+   根据链式法则，第 $\ell$ 层的误差信号来自第 $\ell+1$ 层：
+   $$
+   \delta^{(\ell)}_j = \frac{\partial \mathcal{L}}{\partial z^{(\ell)}_j}
+   = \sum_{k=1}^{n_{\ell+1}} \frac{\partial \mathcal{L}}{\partial z^{(\ell+1)}_k}
+   \cdot \frac{\partial z^{(\ell+1)}_k}{\partial z^{(\ell)}_j}
+   $$
+
+   由于 $z^{(\ell+1)}_k = \sum_i w^{(\ell+1)}_{ki} a^{(\ell)}_i + b^{(\ell+1)}_k$ 且 $a^{(\ell)}_i = g_\ell(z^{(\ell)}_i)$：
+   $$
+   \frac{\partial z^{(\ell+1)}_k}{\partial z^{(\ell)}_j} = w^{(\ell+1)}_{kj} \cdot g_\ell'(z^{(\ell)}_j)
+   $$
+
+   代入得：
+   $$
+   \delta^{(\ell)}_j = \left( \sum_{k} w^{(\ell+1)}_{kj} \delta^{(\ell+1)}_k \right) g_\ell'(z^{(\ell)}_j)
+   $$
+
+   写成矩阵形式即证。
+
+3. **权重梯度**：
+
+   $$
+   \frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(\ell)}} = \boldsymbol{\delta}^{(\ell)} (\mathbf{a}^{(\ell-1)})^\top
+   $$
+
+   即：
+   $$
+   \frac{\partial \mathcal{L}}{\partial w^{(\ell)}_{ij}} = \delta^{(\ell)}_i \cdot a^{(\ell-1)}_j
+   $$
+
+4. **偏置梯度**：
+
+   $$
+   \frac{\partial \mathcal{L}}{\partial \mathbf{b}^{(\ell)}} = \boldsymbol{\delta}^{(\ell)}
+   $$
+
+#### Parameter Update Methods
+
+得到梯度后，使用优化器更新参数。
 
 1. 全量批量梯度下降（**Full-batch GD**）：
 
@@ -323,7 +436,7 @@ $h(x^{(i)}; \theta) - y^{(i)}$ 是模型的**预测误差**（残差），乘以
     - 动量法：Momentum
     - 自适应学习率：Adam、RMSProp 等
 
-### Learning Rate
+#### Learning Rate
 
 学习率 $\alpha$ 的选择对训练很关键。
 
@@ -340,111 +453,43 @@ $h(x^{(i)}; \theta) - y^{(i)}$ 是模型的**预测误差**（残差），乘以
 - 提前停止：
     监控验证集误差，若连续若干轮不下降则停止训练，防止过拟合。
 
+#### Difficulty
+
+神经网络训练是**非凸**优化，常见问题：
+
+- 鞍点（saddle points）导致局部最优解。
+- 过参数化导致高维空间，其中有大量平坦区域（flat plateaus），梯度太小，移动慢；同时高维下特征值多，更容易出现鞍点（Hessian 中正负特征值同时出现）。
+
+因此，直接基于全量批量 GD 在深度学习中往往不够鲁棒，SGD 的噪声反而有帮助。
+
 ### Testing
 
 训练完成后要在测试集上评估模型的泛化能力（generalization）。
 
-#### 常用评估指标
+**常用评估指标**：
 
-- Accuracy（准确率）：$$\frac{\text{正确预测数}}{\text{总样本数}}$$
-- Precision（精确率）：$$\frac{\text{TP}}{\text{TP}+\text{FP}}$$
-- Recall（召回率）：$$\frac{\text{TP}}{\text{TP}+\text{FN}}$$
-- F1-score：调和平均 $$2\cdot\frac{\text{precision}\cdot\text{recall}}{\text{precision}+\text{recall}}$$
-- Confusion Matrix（混淆矩阵）：展示 TP/FP/TN/FN 的分布
-- ROC 曲线 与 AUC：通过变化阈值绘制 TPR vs FPR 曲线，AUC 衡量整体判别能力
-- PR 曲线：类不平衡场景下更 informative
+| 缩写 | 全称 | 含义 |
+| :--- | :--- | :--- |
+| **TP** | True Positives | 1 预测为 1 的数量 |
+| **FP** | False Positives | 0 预测为 1 的数量 |
+| **FN** | False Negatives | 1 预测为 0 的数量 |
+| **TN** | True Negatives | 0 预测为 0 的数量 |
 
-#### Generalization Gap
-
-- 定义：训练误差与测试误差的差距。
-- 导致原因：过拟合（模型在训练集上学到噪声或特殊性）、正则化不足、数据集分布不同等。
-- 缓解方法：增加数据、数据增强、正则化（L2、dropout）、简化模型、早停（early stopping）。
-
-- 对概率输出可给出置信度解释；对于高不确定样本可以拒绝预测或触发人工审查。
-- 若需要更严谨的概率校准，可用温度缩放（temperature scaling）等后处理方法校准概率。
-
-1. Q：0.5 不是固定阈值吗？为什么还需调？  
-   A：当错误代价不对称或数据不平衡时，0.5 不是最佳阈值，需在验证集上选取最合适的 τ。
-2. Q：如何判断模型是否真的学到了泛化能力？  
-   A：观察测试集/验证集的性能、绘制学习曲线（训练/验证误差随 epoch 变化），并在独立数据集上评估。
-3. Q：为什么 AUC 是有用的指标？  
-   A：AUC 与阈值无关，衡量分类器在不同阈值下的整体区分能力，适合比较不同模型的判别力。
-
-### Difficulty
-
-神经网络训练是非凸优化，常见问题：
-
-- 局部极小值（local minima）与更常见的鞍点（saddle points）。
-- 高维空间中大量平坦区域（flat plateaus），一些方向对损失几乎没有影响（过参数化导致）。
-- 因此，直接基于全量批量 GD 在深度学习中往往不够鲁棒，SGD 的噪声反而有帮助。
-
-1. Q：为什么鞍点比局部最小更常见？  
-   A：在高维空间，随机函数的 Hessian 往往有混合正负特征值，鞍点（同时存在上升/下降方向）比局部极小更常见。
-2. Q：Mini-batch 的噪声如何帮助训练？  
-   A：噪声能提供随机扰动，帮助跳出鞍点或浅陷阱，并避免过早陷入坏的局部盆地。
-3. Q：何时使用 Adam 等自适应方法？  
-   A：在很多任务中 Adam 等能加速收敛、自动调整学习率，但有时可能泛化性能略差。实践中常在预热/微调阶段结合多种优化器。
+- 准确率：$$\text{accuracy} = \dfrac{\text{TP}}{\text{TOT}}$$
+- 精确率：$$\text{precision} = \dfrac{\text{TP}}{\text{TP}+\text{FP}}$$
+- 召回率：$$\text{recall} = \dfrac{\text{TP}}{\text{TP}+\text{FN}}$$
+- F1-score：$$2\dfrac{\text{precision}\cdot\text{recall}}{\text{precision}+\text{recall}}$$
+- 混淆矩阵（Confusion Matrix）：展示 TP/FP/TN/FN 的分布
+- 泛化间隙（Generalization Gap）：$\text{generalization gap} = \mathbb{E}_{\text{test}}[\text{loss}] - \mathbb{E}_{\text{train}}[\text{loss}]$。
+   由过拟合造成，可通过增加数据、数据增强、正则化、简化模型、早停缓解。
 
 ---
 
-## Backpropagation
+## Problems for Applying MLP to CV
 
-### 链式法则抽象形式
+需要将图像平坦化（flatten）为向量：
 
-如果复合函数 $f(g(x))$，则：
-$$
-\frac{d}{dx} f(g(x)) = f'(g(x)) \cdot g'(x).
-$$
-在多变量、多层情形中把每层的上游梯度乘以本层局部导数即可得到下游梯度。
+- 会破坏图像的局部结构，空间邻接关系被抹去。
+- 参数数目随像素数线性增长，对高分辨率图像计算与内存负担大。
 
-### 线性层的反向传播
-
-- 对于线性层：$y = W x + b$，若已知 $\frac{\partial L}{\partial y} = \delta$（上游梯度），则：
-  - $$\frac{\partial L}{\partial W} = \delta \, x^\top$$
-  - $$\frac{\partial L}{\partial x} = W^\top \delta$$
-  - $$\frac{\partial L}{\partial b} = \delta \quad(\text{按元素求和/或保持维度一致})$$
-- 这些公式是实现向量化反向传播的基础。
-
-Q：反向传播会很慢吗？  
-A：通过矩阵化与 GPU 并行，实现的反向传播效率很高；关键在于合理使用批量与向量化。
-
----
-
-## 激活函数与 ReLU
-
-### 常见激活函数
-
-- Sigmoid：$g(z) = \frac{1}{1+e^{-z}}$，输出 (0,1)，易饱和导致梯度消失。
-- Tanh：$\tanh(z)$，输出 (−1,1)，也易饱和但中心化。
-- ReLU（**Rectified Linear Unit**）：$g(z) = \max(0,z)$，几乎已成为许多深度网络的默认选择。
-
-### ReLU 的优点
-
-- 计算简单（门控只需阈值化），比指数类函数更快。
-- 在正区间梯度恒为 1，缓解了梯度消失问题（相较 sigmoid/tanh）。
-- 稀疏激活：负输入为 0 导致部分神经元不激活，可带来稀疏性好处（效率与正则化效应）。
-- 实践上收敛更快、效果更好（尤其是深层网络）。
-
-### ReLU 的缺点与注意
-
-- Dead ReLU：若学习率过大或初始化不当，某些神经元长期输出 0（无法恢复），导致容量下降。改良激活包括 Leaky ReLU、ELU 等。
-- ReLU 在负轴导数为 0，可能影响部分训练动态。
-
-1. Q：为什么不总用 sigmoid？  
-   A：sigmoid 在深层网络中会导致梯度消失（导数小于 1），使训练变慢甚至停滞。
-2. Q：什么时候用 Leaky ReLU？  
-   A：当担心 Dead ReLU 问题或想要少量负轴斜率以保持梯度流动时使用。
-
----
-
-## MLP 在视觉信号上的问题
-
-- 将图像平坦化（flatten）为向量：
-  - 会破坏图像的局部结构（空间邻接关系被抹去）。
-  - 对高分辨率图像参数量膨胀（参数数目随像素数线性增长），计算与内存负担大。
-- 因此在视觉任务中更常用 **Convolutional Neural Networks（CNNs）**，保留空间结构并通过参数共享大幅减少参数量。
-
----
-
-Q：反向传播会随网络深度数值不稳定吗？  
-   A：是的，尤其 sigmoid/tanh 会导致梯度消失问题；使用 ReLU、合适初始化与批归一化（BatchNorm）可缓解。
+因此在视觉任务中更常用 **Convolutional Neural Networks（CNNs）**，保留空间结构并通过参数共享大幅减少参数量。

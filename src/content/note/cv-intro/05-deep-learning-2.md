@@ -12,9 +12,6 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-目录（严格按照 PPT/讲义顺序）
-
-- 课程信息与作业说明（Logistics）
 - 术语：人工神经网络（Artificial Neural Network）
   - 生物神经元（Biological Neuron）与类比
   - 脉冲神经网络（Spiking Neural Network）与传统 ANN 的对比
@@ -32,30 +29,6 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
   - 损失函数与优化（SGD、Momentum、Adam）
   - 学习率（Learning Rate）与调度策略（schedules）、batch 与 epoch 的概念
 - 小结与常见疑问（每小节结尾均提供 Q&A）
-
----
-
-## Logistics（课程与作业信息）
-
-- 作业1（Assignment 1）
-  - 发布日期：3/20；截止：4/4 11:59PM（周六）。
-  - 要求实现的任务：
-    - 实现卷积（**convolution**）操作；
-    - Canny 边缘检测（**Canny edge detector**）；
-    - Harris 角点检测（**Harris corner detector**）；
-    - 使用 RANSAC 做平面拟合（Plane fitting using **RANSAC**）。
-  - 要求：部分函数禁止使用 for 循环（以考察向量化/矩阵化实现能力）。
-  - 迟交政策：
-    - 过期 0-24 小时：扣 15%；
-    - 过期 24-48 小时：扣 30%；
-    - 超过 48 小时：记零分。
-
-💡 常见疑问与解答
-
-- Q: 为什么禁止部分 for 循环？  
-  A: 目的是鼓励矩阵化实现以在 Python/Numpy/PyTorch 中获得更高效的执行速度，同时检验对向量化思路的掌握。
-- Q: RANSAC 为什么用于平面拟合？  
-  A: RANSAC 对离群点（outliers）鲁棒，能在含噪数据中找到稳定的模型参数，适合拟合场景中含异常点的点云。
 
 ---
 
@@ -174,7 +147,8 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 - 若 W1 = W2 = H1 = H2 = 100，F = C = K = 3：
   - 全连接层（FC）参数量：
     $$
-    \text{FC params} = W_1 \times H_1 \times C \times W_2 \times H_2 \times K = 100\times100\times3\times100\times100\times3 = 900,000,000\ (\text{约 }900\text{M})
+    \text{FC params} = W_1 \times H_1 \times C \times W_2 \times H_2 \times K = 100\times100\times3\times100\times100\times3
+    = 900,000,000\ (\text{约 }900\text{M})
     $$
   - 卷积层参数量：
     $$

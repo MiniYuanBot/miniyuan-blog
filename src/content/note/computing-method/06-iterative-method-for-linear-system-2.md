@@ -93,42 +93,39 @@ $$
 
     也即 $\mathbf{A} \mathbf{x}^* = \mathbf{b}$，因此 $\mathbf{x}^*$ 是原方程的解。
 
-**注**：
-
-若记误差向量为 $\mathbf{e} = \mathbf{x} - \mathbf{x}^*$，则我们有
-$$
-\phi(\mathbf{x}) = \frac{1}{2}\|\mathbf{e}\|_{\mathbf{A}} + C
-$$
-后续会用到。
-
 ### 向量空间记号约定
 
 为简化表达，引入以下记号，其中 $\mathbf{A}$ 为对称正定阵：
 
-- **标准内积**：
+- **欧式内积**：
     $$
     \langle \mathbf{x}, \mathbf{y} \rangle \equiv \mathbf{x}^\top \mathbf{y}
     $$
 
-- **A-双线性形式（A-内积）**：
+- **$\mathbf{A}$-内积**：
     $$
-    B(\mathbf{x}, \mathbf{y}) \equiv \mathbf{x}^\top \mathbf{A} \mathbf{y}
+    \langle \mathbf{x}, \mathbf{y} \rangle _{\mathbf{A}}
+    \equiv \mathbf{x}^\top \mathbf{A} \mathbf{y}
     = \langle \mathbf{x}, \mathbf{A} \mathbf{y} \rangle
     = \langle \mathbf{A} \mathbf{x}, \mathbf{y} \rangle
     $$
-    **注**：因 $\mathbf{A}$ 对称正定，$B(\cdot,\cdot)$ 是 $\mathbb{R}^n$ 上的内积。
+    **注**：因 $\mathbf{A}$ 对称正定，$\langle \cdot\;, \cdot \rangle _{\mathbf{A}}$ 确实是 $\mathbb{R}^n$ 上的内积。
 
-- **A-范数**：
+- **$\mathbf{A}$-范数**：
     $$
-    \|\mathbf{x}\|_\mathbf{A} \equiv \sqrt{B(\mathbf{x}, \mathbf{x})} = \sqrt{\mathbf{x}^\top \mathbf{A} \mathbf{x}}
+    \|\mathbf{x}\|_\mathbf{A}
+    \equiv \sqrt{\langle \mathbf{x}, \mathbf{x} \rangle _{\mathbf{A}}}
+    = \sqrt{\mathbf{x}^\top \mathbf{A} \mathbf{x}}
     $$
 
 于是目标函数可简写为：
 $$
-\phi(\mathbf{x}) = \frac{1}{2} B(\mathbf{x}, \mathbf{x}) - \langle \mathbf{b}, \mathbf{x} \rangle
+\phi(\mathbf{x})
+= \frac{1}{2} \langle \mathbf{x}, \mathbf{x} \rangle _{\mathbf{A}} - \langle \mathbf{b}, \mathbf{x} \rangle
+= \frac{1}{2} \| \mathbf{x} - \mathbf{x}^* \|_{\mathbf{A}}^2 + C
 $$
 
-**几何意义**：$\phi(\mathbf{x})$ 是一个开口向上的抛物面（椭球面），其等高线为 $A$-椭球。
+**几何意义**：$\phi(\mathbf{x})$ 是一个开口向上的抛物面（椭球面），其等高线为 $\mathbf{A}$-椭球。
 
 ---
 
@@ -153,11 +150,13 @@ $$
 
 函数 $\phi(\mathbf{x})$ 在 $\mathbf{x}^{(k)}$ 处的梯度为：
 $$
-\nabla \phi(\mathbf{x}^{(k)}) = \mathbf{A} \mathbf{x}^{(k)} - \mathbf{b} = -\mathbf{r}^{(k)}
+\nabla \phi(\mathbf{x}^{(k)})
+\equiv \mathbf{g}^{(k)}
+= \mathbf{A} \mathbf{x}^{(k)} - \mathbf{b} = -\mathbf{r}^{(k)}
 $$
 由于**负梯度方向即为下降最快方向**，故取搜索方向为：
 $$
-\mathbf{p}^{(k)} = -\nabla \phi(\mathbf{x}^{(k)}) = \mathbf{r}^{(k)}
+\mathbf{p}^{(k)} = -\mathbf{g}^{(k)} = \mathbf{r}^{(k)}
 $$
 
 ### 步长的确定
@@ -170,81 +169,92 @@ $$
 $$
 \begin{aligned}
 f^{(k)}(\alpha)
-&= \frac{1}{2} B(\mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)}, \mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)})
+&= \frac{1}{2} \langle \mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)}, \mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)} \rangle _{\mathbf{A}}
 - \langle \mathbf{b}, \mathbf{x}^{(k)} + \alpha \mathbf{p}^{(k)} \rangle \\
-&= \frac{1}{2} \left[ B(\mathbf{x}^{(k)},\mathbf{x}^{(k)}) + 2\alpha B(\mathbf{x}^{(k)},\mathbf{p}^{(k)})
-+ \alpha^2 B(\mathbf{p}^{(k)},\mathbf{p}^{(k)}) \right] \\
+&= \frac{1}{2} \langle \mathbf{x}^{(k)},\mathbf{x}^{(k)} \rangle _{\mathbf{A}}
++ \alpha \langle \mathbf{x}^{(k)},\mathbf{p}^{(k)} \rangle _{\mathbf{A}}
++ \frac{\alpha^2}{2} \langle \mathbf{p}^{(k)},\mathbf{p}^{(k)}\rangle _{\mathbf{A}} \\
 &\quad - \langle \mathbf{b}, \mathbf{x}^{(k)} \rangle - \alpha \langle \mathbf{b}, \mathbf{p}^{(k)} \rangle \\
-&= \phi(\mathbf{x}^{(k)}) + \alpha B(\mathbf{x}^{(k)},\mathbf{p}^{(k)})
-+ \frac{\alpha^2}{2} B(\mathbf{p}^{(k)},\mathbf{p}^{(k)}) - \alpha \langle \mathbf{b}, \mathbf{p}^{(k)} \rangle \\
-&= \phi(\mathbf{x}^{(k)}) - \alpha \langle \mathbf{r}^{(k)}, \mathbf{p}^{(k)} \rangle
-+ \frac{\alpha^2}{2} B(\mathbf{p}^{(k)}, \mathbf{p}^{(k)})
+&= \phi(\mathbf{x}^{(k)}) + \alpha \langle \mathbf{g}^{(k)}, \mathbf{p}^{(k)} \rangle
++ \frac{\alpha^2}{2} \langle \mathbf{p}^{(k)},\mathbf{p}^{(k)}\rangle _{\mathbf{A}}
 \end{aligned}
 $$
 
 这是一个关于 $\alpha$ 的二次函数，其最小值点为：
 $$
 \alpha^{(k)}
-= \frac{ \langle \mathbf{r}^{(k)}, \mathbf{p}^{(k)} \rangle }{ B(\mathbf{p}^{(k)}, \mathbf{p}^{(k)}) }
-= \frac{ (\mathbf{r}^{(k)})^\top \mathbf{p}^{(k)} }{ (\mathbf{p}^{(k)})^\top \mathbf{A} \mathbf{p}^{(k)} }
+= -\frac{ \langle \mathbf{g}^{(k)}, \mathbf{p}^{(k)} \rangle }
+{ \langle \mathbf{p}^{(k)},\mathbf{p}^{(k)}\rangle _{\mathbf{A}} }
+= \frac{ \langle \mathbf{r}^{(k)}, \mathbf{p}^{(k)} \rangle }
+{ \langle \mathbf{p}^{(k)},\mathbf{p}^{(k)}\rangle _{\mathbf{A}} }
 $$
 
-代入 $\mathbf{p}^{(k)} = \mathbf{r}^{(k)}$ 得：
+代入 $\mathbf{p}^{(k)} = -\mathbf{g}^{(k)} = \mathbf{r}^{(k)}$ 得：
 $$
-\alpha^{(k)} = \frac{ \|\mathbf{r}^{(k)}\|_2^2 }{ (\mathbf{r}^{(k)})^\top \mathbf{A} \mathbf{r}^{(k)} }
+\alpha^{(k)}
+= \frac{ \langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} \rangle }
+{ \langle \mathbf{g}^{(k)},\mathbf{g}^{(k)}\rangle _{\mathbf{A}} }
+= \frac{ \langle \mathbf{r}^{(k)}, \mathbf{r}^{(k)} \rangle }
+{ \langle \mathbf{r}^{(k)},\mathbf{r}^{(k)}\rangle _{\mathbf{A}} }
 $$
 
-### 残差正交性
+### 梯度正交性
 
-最速下降法具有相邻残差正交的性质，也即：
+最速下降法具有相邻梯度（残差）正交的性质，也即：
 $$
-\langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k)} \rangle  = 0, \quad \forall k \ge 1
+\langle \mathbf{g}^{(k-1)}, \mathbf{g}^{(k)} \rangle  = 0, \quad \forall k \geqslant 1
 $$
 
 **证明**：
+
+易得：
 $$
-\begin{aligned}
-\langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k)} \rangle
-&= \langle \mathbf{r}^{(k-1)}, \mathbf{b} - \mathbf{A}(\mathbf{x}^{(k-1)} + \alpha^{(k-1)} \mathbf{r}^{(k-1)}) \rangle \\
-&= \langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k-1)} - \alpha^{(k-1)} \mathbf{A} \mathbf{r}^{(k-1)} \rangle \\
-&= \|\mathbf{r}^{(k-1)}\|_2^2 - \alpha^{(k-1)} (\mathbf{r}^{(k-1)})^\top \mathbf{A} \mathbf{r}^{(k-1)} \\
-&= \|\mathbf{r}^{(k-1)}\|_2^2
-- \frac{ \|\mathbf{r}^{(k-1)}\|_2^2 }{ (\mathbf{r}^{(k-1)})^\top \mathbf{A} \mathbf{r}^{(k-1)} }
-\cdot (\mathbf{r}^{(k-1)})^\top \mathbf{A} \mathbf{r}^{(k-1)} \\
-&= 0
-\end{aligned}
+\mathbf{g}^{(k+1)} - \mathbf{g}^{(k)} = \mathbf{A} (\mathbf{x}^{(k+1)} - \mathbf{x}^{(k)}) = \alpha^{(k)} \mathbf{A} \mathbf{p}^{(k)}
+$$
+
+代入 $\mathbf{p}^{(k)} = -\mathbf{g}^{(k)}$ 得：
+$$
+\langle \;\cdot\;, \mathbf{g}^{(k+1)} \rangle - \langle \;\cdot\;, \mathbf{g}^{(k)} \rangle
+= -\alpha^{(k)} \langle \;\cdot\;, \mathbf{g}^{(k)} \rangle _\mathbf{A}
+$$
+
+再代入 $\mathbf{g}^{(k)}$ 并结合
+$\alpha^{(k)} = \langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} \rangle / \langle \mathbf{g}^{(k)},\mathbf{g}^{(k)}\rangle _{\mathbf{A}}$
+得：
+$$
+\langle \mathbf{g}^{(k-1)}, \mathbf{g}^{(k)} \rangle  = 0
 $$
 
 **注**：该性质仅对相邻步成立；非相邻步一般不正交，这是最速下降法收敛较慢的根本原因（可能出现锯齿状）。
 
 ### 最速下降法代码
 
-**初始化**：给定初值 $\mathbf{x}^{(0)}$，计算残差 $\mathbf{r}^{(0)} = \mathbf{b} - \mathbf{A} \mathbf{x}^{(0)}$
+**初始化**：给定初值 $\mathbf{x}^{(0)}$，计算梯度 $\mathbf{g}^{(0)} = \mathbf{A} \mathbf{x}^{(0)} - \mathbf{b}$
 
 **循环**：
 
-- 计算 $\mathbf{t} = \mathbf{A} \mathbf{r}^{(k)}$
+- 计算 $\mathbf{t} = \mathbf{A} \mathbf{g}^{(k)}$
 - 计算步长：
-    $\alpha^{(k)} = \dfrac{ \langle \mathbf{r}^{(k)}, \mathbf{r}^{(k)} \rangle }
-    { \langle \mathbf{r}^{(k)}, \mathbf{t} \rangle }$
-- 更新解：$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} + \alpha^{(k)} \mathbf{r}^{(k)}$
-- 更新残差：$\mathbf{r}^{(k+1)} = \mathbf{r}^{(k)} - \alpha^{(k)} \mathbf{t}$
-- 若 $\|\mathbf{r}^{(k+1)}\|_2 < \varepsilon$，终止；否则继续循环
+    $\alpha^{(k)} = \dfrac{ \langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} \rangle }
+    { \langle \mathbf{g}^{(k)}, \mathbf{t} \rangle }$
+- 更新解：$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} - \alpha^{(k)} \mathbf{g}^{(k)}$
+- 更新梯度：$\mathbf{g}^{(k+1)} = \mathbf{g}^{(k)} - \alpha^{(k)} \mathbf{t}$
+- 若 $\|\mathbf{r}^{(k+1)}\|_2 = \|\mathbf{g}^{(k+1)}\|_2 < \varepsilon$，终止；否则继续循环
 
 ```python
 k = 0
-r = b - A @ x
+g = A @ x - b
 while k < N:
-    t = A @ r
-    alpha = np.dot(r, r) / np.dot(r, t)  # 步长
-    x += alpha * r                       # 更新解
-    r -= alpha * t                       # 更新残差
-    if np.linalg.norm(r) < EPS:
+    t = A @ g
+    alpha = np.dot(g, g) / np.dot(g, t)  # 步长
+    x -= alpha * g                       # 更新解
+    g -= alpha * t                       # 更新梯度
+    if np.linalg.norm(g) < EPS:
         break
     k += 1
 ```
 
-**复杂度分析**：主要代价来自矩阵-向量乘法 $\mathbf{A} \mathbf{r}^{(k)}$。若 $\mathbf{A}$ 稀疏，则成本为 $\mathcal{O}(\text{nnz}(\mathbf{A}))$。  
+**复杂度分析**：主要代价来自矩阵-向量乘法 $\mathbf{A} \mathbf{g}^{(k)}$。若 $\mathbf{A}$ 稀疏，则成本为 $\mathcal{O}(\text{nnz}(\mathbf{A}))$。  
 
 ### 最速下降法收敛性分析
 
@@ -277,11 +287,6 @@ $$
 $$
 P(\mathbf{A}) = \mathbf{Q}P(\mathbf{\Lambda})\mathbf{Q}^\top
 = \mathbf{Q}\,\mathrm{diag}(P(\lambda_1), P(\lambda_2), \ldots, P(\lambda_n))\,\mathbf{Q}^\top
-$$
-
-$\mathbf{A}$-范数定义为：
-$$
-\|\mathbf{x}\|_{\mathbf{A}} = \sqrt{\mathbf{x}^\top\mathbf{A}\mathbf{x}}
 $$
 
 令 $\mathbf{y} = \mathbf{Q}^\top\mathbf{x}$，即 $\mathbf{x} = \mathbf{Q}\mathbf{y}$。从而：
@@ -324,18 +329,19 @@ $$
 
 则有：
 $$
-\mathbf{r}^{(k)} = \mathbf{b} - \mathbf{A} \mathbf{x}^{(k)} = - \mathbf{A} \mathbf{e}^{(k)}
+\mathbf{g}^{(k)} = \mathbf{A} \mathbf{x}^{(k)} - \mathbf{b} = \mathbf{A} \mathbf{e}^{(k)}
+$$
+
+我们还有：
+$$
+\mathbf{g}^{(k+1)}
+= \mathbf{g}^{(k)} + \alpha^{(k)} \mathbf{A} \mathbf{p}^{(k)}
+= (\mathbf{I} - \alpha^{(k)} \mathbf{A}) \mathbf{g}^{(k)}
 $$
 
 从而：
 $$
-\begin{aligned}
-\mathbf{e}^{(k+1)}
-&= \mathbf{x}^{(k+1)} - \mathbf{x}^*
-= \mathbf{x}^{(k)} + \alpha^{(k)} \mathbf{r}^{(k)} - \mathbf{x}^* \\
-&= \mathbf{e}^{(k)} - \alpha^{(k)} \mathbf{A} \mathbf{e}^{(k)}
-= (\mathbf{I} - \alpha^{(k)} \mathbf{A}) \mathbf{e}^{(k)}
-\end{aligned}
+\mathbf{e}^{(k+1)} = (\mathbf{I} - \alpha^{(k)} \mathbf{A}) \mathbf{e}^{(k)}
 $$
 
 我们还知道 $\alpha^{(k)} = \argmin_{\alpha \in \mathbb{R}} \|\mathbf{e}^{(k+1)}\|_{\mathbf{A}}$，从而：
@@ -388,200 +394,282 @@ $$
 
 ## 共轭梯度法
 
-共轭梯度法是对最速下降法的根本性改进：**不再使用负梯度方向，而是构造一组 $\mathbf{A}$-正交搜索方向** $\{\mathbf{d}^{(k)}\}$，使得在 $n$ 步内精确收敛（无舍入误差下），避免震荡。
+共轭梯度法是对最速下降法的根本性改进：**不再使用负梯度方向，而是构造一组 $\mathbf{A}$-共轭搜索方向** $\{\mathbf{d}^{(k)}\}$，使得在 $n$ 步内精确收敛（无舍入误差下），避免震荡。
 
-### A-正交性与共轭方向
+### A-共轭与共轭方向
 
 **定义**：
 
-- **$\mathbf{A}$-正交**：对称正定矩阵 $\mathbf{A}$ 下, 向量 $\mathbf{x}, \mathbf{y}$ 满足：
+- **$\mathbf{A}$-共轭**：对称正定矩阵 $\mathbf{A}$ 下, 向量 $\mathbf{x}, \mathbf{y}$ 满足：
   $$
-  B(\mathbf{x}, \mathbf{y}) = \mathbf{x}^\top \mathbf{A} \mathbf{y} = 0
+  \langle \mathbf{x}, \mathbf{y} \rangle _\mathbf{A} = \mathbf{x}^\top \mathbf{A} \mathbf{y} = 0
   $$
-- **$\mathbf{A}$-正交向量组**：$\{\mathbf{d}^{(0)}, \mathbf{d}^{(1)}, \dots, \mathbf{d}^{(m)}\}$ 满足：
+- **$\mathbf{A}$-共轭向量组**：$\{\mathbf{d}^{(0)}, \mathbf{d}^{(1)}, \dots, \mathbf{d}^{(m)}\}$ 满足：
   $$
-  B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = 0, \quad \forall i \ne j
+  \langle \mathbf{d}^{(i)}, \mathbf{d}^{(j)} \rangle _\mathbf{A} = 0, \quad \forall i \ne j
   $$
 
 **性质**：
 
-- $\mathbf{A}$-正交向量组线性无关；
-- $\mathbb{R}^n$ 中最多存在 $n$ 个线性无关的 $\mathbf{A}$-正交向量；
-- 若 $\{\mathbf{d}^{(i)}\}_{i=0}^{n-1}$ 构成 $\mathbf{A}$-正交基，则任意向量 $\mathbf{x}$ 可唯一投影表示为：
+- $\mathbf{A}$-共轭向量组线性无关；
+- $\mathbb{R}^n$ 中最多存在 $n$ 个线性无关的 $\mathbf{A}$-共轭向量；
+- 若 $\{\mathbf{d}^{(i)}\}_{i=0}^{n-1}$ 构成 $\mathbf{A}$-共轭基，则任意向量 $\mathbf{x}$ 可唯一投影表示为：
     $$
     \mathbf{x} = \sum_{i=0}^{n-1} \lambda_i \mathbf{d}^{(i)}, \quad
-    \lambda_i = \frac{ B(\mathbf{x}, \mathbf{d}^{(i)}) }{ B(\mathbf{d}^{(i)}, \mathbf{d}^{(i)}) }
+    \lambda_i = \frac{ \langle \mathbf{x}, \mathbf{d}^{(i)} \rangle _\mathbf{A} }
+    { \langle \mathbf{d}^{(i)}, \mathbf{d}^{(i)} \rangle _\mathbf{A} }
     $$
 
     特殊地，对于解 $\mathbf{x}^*$，有：
     $$
     \mathbf{x}^* = \sum_{i=0}^{n-1} \lambda_i \mathbf{d}^{(i)}, \quad
-    \lambda_i = \frac{ \langle \mathbf{b}, \mathbf{d}^{(i)} \rangle }{ B(\mathbf{d}^{(i)}, \mathbf{d}^{(i)}) }
+    \lambda_i = \frac{ \langle \mathbf{b}, \mathbf{d}^{(i)} \rangle }
+    { \langle \mathbf{d}^{(i)}, \mathbf{d}^{(i)} \rangle _\mathbf{A} }
     $$
 
-**几何意义**：$\mathbf{A}$-正交方向在拉伸后的坐标系下相互垂直（椭球主轴方向），沿这些方向搜索更加高效。
+**几何意义**：$\mathbf{A}$-共轭方向在拉伸后的坐标系下相互垂直（椭球主轴方向），沿这些方向搜索更加高效。
 
 ### 递推构造共轭方向
 
-共轭梯度法递推构造了一组 $\mathbf{A}$-正交基，并且一边构造一边进行求解（投影）。具体构造如下：
-$$
-\mathbf{d}^{(0)} = \mathbf{r}^{(0)}, \quad
-\mathbf{d}^{(k)} = \mathbf{r}^{(k)} + \beta^{(k-1)} \mathbf{d}^{(k-1)}, \quad k \ge 1
-$$
-其中 $\beta^{(k-1)}$ 由 $\mathbf{A}$-正交条件 $B(\mathbf{d}^{(k-1)}, \mathbf{d}^{(k)}) = 0$ 确定：
-$$
-\beta^{(k-1)} = - \frac{ B(\mathbf{r}^{(k)}, \mathbf{d}^{(k-1)}) }{ B(\mathbf{d}^{(k-1)}, \mathbf{d}^{(k-1)}) }
-$$
+共轭梯度法递推构造了一组 $\mathbf{A}$-共轭基，并且一边构造一边进行求解（投影）。具体构造如下：
 
-步长仍由下式确定：
-$$
-\alpha^{(k)} = \frac{ \langle \mathbf{r}^{(k)}, \mathbf{d}^{(k)} \rangle }{ B(\mathbf{d}^{(k)}, \mathbf{d}^{(k)}) }
-$$
+1. 初值：
+    $$
+    \mathbf{x}^{(0)}, \quad
+    \mathbf{d}^{(0)} = -\mathbf{g}^{(0)}
+    $$
+2. 先构造新的解和梯度：
+    $$
+    \mathbf{x}^{(k)} = \mathbf{x}^{(k-1)} + \alpha^{(k-1)} \mathbf{A} \mathbf{d}^{(k-1)}
+    $$
+    其中 $\alpha^{(k-1)}$ 由[前述](#步长的确定)确定（实际上是确保了相邻梯度正交）：
+    $$
+    \alpha^{(k-1)}
+    = -\frac{ \langle \mathbf{g}^{(k-1)}, \mathbf{d}^{(k-1)} \rangle }
+    { \langle \mathbf{d}^{(k-1)}, \mathbf{d}^{(k-1)} \rangle _\mathbf{A} }
+    $$
+    从而可得新的梯度 $\mathbf{g}^{(k)} = \mathbf{A} \mathbf{x}^{(k)} - \mathbf{b}$
+3. 再构造新的共轭方向：
+    $$
+    \mathbf{d}^{(k)} = -\mathbf{g}^{(k)} + \beta^{(k-1)} \mathbf{d}^{(k-1)}
+    $$
+    其中 $\beta^{(k-1)}$ 由 $\mathbf{A}$-共轭条件 $\langle \mathbf{d}^{(k-1)}, \mathbf{d}^{(k)} \rangle _\mathbf{A} = 0$ 确定：
+    $$
+    \beta^{(k-1)}
+    = \frac{ \langle \mathbf{g}^{(k)}, \mathbf{d}^{(k-1)}\rangle _\mathbf{A} }
+    { \langle \mathbf{d}^{(k-1)}, \mathbf{d}^{(k-1)}\rangle _\mathbf{A} }
+    $$
 
 **定理**：
-共轭梯度法递推构造的向量组 $\{\mathbf{d}^{(k)}\}$ 是 $\mathbf{A}$-正交基，即：
+共轭梯度法递推构造的向量组 $\{\mathbf{d}^{(k)}\}$ 是 $\mathbf{A}$-共轭基，即：
 $$
-B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = \mathbf{d}^{(i)\top}\mathbf{A}\mathbf{d}^{(j)} = 0, \quad \forall i \neq j
+\langle \mathbf{d}^{(i)}, \mathbf{d}^{(j)} \rangle _\mathbf{A} = 0, \quad \forall i \neq j
 $$
 
 **证明**：
 
 数学归纳法，同时证明以下三个性质对任意 $k \geqslant 0$ 成立：
 
-1. **$\mathbf{A}$-正交性**：$B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = 0$，对 $0 \leqslant j < i \leqslant k$
-2. **残差正交性**：$\langle \mathbf{r}^{(i)}, \mathbf{r}^{(j)} \rangle = 0$，对 $0 \leqslant j < i \leqslant k$  
-3. **残差与方向正交**：$\langle \mathbf{r}^{(i)}, \mathbf{d}^{(j)} \rangle = 0$，对 $0 \leqslant j < i \leqslant k$
+1. **$\mathbf{A}$-共轭性**：
+    $\langle \mathbf{d}^{(i)}, \mathbf{d}^{(j)} \rangle _\mathbf{A} = 0,$，对 $0 \leqslant j < i \leqslant k$
+2. **梯度正交性**：$\langle \mathbf{g}^{(i)}, \mathbf{g}^{(j)} \rangle = 0$，对 $0 \leqslant j < i \leqslant k$  
+3. **梯度与方向正交**：$\langle \mathbf{g}^{(i)}, \mathbf{d}^{(j)} \rangle = 0$，对 $0 \leqslant j < i \leqslant k$
 
-其中迭代关系为：
+已知迭代关系为：
 $$
-\mathbf{r}^{(k+1)} = \mathbf{r}^{(k)} - \alpha^{(k)}\mathbf{A}\mathbf{d}^{(k)}, \quad
-\alpha^{(k)} = \frac{\langle \mathbf{r}^{(k)}, \mathbf{d}^{(k)} \rangle}{B(\mathbf{d}^{(k)}, \mathbf{d}^{(k)})}
+\mathbf{g}^{(k+1)} = \mathbf{g}^{(k)} + \alpha^{(k)}\mathbf{A}\mathbf{d}^{(k)}, \quad
+\mathbf{d}^{(k)} = -\mathbf{g}^{(k)} + \beta^{(k-1)} \mathbf{d}^{(k-1)}
+$$
+
+也即：
+$$
+\begin{align}
+\langle \;\cdot\;, \mathbf{g}^{(m+1)} \rangle
+&= \langle \;\cdot\;, \mathbf{g}^{(m)} \rangle + \alpha^{(m)}\langle \;\cdot\;, \mathbf{d}^{(m)} \rangle _\mathbf{A} \\
+\langle \;\cdot\;, \mathbf{d}^{(m)} \rangle _\mathbf{A}
+&= -\langle \;\cdot\;, \mathbf{g}^{(m)} \rangle _\mathbf{A}
++ \beta^{(m-1)} \langle \;\cdot\;, \mathbf{d}^{(m-1)} \rangle _\mathbf{A}
+\end{align}
 $$
 
 - **验证初值**：
 
-$B(\mathbf{d}^{(1)}, \mathbf{d}^{(0)}) = 0$ 显然。
+$\langle \mathbf{d}^{(1)}, \mathbf{d}^{(0)}\rangle _\mathbf{A} = 0$ 显然。
 
-利用 $\mathbf{d}^{(0)} = \mathbf{r}^{(0)}$
-和 $\alpha^{(0)} = \dfrac{\|\mathbf{r}^{(0)}\|^2}{B(\mathbf{d}^{(0)}, \mathbf{d}^{(0)})}$ 得：
+利用 $\mathbf{d}^{(0)} = -\mathbf{g}^{(0)}$ 和
+$\alpha^{(0)} = \langle \mathbf{g}^{(0)}, \mathbf{g}^{(0)} \rangle
+/ \langle \mathbf{g}^{(0)}, \mathbf{g}^{(0)} \rangle _\mathbf{A}$
+，在 $(1)$ 式中代入 $\mathbf{g}^{(0)}$ 和 $m=0$：
 $$
-\langle \mathbf{r}^{(1)}, \mathbf{r}^{(0)} \rangle
-= \langle \mathbf{r}^{(0)} - \alpha^{(0)}\mathbf{A}\mathbf{d}^{(0)}, \mathbf{r}^{(0)} \rangle
-= \|\mathbf{r}^{(0)}\|^2 - \alpha^{(0)}B(\mathbf{d}^{(0)}, \mathbf{d}^{(0)})
+\langle \mathbf{g}^{(0)}, \mathbf{g}^{(1)} \rangle
+= \langle \mathbf{g}^{(0)}, \mathbf{g}^{(0)} \rangle - \alpha^{(0)}\langle \mathbf{g}^{(0)}, \mathbf{g}^{(0)} \rangle _\mathbf{A}
 = 0
 $$
 
 - **归纳假设**：
 
-假设对某个 $k \geqslant 1$，上述三性质对 $k$ 成立，即：
+假设对某个 $k \geqslant 1$，上述三性质对 $k$ 成立。下证对于 $k+1$ 也成立。
 
-- $\{\mathbf{d}^{(0)}, \ldots, \mathbf{d}^{(k)}\}$ 两两 $\mathbf{A}$-正交
-- $\{\mathbf{r}^{(0)}, \ldots, \mathbf{r}^{(k)}\}$ 两两欧几里得正交  
-- $\langle \mathbf{r}^{(k)}, \mathbf{d}^{(j)} \rangle = 0$ 对 $j = 0, \ldots, k-1$
+**先证梯度正交性**：
+$\langle \mathbf{g}^{(k+1)}, \mathbf{g}^{(j)} \rangle = 0$ 对 $j \leqslant k$。
 
-**先证** $\langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(j)} \rangle = 0$ 对 $j \leqslant k$：
-
-- **当 $j = k$**：
+- $j = k$ 时：由递推方式显然。
+- $j \lt k$ 时：
+    在 $(1)$ 式中代入 $\mathbf{g}^{(j)}$ 和 $m=k$：
     $$
-    \langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(k)} \rangle
-    = \langle \mathbf{r}^{(k)}, \mathbf{d}^{(k)} \rangle - \alpha^{(k)}B(\mathbf{d}^{(k)}, \mathbf{d}^{(k)})
+    \langle \mathbf{g}^{(j)}, \mathbf{g}^{(k+1)} \rangle
+    = \langle \mathbf{g}^{(j)}, \mathbf{g}^{(k)} \rangle
+    + \alpha^{(k)}\langle \mathbf{g}^{(j)}, \mathbf{d}^{(k)} \rangle _\mathbf{A}
     = 0
     $$
 
-- **当 $j < k$**：
-    $$
-    \begin{aligned}
-    \langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(j)} \rangle
-    &= \langle \mathbf{r}^{(k)}, \mathbf{d}^{(j)} \rangle
-    - \alpha^{(k)}\langle \mathbf{A}\mathbf{d}^{(k)}, \mathbf{d}^{(j)} \rangle \\
-    &= 0 - \alpha^{(k)}B(\mathbf{d}^{(k)}, \mathbf{d}^{(j)}) \\
-    &= 0
-    \end{aligned}
-    $$
+**再证梯度方向正交性**：
+$\langle \mathbf{g}^{(k+1)}, \mathbf{d}^{(j)} \rangle = 0$ 对 $j \leqslant k$。
 
-**再证** $\langle \mathbf{r}^{(k+1)}, \mathbf{r}^{(j)} \rangle = 0$ 对 $j \leqslant k$：
-
-- 利用关系 $\mathbf{r}^{(j)} = \mathbf{d}^{(j)} - \beta^{(j-1)}\mathbf{d}^{(j-1)}$（$j \geqslant 1$）：
+- $j = k$ 时：由递推方式显然。
+- $j < k$ 时：
+    在 $(1)$ 式中代入 $\mathbf{d}^{(j)}$ 和 $m=k$：
     $$
-    \langle \mathbf{r}^{(k+1)}, \mathbf{r}^{(j)} \rangle
-    = \langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(j)} \rangle
-    - \beta^{(j-1)}\langle \mathbf{r}^{(k+1)}, \mathbf{d}^{(j-1)} \rangle
-    = 0 - 0
+    \langle \mathbf{d}^{(j)}, \mathbf{g}^{(k+1)} \rangle
+    = \langle \mathbf{d}^{(j)}, \mathbf{g}^{(k)} \rangle
+    + \alpha^{(k)}\langle \mathbf{d}^{(j)}, \mathbf{d}^{(k)} \rangle _\mathbf{A}
     = 0
     $$
-    对 $j=0$ 同理成立。
 
-**最后证明** $B(\mathbf{d}^{(k+1)}, \mathbf{d}^{(j)}) = 0$ 对 $j \leqslant k$：
+**最后证明 $\mathbf{A}$-共轭性**：
+$\langle \mathbf{d}^{(k+1)}, \mathbf{d}^{(j)} \rangle _\mathbf{A} = 0$ 对 $j \leqslant k$。
 
-- **$j = k$**：由构造显然。
-
-- **$j < k$**：
-
+- $j = k$ 时：由递推方式显然。
+- $j < k$ 时：
+    在 $(2)$ 式中代入 $\mathbf{d}^{(j)}$ 和 $m=k+1$：
     $$
     \begin{aligned}
-    B(\mathbf{d}^{(k+1)}, \mathbf{d}^{(j)})
-    &= B(\mathbf{r}^{(k+1)}, \mathbf{d}^{(j)}) + \beta^{(k)}B(\mathbf{d}^{(k)}, \mathbf{d}^{(j)}) \\
-    &= B(\mathbf{r}^{(k+1)}, \mathbf{d}^{(j)})
+    \langle \mathbf{d}^{(j)}, \mathbf{d}^{(k+1)} \rangle _\mathbf{A}
+    &= -\langle \mathbf{d}^{(j)}, \mathbf{g}^{(k+1)} \rangle _\mathbf{A}
+    + \beta^{(k)}\langle \mathbf{d}^{(j)}, \mathbf{d}^{(k)} \rangle _\mathbf{A} \\
+    &= -\langle \mathbf{d}^{(j)}, \mathbf{g}^{(k+1)} \rangle _\mathbf{A}
     \end{aligned}
     $$
 
-    利用 $\mathbf{A}\mathbf{d}^{(j)} = \dfrac{1}{\alpha^{(j)}}(\mathbf{r}^{(j)} - \mathbf{r}^{(j+1)})$：
+    又因为在 $(1)$ 式中代入 $\mathbf{g}^{(k+1)}$ 和 $m=j$：
     $$
-    \begin{aligned}
-    B(\mathbf{r}^{(k+1)}, \mathbf{d}^{(j)})
-    &= \mathbf{r}^{(k+1)\top}\mathbf{A}\mathbf{d}^{(j)} \\
-    &= \frac{1}{\alpha^{(j)}}[\langle \mathbf{r}^{(k+1)}, \mathbf{r}^{(j)} \rangle
-    - \langle \mathbf{r}^{(k+1)}, \mathbf{r}^{(j+1)} \rangle] \\
-    &= 0
-    \end{aligned}
+    \langle \mathbf{g}^{(k+1)}, \mathbf{g}^{(j+1)} \rangle
+    = \langle \mathbf{g}^{(k+1)}, \mathbf{g}^{(j)} \rangle
+    + \alpha^{(j)}\langle \mathbf{g}^{(k+1)}, \mathbf{d}^{(j)} \rangle _\mathbf{A}
+    $$
+
+    从而：
+    $$
+    \langle \mathbf{d}^{(j)}, \mathbf{d}^{(k+1)} \rangle _\mathbf{A}
+    = -\langle \mathbf{d}^{(j)}, \mathbf{g}^{(k+1)} \rangle _\mathbf{A}
+    = 0
     $$
 
 **证毕。**
 
-**注**：该 $\beta^{(k-1)}$ 有多种等价形式（Polak–Ribière, Fletcher–Reeves），此处为 Fletcher–Reeves 形式，适用于二次函数。
+### 共轭参数的等价形式
+
+1. **Hestenes–Stiefel (HS)**：
+    $$
+    \beta^{(k-1)}_{\text{HS}}
+    = \frac{\langle \mathbf{g}^{(k)}, \mathbf{d}^{(k-1)} \rangle _{\mathbf{A}}}
+    {\langle \mathbf{d}^{(k-1)}, \mathbf{d}^{(k-1)} \rangle _{\mathbf{A}}}
+    $$
+
+2. **Crowder–Wolfe (CW)**：
+    $$
+    \beta^{(k-1)}_{\text{CW}}
+    = \frac{\langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} - \mathbf{g}^{(k-1)} \rangle}
+    {\langle \mathbf{d}^{(k-1)}, \mathbf{g}^{(k)} - \mathbf{g}^{(k-1)} \rangle}
+    $$
+
+    **等价性证明**：
+
+    利用 $\mathbf{g}^{(k)} - \mathbf{g}^{(k-1)} = \alpha^{(k-1)} \mathbf{A} \mathbf{d}^{(k-1)}$，代入 HS 即得。
+
+3. **Dixon (D)**：
+    $$
+    \beta^{(k-1)}_{\text{D}}
+    = -\frac{\langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} \rangle}
+    {\langle \mathbf{d}^{(k-1)}, \mathbf{g}^{(k-1)} \rangle}
+    $$
+
+    **等价性证明**：
+
+    利用前述性质代入 CW 即得。
+
+4. **Fletcher–Reeves (FR)**：
+    $$
+    \beta^{(k-1)}_{\text{FR}}
+    = \frac{\langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} \rangle}
+    {\langle \mathbf{g}^{(k-1)}, \mathbf{g}^{(k-1)} \rangle}
+    $$
+
+    **等价性证明**：
+
+    利用
+    $\langle \mathbf{d}^{(k)}, \mathbf{g}^{(k)} \rangle = -\langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} \rangle$
+    代入 D 即得。
+
+5. **Polak–Ribière–Polyak (PRP)**：
+    $$
+    \beta^{(k-1)}_{\text{PRP}}
+    = \frac{\langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} - \mathbf{g}^{(k-1)} \rangle}
+    {\langle \mathbf{g}^{(k-1)}, \mathbf{g}^{(k-1)} \rangle}
+    $$
+
+    **等价性证明**：显然。
+
+6. **Dai–Yuan (DY)**：
+    $$
+    \beta^{(k-1)}_{\text{DY}}
+    = \frac{\langle \mathbf{g}^{(k)}, \mathbf{g}^{(k)} \rangle}
+    {\langle \mathbf{d}^{(k-1)}, \mathbf{g}^{(k)} - \mathbf{g}^{(k-1)} \rangle}
+    $$
+
+    **等价性证明**：显然。
 
 ### 共轭梯度法代码
 
 **初始化**：
 给定初值 $\mathbf{x}^{(0)}$，
-计算残差 $\mathbf{r}^{(0)} = \mathbf{b} - \mathbf{A}\mathbf{x}^{(0)}$，
-设搜索方向 $\mathbf{d}^{(0)} = \mathbf{r}^{(0)}$
+计算梯度 $\mathbf{g}^{(0)} = \mathbf{A}\mathbf{x}^{(0)} - \mathbf{b}$，
+设搜索方向 $\mathbf{d}^{(0)} = -\mathbf{g}^{(0)}$
 
 **循环**：
 
 - 计算 $\mathbf{t} = \mathbf{A}\mathbf{d}^{(k)}$
-- 计算 $s = \langle \mathbf{d}^{(k)}, \mathbf{t} \rangle$（即 $B(\mathbf{d}^{(k)}, \mathbf{d}^{(k)})$）
+- 计算 $s = \langle \mathbf{d}^{(k)}, \mathbf{t} \rangle$（即 $\langle \mathbf{d}^{(k)}, \mathbf{d}^{(k)} \rangle _\mathbf{A}$）
 - 计算步长：
-    $\alpha^{(k)} = \dfrac{ \langle \mathbf{r}^{(k)}, \mathbf{d}^{(k)} \rangle }{ s }$
+    $\alpha^{(k)} = -\dfrac{ \langle \mathbf{g}^{(k)}, \mathbf{d}^{(k)} \rangle }{ s }$
 - 更新解：$\mathbf{x}^{(k+1)} = \mathbf{x}^{(k)} + \alpha^{(k)} \mathbf{d}^{(k)}$
-- 更新残差：$\mathbf{r}^{(k+1)} = \mathbf{r}^{(k)} - \alpha^{(k)} \mathbf{t}$
-- 若 $\|\mathbf{r}^{(k+1)}\|_2 < \varepsilon$，终止
-- 计算 $\beta^{(k)}$（两种等价形式）：
-  - 形式一（A-正交条件）：$\beta^{(k)} = -\dfrac{ \langle \mathbf{r}^{(k+1)}, \mathbf{t} \rangle }{ s }$
-  - 形式二（Fletcher–Reeves）：$\beta^{(k)} = \dfrac{ \|\mathbf{r}^{(k+1)}\|_2^2 }{ \|\mathbf{r}^{(k)}\|_2^2 }$（推荐，避免额外内积）
-- 更新搜索方向：$\mathbf{d}^{(k+1)} = \mathbf{r}^{(k+1)} + \beta^{(k)} \mathbf{d}^{(k)}$
+- 更新梯度：$\mathbf{g}^{(k+1)} = \mathbf{g}^{(k)} + \alpha^{(k)} \mathbf{t}$
+- 若 $\|\mathbf{r}^{(k+1)}\|_2 = \|\mathbf{g}^{(k+1)}\|_2 < \varepsilon$，终止
+- 计算 $\beta^{(k)}$：选择等价形式中的一种，一般采用 FR 形式。
+    $\beta^{(k)} = \dfrac{ \|\mathbf{g}^{(k+1)}\|_2^2 }{ \|\mathbf{g}^{(k)}\|_2^2 }$
+- 更新搜索方向：$\mathbf{d}^{(k+1)} = -\mathbf{g}^{(k+1)} + \beta^{(k)} \mathbf{d}^{(k)}$
 
 ```python
 k = 0
-r = b - A @ x
-d = r.copy()
-r_norm_sq = np.dot(r, r)       # 存储 ||r^(k)||^2
+g = A @ x - b
+d = g.copy()
+g_norm = np.dot(g, g)          # 存储 ||g^(k)||^2
 
 while k < N:
     t = A @ d
     s = np.dot(d, t)
-    alpha = np.dot(r, d) / s   # 步长
+    alpha = -np.dot(g, d) / s   # 步长
     x += alpha * d             # 更新解
-    r -= alpha * t             # 更新残差
+    g += alpha * t             # 更新梯度
     
-    if np.linalg.norm(r) < EPS:
+    g_norm_new = np.dot(r, r)
+    if g_norm_new < EPS:
         break
     
-    r_norm_sq_new = np.dot(r, r)
-    beta = r_norm_sq_new / r_norm_sq
-    r_norm_sq = r_norm_sq_new
+    beta = g_norm_new / g_norm
+    g_norm = g_norm_new
     
-    d = r + beta * d           # 更新搜索方向
+    d = -g + beta * d           # 更新搜索方向
     k += 1
 ```
 
@@ -603,17 +691,15 @@ while k < N:
 
 | 特性 | 最速下降法 (SD) | 共轭梯度法 (CG) |
 | ------ | -------------- | ---------------- |
-| **搜索方向** | $\mathbf{p}^{(k)} = \mathbf{r}^{(k)}$（负梯度） | $\mathbf{d}^{(k)} = \mathbf{r}^{(k)} + \beta^{(k-1)} \mathbf{d}^{(k-1)}$（$\mathbf{A}$-正交基） |
+| **搜索方向** | $\mathbf{p}^{(k)} = -\mathbf{g}^{(k)}$（负梯度） | $\mathbf{d}^{(k)} = -\mathbf{g}^{(k)} + \beta^{(k-1)} \mathbf{d}^{(k-1)}$（$\mathbf{A}$-共轭基） |
 | **步长公式** | $\alpha^{(k)} = \dfrac{\|\mathbf{r}^{(k)}\|^2}{\mathbf{r}^{(k)T} \mathbf{A} \mathbf{r}^{(k)}}$ | $\alpha^{(k)} = \dfrac{\mathbf{r}^{(k)T} \mathbf{d}^{(k)}}{\mathbf{d}^{(k)T} \mathbf{A} \mathbf{d}^{(k)}}$ |
-| **方向正交性** | $\langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k)} \rangle = 0$（相邻） | $B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = 0, \; i \ne j$（全局 $\mathbf{A}$-正交） |
+| **方向正交性** | $\langle \mathbf{r}^{(k-1)}, \mathbf{r}^{(k)} \rangle = 0$（相邻） | $B(\mathbf{d}^{(i)}, \mathbf{d}^{(j)}) = 0, \; i \ne j$（全局 $\mathbf{A}$-共轭） |
 | **实际收敛速度** | 慢，$\sim \left(\frac{\lambda_n-\lambda_1}{\lambda_n+\lambda_1}\right)^k$ | 快，理论上 $n$ 步得到精确解，对良态/病态矩阵均稳健 |
 | **空间复杂度** | $O(n)$（存 $\mathbf{x}, \mathbf{r}$） | $O(n)$（存 $\mathbf{x}, \mathbf{r}, \mathbf{d}$） |
 | **时间复杂度** | 1 × matvec ($\mathbf{A} \mathbf{r}$) | 1 × matvec ($\mathbf{A} \mathbf{d}$) |
 
 - **最速下降法的缺陷**：负梯度方向在狭长椭球中会反复在主轴间震荡，每次修正仅消除一个方向误差，效率低下。
-- **CG 的优势**：通过 $\mathbf{A}$-正交性，确保每次搜索方向独立修正一个主轴方向的误差，相当于在 A-内积下进行正交化搜索，极大提升效率。
-- **本质**：CG 是 Lanczos 过程的隐式实现，
-  将问题投影到 Krylov 子空间 $\mathcal{K}_k(A, r^{(0)}) = \text{span}\{r^{(0)}, A r^{(0)}, \dots, A^{k-1} r^{(0)}\}$ 上求最优解。
+- **CG 的优势**：通过 $\mathbf{A}$-共轭性，确保每次搜索方向独立修正一个主轴方向的误差，相当于在 A-内积下进行正交化搜索，极大提升效率。
 
 ### 预处理共轭梯度法
 

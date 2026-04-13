@@ -14,12 +14,10 @@
   "compilerOptions": {
     "types": ["astro/client"],
     "strictNullChecks": true,
-    // Non-relative module'll be resolved starting from base directory.
-    "baseUrl": ".",
     // Path aliases
     "paths": {
       "@/*": [
-        "src/*"
+        "./src/*"
       ]
     }
   }
