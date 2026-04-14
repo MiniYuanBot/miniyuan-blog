@@ -67,27 +67,29 @@ $$
 
 ```python
 x_new = np.zeros(n, dtype=float) # 初始值
+x_old = np.zeros(n, dtype=float)
 
 k = 0
 while k < N:
-    x_old = x_new.copy() # 保存旧值
+    k += 1
 
     for i in range(n):
         x_new[i] = b[i]
-        
+
         for j in range(n):
             if j != i: # 为减少判断开销可以分开循环
                 x_new[i] -= A[i, j] * x_old[j]
-        
+
         x_new[i] /= A[i, i]
-    
+
     if np.linalg.norm(x_new - x_old, 2) < EPS:
         break
-    
-    k += 1
+
+    x_old = x_new.copy() # 保存旧值
 ```
 
-**注**：必须先用临时变量保存 $\mathbf{x}^{(k)}$ 的所有分量，避免混用新旧值。不过可以交替使用两个数列作为新旧值，只需交换引用而不需要复制数组，减少内存分配和复制的开销。
+**注**：
+必须先用临时变量保存 $\mathbf{x}^{(k)}$ 的所有分量，避免混用新旧值。不过可以交替使用两个数列作为新旧值，只需交换引用而不需要复制数组，减少内存分配和复制的开销。
 
 ---
 
@@ -131,10 +133,11 @@ $$
 
 ```python
 x_new = np.zeros(n, dtype=float) # 初始值
+x_old = np.zeros(n, dtype=float)
 
 k = 0
 while k < N:
-    x_old = x_new.copy() # 保存旧值
+    k += 1
 
     for i in range(n):
         x_new[i] = b[i]
@@ -143,20 +146,21 @@ while k < N:
             x_new[i] -= A[i, j] * x_new[j]
 
         for j in range(i + 1, n): # 使用旧值
-            x_new[i] -= A[i, j] * x_old[j]
+            x_new[i] -= A[i, j] * x_old[j] # 也可以写成 x_new
         
         x_new[i] /= A[i, i]
-    
+
     if np.linalg.norm(x_new - x_old, 2) < EPS:
         break
-    
-    k += 1
+
+    x_old = x_new.copy() # 保存旧值
 ```
 
 **注**：
 
 - Gauss-Seidel 通常比 Jacobi 收敛更快。
 - 但 Jacobi 是同步的，每个分量的更新只依赖上一轮迭代的旧值，可以进行**并行**计算，而 Gauss-Seidel 是串行依赖的，每个分量的更新依赖同一轮迭代的新值，所以只能**串行**。
+- 计算时实际上可以直接都使用 `x_new`，但是为了判断收敛不得不保存 `x_old`，所以使用 `x_old` 更加清晰。
 
 ---
 
@@ -215,10 +219,11 @@ $$
 
 ```python
 x_new = np.zeros(n, dtype=float) # 初始值
+x_old = np.zeros(n, dtype=float)
 
 k = 0
 while k < N:
-    x_old = x_new.copy() # 保存旧值
+    k += 1
 
     for i in range(n):
         # 先计算 delta x
@@ -228,7 +233,7 @@ while k < N:
             x_new[i] -= A[i, j] * x_new[j]
 
         for j in range(i + 1, n): # 使用旧值
-            x_new[i] -= A[i, j] * x_old[j]
+            x_new[i] -= A[i, j] * x_old[j] # 也可以写成 x_new
         
         x_new[i] = x_new[i] * omega / A[i, i]
 
@@ -238,7 +243,7 @@ while k < N:
     if np.linalg.norm(x_new - x_old, 2) < EPS:
         break
     
-    k += 1
+    x_old = x_new.copy() # 保存旧值
 ```
 
 **注**：最优松弛因子 $\omega_{\text{opt}}$ 通常介于 0.9-1.5 之间，具体值与矩阵谱性质有关。对于特殊矩阵（如相容次序矩阵），有理论公式计算 $\omega_{\text{opt}}$。

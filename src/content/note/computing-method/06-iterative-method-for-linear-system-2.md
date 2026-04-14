@@ -658,18 +658,18 @@ g_norm = np.dot(g, g)          # 存储 ||g^(k)||^2
 while k < N:
     t = A @ d
     s = np.dot(d, t)
-    alpha = -np.dot(g, d) / s   # 步长
+    alpha = -np.dot(g, d) / s  # 步长
     x += alpha * d             # 更新解
     g += alpha * t             # 更新梯度
     
-    g_norm_new = np.dot(r, r)
+    g_norm_new = np.dot(g, g)
     if g_norm_new < EPS:
         break
     
     beta = g_norm_new / g_norm
     g_norm = g_norm_new
     
-    d = -g + beta * d           # 更新搜索方向
+    d = -g + beta * d          # 更新搜索方向
     k += 1
 ```
 
