@@ -209,6 +209,76 @@ $$
 \ldots, \mathbf{W}^{(L)}, \mathbf{b}^{(L)} \right\}
 $$
 
+**激活函数**：
+
+1. **Sigmoid**：
+
+   ![图 2：Sigmoid 函数 | width=70%](/images/note/cv-intro/04-deep-learning-1-02-sigmoid.png)
+
+   $$
+   \sigma(x)=\frac{1}{1+e^{-x}},\quad \sigma'(x)=\sigma(x)(1-\sigma(x))
+   $$
+   - 优点：概率化输出。  
+   - 缺点：易饱和导致梯度消失，输出非零中心。  
+   - 何时用：二分类输出层，隐藏层一般不推荐。
+
+2. **tanh**：
+
+   ![图 3：tanh 函数 | width=70%](/images/note/cv-intro/04-deep-learning-1-03-tanh.png)
+
+   $$
+   \tanh(x)=\frac{e^x-e^{-x}}{e^x+e^{-x}},\quad \tanh'(x)=1-\tanh^2(x)
+   $$
+   - 优点：输出以 0 为中心，训练通常比 sigmoid 稳定。  
+   - 缺点：仍会饱和（梯度消失）。  
+   - 何时用：历史上隐藏层曾常用，现代深层网络多用 ReLU。
+
+3. **ReLU**：
+
+   ![图 4：ReLU 函数 | width=70%](/images/note/cv-intro/04-deep-learning-1-04-relu.png)
+
+   $$
+   \mathrm{ReLU}(x)=\max(0,x)
+   $$
+   - 优点：计算简单、正区间梯度恒为 1，缓解梯度消失，训练快且产生稀疏激活。  
+   - 缺点：可能出现 Dead ReLU（神经元输出恒为 0）。  
+   - 何时用：默认隐藏层首选激活。
+
+4. **Leaky ReLU**：
+
+   ![图 5：Leaky ReLU 函数 | width=70%](/images/note/cv-intro/04-deep-learning-1-05-leaky-relu.png)
+
+   $$
+   \mathrm{LeakyReLU}(x)=\max(\alpha x,\,x)\quad(\text{usually }\alpha=0.01)
+   $$
+   - 优点：较少死神经元，训练更稳健。  
+   - 缺点：引入小负输出，微弱影响稀疏性。  
+   - 何时用：遇到 Dead ReLU 或需更鲁棒时。
+
+5. **ELU**：
+
+   ![图 6：ELU 函数 | width=70%](/images/note/cv-intro/04-deep-learning-1-06-elu.png)
+
+   $$
+   \mathrm{ELU}(x)=\begin{cases}x,&x\ge0,\\[4pt]\alpha(e^{x}-1),&x<0\end{cases}
+   $$
+   - 优点：负区间平滑、均值可接近 0，训练稳定性好。  
+   - 缺点：含指数计算，开销比 ReLU 大。  
+   - 何时用：重视稳定性且能接受稍高计算成本时。
+
+6. **Maxout**：
+
+   ![图 7：Maxout 函数 | width=70%](/images/note/cv-intro/04-deep-learning-1-07-maxout.png)
+
+   $$
+   \mathrm{Maxout}(x)=\max(w_1^\top x+b_1,\; w_2^\top x+b_2)
+   $$
+   - 优点：分段线性拟合能力强，对 Dropout 友好。  
+   - 缺点：参数与计算量成倍增加。  
+   - 何时用：需要更高模型容量且资源充足时。
+
+**注**：ReLU 计算简单、正区间梯度为 1，可缓解梯度消失并加速收敛，是稳健的默认选择。
+
 ### Define the Loss Function
 
 我们要给出具体的损失函数与训练目标（optimization objective）。
@@ -235,21 +305,36 @@ $$
 
 #### NLL/Cross-Entropy
 
-最小化负对数似然（Negative Log-Likelihood）
+最大化似然等同于最小化负对数似然（Negative Log-Likelihood）。
 
-最大化似然等同于最小化负对数似然，为了使得梯度大小与样本数无关，我们取**平均形式**：
+**交叉熵**：
+
+对于定义在同一个离散集合 $ \mathcal{X} $ 上的两个概率分布 $ P $ 和 $ Q $
+$$
+H(P, Q) = -\sum_{x \in \mathcal{X}} P(x) \log Q(x)
+$$
+
+其中 $H(\cdot,\ \cdot)$ 即为交叉熵函数。
+
+**NLL/CE**：
+
+针对这个二分类问题，为了使得梯度大小与样本数无关，我们取**平均形式**：
 $$
 \begin{aligned}
 \mathcal{L}(\theta)
 &= -\frac{1}{n} \log p(Y|X;\theta) \\
-&= -\frac{1}{n} \sum_{i=1}^n \left[ y^{(i)}\log h(x^{(i)}; \theta) + (1-y^{(i)})\log(1-h(x^{(i)}; \theta)) \right]
+&= -\frac{1}{n} \sum_{i=1}^n \left[ y^{(i)}\log h(x^{(i)}; \theta) + (1-y^{(i)})\log(1-h(x^{(i)}; \theta)) \right] \\
+&= \frac{1}{n} \sum_{i=1}^n H(y^{(i)}, h^{(i)})
 \end{aligned}
 $$
-这也是常说的二元交叉熵（binary cross-entropy）损失。
 
 对单样本的损失：
 $$
-\ell^{(i)}(\theta) = -\left[ y^{(i)}\log h(x^{(i)}; \theta) + (1-y^{(i)})\log(1-h(x^{(i)}; \theta)) \right]
+\begin{aligned}
+\ell^{(i)}(\theta)
+&= -\left[ y^{(i)}\log h(x^{(i)}; \theta) + (1-y^{(i)})\log(1-h(x^{(i)}; \theta)) \right] \\
+&= H(y^{(i)}, h^{(i)})
+\end{aligned}
 $$
 若加入 L2 正则化：
 $$
@@ -261,7 +346,7 @@ $$
 
 - NLL 使用对数，在概率极小时数值仍然稳定，且对于小概率惩罚更大。
 - NLL 使用对数，将复杂乘法转化为加法。
-- 二元 NLL 和二元交叉熵在数学上等价。
+- 多元 NLL 和多元 CE 在数学上等价，不过 NLL 属于统计学，CE 属于信息论（damn）
 
 ### Perform Fitting
 
@@ -483,13 +568,16 @@ $$
 - 泛化间隙（Generalization Gap）：$\text{generalization gap} = \mathbb{E}_{\text{test}}[\text{loss}] - \mathbb{E}_{\text{train}}[\text{loss}]$。
    由过拟合造成，可通过增加数据、数据增强、正则化、简化模型、早停缓解。
 
+![图 8：欠拟合与过拟合图示 | width=100%](/images/note/cv-intro/04-deep-learning-1-08-underfitting-and-overfitting.png)
+
 ---
 
 ## Problems for Applying MLP to CV
 
 需要将图像平坦化（flatten）为向量：
 
-- 会破坏图像的局部结构，空间邻接关系被抹去。
-- 参数数目随像素数线性增长，对高分辨率图像计算与内存负担大。
+- 会破坏图像的局部结构，**空间邻接**关系在展平的向量中不再邻接。
+- 参数数目随像素数线性增长，对高分辨率图像**计算与内存负担大**。
+- 对于输入图像的微小平移操作，MLP 很难保持输出基本不变，也即**很难具有平移不变性**。
 
 因此在视觉任务中更常用 **Convolutional Neural Networks（CNNs）**，保留空间结构并通过参数共享大幅减少参数量。
