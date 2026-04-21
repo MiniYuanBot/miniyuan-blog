@@ -181,15 +181,13 @@ $$
     并且训练时使用 batch mean / variance，验证/测试时使用 running mean / variance，导致**性能不一致**。
 - 本质上 BatchNorm 假设了所有 $N \times H \times W$ 个数值独立同分布，从而对**分布高度相关**的实例不适用。
 
-### Other Normalizations[^1]
+### Other Normalizations
 
 - **LayerNorm**：按单个样本做归一化，常用于 RNN / Transformer。
 - **InstanceNorm**：按单个样本的单个通道做归一化，常用于具有明显样本风格的图像工作。
 - **GroupNorm**：把通道分组后在组内归一化，适合小 batch 或样本高度相关场景。
 
-![图 1：Normalizations，每个都是对蓝色区域进行归一化 | width=100%](/images/note/cv-intro/06-deep-learning-3-01-normalizations.png)
-
-[^1]: 图片来自 [Wu, Y., & He, K. (2018). Group Normalization.](https://doi.org/10.1007/978-3-030-01261-8_1)
+![图 1：Normalizations，每个都是对蓝色区域进行归一化 %% credit: [[Wu, Y., & He, K. (2018). Group Normalization.|https://doi.org/10.1007/978-3-030-01261-8_1]] | width=100% ](/images/note/cv-intro/06-deep-learning-3-01-normalizations.png)
 
 **注**：
 
