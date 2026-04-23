@@ -82,7 +82,7 @@ $$
 A_k
 =
 \begin{bmatrix}
-A_{k-1} & c^T \\
+A_{k-1} & c^\top \\
 d & a_{kk} \\
 \end{bmatrix}
 $$
@@ -91,7 +91,7 @@ $$
 A_k
 =
 \begin{bmatrix}
-A_{k-1} & c^T \\
+A_{k-1} & c^\top \\
 d & a_{kk} \\
 \end{bmatrix}
 =
@@ -100,7 +100,7 @@ L_{k-1} & 0 \\
 l & 1 \\
 \end{bmatrix}
 \begin{bmatrix}
-U_{k-1} & u^T \\
+U_{k-1} & u^\top \\
 0 & u_{kk} \\
 \end{bmatrix}
 $$
@@ -108,9 +108,9 @@ $$
 $$
 \begin{cases}
 A_{k-1} = L_{k-1} U_{k-1} \\
-c^T = L_{k-1} u^T \\
+c^\top = L_{k-1} u^\top \\
 d = l U_{k-1} \\
-a_{kk} = l u^T + u_{kk}
+a_{kk} = l u^\top + u_{kk}
 \end{cases}
 \tag{1}
 $$
@@ -127,8 +127,8 @@ $$
    -l U_{k-1}^{-1} & 1 \\
    \end{bmatrix}
    \begin{bmatrix}
-   U_{k-1} & L_{k-1}^{-1} u^T \\
-   0 & a_{kk} - l U_{k-1}^{-1} L_{k-1}^{-1} u^T \\
+   U_{k-1} & L_{k-1}^{-1} u^\top \\
+   0 & a_{kk} - l U_{k-1}^{-1} L_{k-1}^{-1} u^\top \\
    \end{bmatrix}
    $$
    本质上就是简单的行列变换消元。
@@ -141,6 +141,7 @@ $$
 - 我们证明时不需要 $A$ 是奇异的，其右下角元可以为 0
 - 若某顺序主子式为 0，但主元位置可通过行交换（列主元）避免为 0，则可进行**PLU分解**（$PA = LU$，其中 $P$ 为置换矩阵）。
 
+<!-- 具体计算没有问题，但是对于计算方式应该给出更直观的理解与图像 -->
 ### LU 分解计算公式
 
 $$
@@ -277,7 +278,7 @@ $$
 基于分块矩阵思想，将 $A$ 分块为：
 $$
 A = \begin{bmatrix}
-a_{11} & \mathbf{u}^T \\
+a_{11} & \mathbf{u}^\top \\
 \mathbf{l} & B
 \end{bmatrix}
 =
@@ -287,19 +288,19 @@ a_{11} & \mathbf{u}^T \\
 \end{bmatrix}
 \begin{bmatrix}
 1 & 0 \\
-0 & B - \mathbf{l}\mathbf{u}^T/a_{11}
+0 & B - \mathbf{l}\mathbf{u}^\top/a_{11}
 \end{bmatrix}
 \begin{bmatrix}
-a_{11} & \mathbf{u}^T \\
+a_{11} & \mathbf{u}^\top \\
 0 & I_{n-1}
 \end{bmatrix}
 $$
 
-其中 $B - \mathbf{l}\mathbf{u}^T/a_{11}$ 称为 $a_{11}$ 的 **Schur 补**，其 LU 分解与原矩阵的 LU 分解递归相关。
-这是因为若 Schur 补也能够 LU 分解，即若有 $B - \mathbf{l}\mathbf{u}^T/a_{11} = L_{n-1} U_{n-1}$，则：
+其中 $B - \mathbf{l}\mathbf{u}^\top/a_{11}$ 称为 $a_{11}$ 的 **Schur 补**，其 LU 分解与原矩阵的 LU 分解递归相关。
+这是因为若 Schur 补也能够 LU 分解，即若有 $B - \mathbf{l}\mathbf{u}^\top/a_{11} = L_{n-1} U_{n-1}$，则：
 $$
 A = \begin{bmatrix}
-a_{11} & \mathbf{u}^T \\
+a_{11} & \mathbf{u}^\top \\
 \mathbf{l} & B
 \end{bmatrix}
 =
@@ -308,7 +309,7 @@ a_{11} & \mathbf{u}^T \\
 \mathbf{l}/a_{11} & L_{n-1}
 \end{bmatrix}
 \begin{bmatrix}
-a_{11} & \mathbf{u}^T \\
+a_{11} & \mathbf{u}^\top \\
 0 & U_{n-1}
 \end{bmatrix}
 $$
@@ -415,22 +416,22 @@ for k in range(n - 1): # 递归的第 k 步，最后一步不用计算
 
 ### 数学基础：正定矩阵
 
-**定义**：矩阵 $A$ 称为对称正定矩阵（SPD），若 $A^T = A$ 且对任意非零向量 $\mathbf{x} \in \mathbb{R}^n$，有 $\mathbf{x}^TA\mathbf{x} > 0$。
+**定义**：矩阵 $A$ 称为对称正定矩阵（SPD），若 $A^\top = A$ 且对任意非零向量 $\mathbf{x} \in \mathbb{R}^n$，有 $\mathbf{x}^\top A\mathbf{x} > 0$。
 
 **重要性质**：
 
 1. $A$ 的所有特征值均为正数
-2. $A$ 的所有顺序主子式均为正数
+2. $A$ 的所有主子式均为正数
 3. $A$ 的所有主子阵也为正定阵，所有对角元素均为正数
 4. $A$ 可逆，且 $A^{-1}$ 也是对称正定矩阵
 
-**几何意义**：SPD 矩阵对应的二次型 $\mathbf{x}^TA\mathbf{x}$ 在 $\mathbb{R}^n$ 中表示一个开口向上的碗状曲面，其最小值在原点处取得。
+**几何意义**：SPD 矩阵对应的二次型 $\mathbf{x}^\top A\mathbf{x}$ 在 $\mathbb{R}^n$ 中表示一个开口向上的碗状曲面，其最小值在原点处取得。
 
 ### 数学基础：Cholesky 分解的存在唯一性
 
 若 $A \in \mathbb{R}^{n \times n}$ 是对称正定矩阵，则存在唯一的下三角矩阵 $L$（对角元为正），使得：
 $$
-A = LL^T
+A = LL^\top
 $$
 
 **证明**：
@@ -438,14 +439,14 @@ $$
 记 $ A_k $ 为 $ A $ 的 $ k $ 阶顺序主子矩阵。由 $ A $ 正定知 $ A_k $ 可逆。当 $n=1$ 时，$ A = [a_{11}] $，$ a_{11} > 0 $，显然存在唯一。
 
 假设对 $ n \le k-1 $ 结论成立，则对称正定矩阵 $ A_{k-1} $ 存在唯一的 Cholesky 分解  
-$ A_{k-1} = L_{k-1} L_{k-1}^T $，其中 $ L_{k-1} $ 下三角且对角元为正。下证 $n = k$ 时成立。
+$ A_{k-1} = L_{k-1} L_{k-1}^\top $，其中 $ L_{k-1} $ 下三角且对角元为正。下证 $n = k$ 时成立。
 
 将 $ A_k $ 分块为
 $$
 A_k =
 \begin{bmatrix}
 A_{k-1} & v \\
-v^T & a_{kk}
+v^\top & a_{kk}
 \end{bmatrix},
 $$
 其中 $ v \in \mathbb{R}^{k-1} $，$ a_{kk} > 0 $。
@@ -455,66 +456,66 @@ $$
 L_k =
 \begin{bmatrix}
 L_{k-1} & 0 \\
-w^T & l_{kk}
+w^\top & l_{kk}
 \end{bmatrix},
 $$
 其中 $ L_{k-1} $ 是归纳得到的下三角矩阵（对角元为正），$ w \in \mathbb{R}^{k-1} $，$ l_{kk} > 0 $。
 
 计算
 $$
-L_k L_k^T =
+L_k L_k^\top =
 \begin{bmatrix}
 L_{k-1} & 0 \\
-w^T & l_{kk}
+w^\top & l_{kk}
 \end{bmatrix}
 \begin{bmatrix}
-L_{k-1}^T & w \\
+L_{k-1}^\top & w \\
 0 & l_{kk}
 \end{bmatrix}
 =
 \begin{bmatrix}
-L_{k-1} L_{k-1}^T & L_{k-1} w \\
-w^T L_{k-1}^T & w^T w + l_{kk}^2
+L_{k-1} L_{k-1}^\top & L_{k-1} w \\
+w^\top L_{k-1}^\top & w^\top w + l_{kk}^2
 \end{bmatrix}.
 $$
 
 令其等于 $ A_k $：
 $$
 \begin{cases}
-A_{k-1} = L_{k-1} L_{k-1}^T & \text{(由归纳假设已知)}\\
+A_{k-1} = L_{k-1} L_{k-1}^\top & \text{(由归纳假设已知)}\\
 v = L_{k-1} w & \text{(1)}\\
-a_{kk} = w^T w + l_{kk}^2 & \text{(2)}
+a_{kk} = w^\top w + l_{kk}^2 & \text{(2)}
 \end{cases}
 \tag{2}
 $$
 
-则 Cholesky 分解存在且唯一等价于方程组 $(2)$ 的解存在且唯一。显然 $w = L_{k-1}^{-1} v$ 存在且唯一，只需验证 $ a_{kk} - w^T w > 0 $ 即可！
+则 Cholesky 分解存在且唯一等价于方程组 $(2)$ 的解存在且唯一。显然 $w = L_{k-1}^{-1} v$ 存在且唯一，只需验证 $ a_{kk} - w^\top w > 0 $ 即可！
 
-由正定性，对任意非零向量 $ x \in \mathbb{R}^k $ 有 $ x^T A_k x > 0 $。
+由正定性，对任意非零向量 $ x \in \mathbb{R}^k $ 有 $ x^\top A_k x > 0 $。
 取 $ x = \begin{pmatrix} -L_{k-1}^{-T} w \\ 1 \end{pmatrix} $，注意这是一个分块向量，第一块长度 $k-1$，第二块是标量。
 则
 $$
-x^T A_k x = \begin{pmatrix} -w^T L_{k-1}^{-1} & 1 \end{pmatrix}
+x^\top A_k x = \begin{pmatrix} -w^\top L_{k-1}^{-1} & 1 \end{pmatrix}
 \begin{bmatrix}
 A_{k-1} & v \\
-v^T & a_{kk}
+v^\top & a_{kk}
 \end{bmatrix}
 \begin{pmatrix} -L_{k-1}^{-T} w \\ 1 \end{pmatrix} \\
 =
-\begin{pmatrix} -w^T L_{k-1}^{-1} & 1 \end{pmatrix}
+\begin{pmatrix} -w^\top L_{k-1}^{-1} & 1 \end{pmatrix}
 \begin{bmatrix}
-L_{k-1} L_{k-1}^T & L_{k-1} w \\
-w^T L_{k-1}^T & a_{kk}
+L_{k-1} L_{k-1}^\top & L_{k-1} w \\
+w^\top L_{k-1}^\top & a_{kk}
 \end{bmatrix}
 \begin{pmatrix} -L_{k-1}^{-T} w \\ 1 \end{pmatrix} \\
-= a_{kk} - w^T w > 0.
+= a_{kk} - w^\top w > 0.
 $$
 
 于是存在唯一性得证。
 
 ### Cholesky 分解计算公式
 
-从 $A=L L^T$ 出发，对比矩阵元素可得：
+从 $A=L L^\top$ 出发，对比矩阵元素可得：
 
 $$
 l_{kk} = \sqrt{a_{kk} - \sum_{j=1}^{k-1} l_{kj}^2}, \quad k=1,2,3,\dots,n
@@ -527,7 +528,7 @@ $$
 
 矩阵乘法：
 $$
-a_{ij} = (LL^T)_{ij} = \sum_{k=1}^n l_{ik} l_{jk} = \sum_{k=1}^{\min(i, j)} l_{ik} l_{jk}.
+a_{ij} = (LL^\top)_{ij} = \sum_{k=1}^n l_{ik} l_{jk} = \sum_{k=1}^{\min(i, j)} l_{ik} l_{jk}.
 $$
 
 由于 $ L $ 下三角，$ l_{ik} = 0 $ 当 $ i < k $，且 $ l_{jk} = 0 $ 当 $ j < k $，所以求和实际上只到 $ \min(i, j) $。
@@ -542,7 +543,7 @@ $$
    l_{ii}^2 = a_{ii} - \sum_{k=1}^{i-1} l_{ik}^2.
    $$
 
-   将 $i$ 替换为 $k$，$k$ 替换为 $j$，并开方得（可以开方的证明见前一节）：
+   将 $i$ 替换为 $k$，$k$ 替换为 $j$，并开方得（可以开方的证明见[前一节](#数学基础cholesky-分解的存在唯一性)）：
    $$
    l_{kk} = \sqrt{a_{kk} - \sum_{j=1}^{k-1} l_{kj}^2}, \quad k = 1, 2, \dots, n.
    $$
@@ -587,7 +588,7 @@ for k in range(n):
 对于对称正定矩阵
 $$
 A = \begin{bmatrix}
-a_{11} & \mathbf{l}^T \\
+a_{11} & \mathbf{l}^\top \\
 \mathbf{l} & B
 \end{bmatrix}
 $$
@@ -601,16 +602,16 @@ A = \begin{bmatrix}
 \end{bmatrix}
 \begin{bmatrix}
 1 & 0 \\
-0 & B - \mathbf{l}\mathbf{l}^T / a_{11}
+0 & B - \mathbf{l}\mathbf{l}^\top / a_{11}
 \end{bmatrix}
 \begin{bmatrix}
-\sqrt{a_{11}} & \mathbf{l}^T/\sqrt{a_{11}} \\
+\sqrt{a_{11}} & \mathbf{l}^\top/\sqrt{a_{11}} \\
 0 & I_{n-1}
 \end{bmatrix}
 $$
 
-其中 $B - \mathbf{l}\mathbf{l}^T/a_{11}$ 为 Schur 补，其 Cholesky 分解与原矩阵的 Cholesky 分解递归相关。
-这是因为若 Schur 补也能够 Cholesky 分解，即若有 $B - \mathbf{l}\mathbf{l}^T/a_{11} = L_{n-1} L_{n-1}^T$，则：
+其中 $B - \mathbf{l}\mathbf{l}^\top/a_{11}$ 为 Schur 补，其 Cholesky 分解与原矩阵的 Cholesky 分解递归相关。
+这是因为若 Schur 补也能够 Cholesky 分解，即若有 $B - \mathbf{l}\mathbf{l}^\top/a_{11} = L_{n-1} L_{n-1}^\top$，则：
 
 $$
 A = \begin{bmatrix}
@@ -618,8 +619,8 @@ A = \begin{bmatrix}
 \mathbf{l}/\sqrt{a_{11}} & L_{n-1}
 \end{bmatrix}
 \begin{bmatrix}
-\sqrt{a_{11}} & \mathbf{l}^T/\sqrt{a_{11}} \\
-0 & L_{n-1}^T
+\sqrt{a_{11}} & \mathbf{l}^\top/\sqrt{a_{11}} \\
+0 & L_{n-1}^\top
 \end{bmatrix}
 $$
 
@@ -660,7 +661,7 @@ $$
 特别地，若 $A$ 对称正定（SPD），则所有 $d_k > 0$。
 
 **与 Cholesky 分解的关系**：  
-若 $A = LL^T$ 是标准 Cholesky 分解，则 $LDL^T$ 分解可视为 $L_{\text{chol}} = L_{\text{ldl}} \sqrt{D}$，从而避免开方运算，数值上更稳定，尤其适用于半正定或接近奇异的矩阵。
+若 $A = LL^\top$ 是标准 Cholesky 分解，则 $LDL^T$ 分解可视为 $L_{\text{chol}} = L_{\text{ldl}} \sqrt{D}$，从而避免开方运算，数值上更稳定，尤其适用于半正定或接近奇异的矩阵。
 
 **证明**：
 
@@ -675,17 +676,17 @@ $$
 A_k =
 \begin{bmatrix}
 A_{k-1} & v \\
-v^T & a_{kk}
+v^\top & a_{kk}
 \end{bmatrix},
 $$
 其中 $v \in \mathbb{R}^{k-1}$。
 
-由归纳假设，$A_{k-1} = L_{k-1} D_{k-1} L_{k-1}^T$。设待求的 $L_k$ 和 $D_k$ 分块为
+由归纳假设，$A_{k-1} = L_{k-1} D_{k-1} L_{k-1}^\top$。设待求的 $L_k$ 和 $D_k$ 分块为
 $$
 L_k =
 \begin{bmatrix}
 L_{k-1} & 0 \\
-w^T & 1
+w^\top & 1
 \end{bmatrix},
 \quad
 D_k =
@@ -696,21 +697,21 @@ D_{k-1} & 0 \\
 $$
 其中 $w \in \mathbb{R}^{k-1}$，$d_{kk} \neq 0$ 待定。
 
-计算 $L_k D_k L_k^T$：
+计算 $L_k D_k L_k^\top$：
 $$
-L_k D_k L_k^T =
+L_k D_k L_k^\top =
 \begin{bmatrix}
-L_{k-1} D_{k-1} L_{k-1}^T & L_{k-1} D_{k-1} w \\
-w^T D_{k-1} L_{k-1}^T & w^T D_{k-1} w + d_{kk}
+L_{k-1} D_{k-1} L_{k-1}^\top & L_{k-1} D_{k-1} w \\
+w^\top D_{k-1} L_{k-1}^\top & w^\top D_{k-1} w + d_{kk}
 \end{bmatrix}.
 $$
 
 令其等于 $A_k$，得方程组：
 $$
 \begin{cases}
-A_{k-1} = L_{k-1} D_{k-1} L_{k-1}^T & \text{(由归纳假设满足)}\\
+A_{k-1} = L_{k-1} D_{k-1} L_{k-1}^\top & \text{(由归纳假设满足)}\\
 v = L_{k-1} D_{k-1} w & \text{(1)}\\
-a_{kk} = w^T D_{k-1} w + d_{kk} & \text{(2)}
+a_{kk} = w^\top D_{k-1} w + d_{kk} & \text{(2)}
 \end{cases}
 $$
 
@@ -722,18 +723,19 @@ $$
 
 代入 (2) 得
 $$
-d_{kk} = a_{kk} - w^T D_{k-1} w.
+d_{kk} = a_{kk} - w^\top D_{k-1} w.
 $$
 $d_{kk}$ 由给定数据唯一确定。至此 $L_k$、$D_k$ 被唯一确定。
 
 **需要验证 $d_{kk} \neq 0$**：由条件 $\det(A_k) \neq 0$，且
 $$
-\det(A_k) = \det(L_k D_k L_k^T) = \det(D_k) = \left( \prod_{i=1}^{k-1} d_i \right) \cdot d_{kk}.
+\det(A_k) = \det(L_k D_k L_k^\top) = \det(D_k) = \left( \prod_{i=1}^{k-1} d_i \right) \cdot d_{kk}.
 $$
 由归纳假设 $\prod_{i=1}^{k-1} d_i = \det(A_{k-1}) \neq 0$，结合 $\det(A_k) \neq 0$ 得 $d_{kk} \neq 0$。证毕。
 
 当正定时，显然可知所有 $d_k \gt 0$
 
+<!-- 问题同上 -->
 ### LDL^T 分解计算公式
 
 从 $A = LDL^T$ 出发，设 $L$ 为单位下三角，$D = \operatorname{diag}(d_1, d_2, \dots, d_n)$，对比矩阵元素可得：
@@ -798,7 +800,7 @@ for k in range(n):
 对于对称阵
 $$
 A = \begin{bmatrix}
-a_{11} & \mathbf{l}^T \\
+a_{11} & \mathbf{l}^\top \\
 \mathbf{l} & B
 \end{bmatrix}
 $$
@@ -812,14 +814,15 @@ A = \begin{bmatrix}
 \end{bmatrix}
 \begin{bmatrix}
 a_{11} & 0 \\
-0 & B - \mathbf{l}\mathbf{l}^T / a_{11}
+0 & B - \mathbf{l}\mathbf{l}^\top / a_{11}
 \end{bmatrix}
 \begin{bmatrix}
-1 & \mathbf{l}^T/a_{11} \\
+1 & \mathbf{l}^\top/a_{11} \\
 0 & I_{n-1}
 \end{bmatrix}
 $$
-其中 $B - \mathbf{l}\mathbf{l}^T / a_{11}$ 是 Schur 补，其 $LDL^T$ 分解可以递归进行。也即若有 $B - \mathbf{l}\mathbf{l}^T / a_{11} = L_{n-1}D_{n-1}L_{n-1}^T$，则：
+其中 $B - \mathbf{l}\mathbf{l}^\top / a_{11}$ 是 Schur 补，其 $LDL^T$ 分解可以递归进行。
+也即若有 $B - \mathbf{l}\mathbf{l}^\top / a_{11} = L_{n-1}D_{n-1}L_{n-1}^\top$，则：
 $$
 A = \begin{bmatrix}
 1 & 0 \\
@@ -830,8 +833,8 @@ a_{11} & 0 \\
 0 & D_{n-1}
 \end{bmatrix}
 \begin{bmatrix}
-1 & \mathbf{l}^T/a_{11} \\
-0 & L_{n-1}^T
+1 & \mathbf{l}^\top/a_{11} \\
+0 & L_{n-1}^\top
 \end{bmatrix}
 $$
 

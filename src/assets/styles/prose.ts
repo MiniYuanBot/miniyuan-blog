@@ -19,7 +19,7 @@ export const typographyConfig: TypographyOptions = {
             'line-height': '1.3',
         },
         'h2': {
-            'border-bottom': '1px solid hsl(var(--border))',
+            // 'border-bottom': '1px solid hsl(var(--border))',
             'padding-bottom': '0.3rem',
         },
 

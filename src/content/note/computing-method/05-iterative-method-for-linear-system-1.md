@@ -112,7 +112,7 @@ $$
 (\mathbf{D} - \mathbf{L})\mathbf{x}^{(k+1)} = \mathbf{U}\mathbf{x}^{(k)} + \mathbf{b}
 $$
 
-即：
+即 **Gauss-Seidal 迭代格式**：
 $$
 \mathbf{x}^{(k+1)} = (\mathbf{D}-\mathbf{L})^{-1}\mathbf{U}\mathbf{x}^{(k)} + (\mathbf{D}-\mathbf{L})^{-1}\mathbf{b}
 $$

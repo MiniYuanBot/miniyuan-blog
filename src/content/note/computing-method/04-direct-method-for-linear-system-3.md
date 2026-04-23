@@ -155,6 +155,8 @@ $$
 - 反例：
   $f(\mathbf{A})=\max_{i,j}|a_{ij}|$ 不满足相容性。如 $\mathbf{A}=\mathbf{B}=\begin{bmatrix}1&1\\1&1\end{bmatrix}$ 时，$f(\mathbf{AB})=2>f(\mathbf{A})f(\mathbf{B})=1$。
 
+**向量范数与矩阵范数相容**：
+
 若对 $\forall \mathbf{A} \in \mathbf{R}^{n \times n}$ 与 $\forall \mathbf{x} \in \mathbf{R}^n$，都有：
 $$
 \| \mathbf{A} \mathbf{x} \| \le \| \mathbf{A} \| \| \mathbf{x} \|
@@ -435,7 +437,7 @@ $$
 
 ### 定义：条件数
 
-在矩阵范数 $\|\cdot\|$ 下，非奇异方阵阵 $\mathbf{A} \in \mathbf{R}^{n \times n}$ 的条件数为：
+在矩阵范数 $\|\cdot\|$ 下，非奇异方阵 $\mathbf{A} \in \mathbf{R}^{n \times n}$ 的条件数为：
 $$
 \text{Cond}(\mathbf{A}) \equiv \|\mathbf{A}\|\|\mathbf{A}^{-1}\|
 $$
@@ -625,7 +627,7 @@ $$
 
 **注**：
 
-- **条件数的倒数** = **矩阵到最近奇异矩阵的相对距离**
+- **条件数的倒数** $=$ **矩阵到最近奇异矩阵的相对距离**
 - 病态矩阵 $\Leftrightarrow$ 距离奇异矩阵近
 - 良态矩阵 $\Leftrightarrow$ 与所有奇异矩阵保持距离
 - 病态问题难以求解，因为数值计算中的舍入误差可能导致矩阵穿越奇异边界
@@ -706,7 +708,7 @@ $$
 如果 $\mathbf{x} \in \mathbb{R}^n$ 是 $\mathbf{Ax} = \mathbf{b}$ 的解，其中 $\mathbf{b} \in \mathbb{R}^n, \mathbf{b} \neq \mathbf{0}$。
 考虑扰动 $\delta\mathbf{b} \in \mathbb{R}^n$，$\delta\mathbf{x}$ 是
 $$
-(\mathbf{A}+\delta\mathbf{A})(\mathbf{x}+\delta\mathbf{x}) = \mathbf{b}+\delta\mathbf{b} \tag{4.39}
+(\mathbf{A}+\delta\mathbf{A})(\mathbf{x}+\delta\mathbf{x}) = \mathbf{b}+\delta\mathbf{b}
 $$
 的解。此时有如下**正向先验误差估计**：
 $$
