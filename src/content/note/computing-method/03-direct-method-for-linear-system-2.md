@@ -383,8 +383,9 @@ for k in range(n - 1): # 递归的第 k 步，最后一步不用计算
 
 普通 $n \times n$ 矩阵需 $n^2$ 存储空间，带状矩阵仅需 $(p+q+1) \times n$ 空间：
 $$
-a_{ij} \Rightarrow \bar{a}_{i-j+q+1,j}, \quad \text{其中 } \bar{A} \in \mathbb{R}^{(p+q+1) \times n}
+a_{ij} \Rightarrow \bar{a}_{i-j+q+1,j}
 $$
+其中 $\bar{A} \in \mathbb{R}^{(p+q+1) \times n}$
 
 ![图3：下带宽 p=1、上带宽 q=2 的6×6矩阵](/images/note/computing-method/03-direct-method-for-linear-system-2-03-band-matrix.png)
 

@@ -137,8 +137,17 @@ Decision for the task。常用浅学习模型，如 **logistic regression**（�
    - 对于线性模型/MLP：展平为 (784,) 向量。
    - 对于 CNN：保留形状 (1, 28, 28) 。
 4. 划分数据集：
-   - 划分为训练集和测试集。
+   - 划分为**训练集**、**验证集**和**测试集**。
    - 按照训练方法进一步划分，比如划分出 mini-batch。
+
+**注**：区分 train、validation、test、inference
+
+| 阶段 | 核心目的 | 是否更新模型参数 | 是否需要标签 |
+| :--- | :--- | :--- | :--- |
+| **训练 (Train)** | 学习规律 | Y | Y |
+| **验证 (Validation)** | 调超参数、选模型 | N | Y |
+| **测试 (Test)** | 最终评估泛化能力 | N | Y |
+| **推理 (Inference)** | 实际应用预测 | N | N |
 
 ### Build a Model
 
@@ -549,7 +558,7 @@ $$
 
 ### Testing
 
-训练完成后要在测试集上评估模型的泛化能力（generalization）。
+训练完成后要在**测试集**上评估模型的泛化能力（generalization）。
 
 **常用评估指标**：
 

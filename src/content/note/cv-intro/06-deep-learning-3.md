@@ -103,7 +103,7 @@ $$
 
 解决办法是进行 Batch Normalization。通过对 mini-batch 内每个激活做归一化来稳定训练、加速收敛，并在一定程度上起到正则化作用。
 
-### BatchNorm Layer
+### BatchNorm Layer in CNN
 
 **Train Mode**：
 
@@ -135,6 +135,7 @@ $$
 **注**：
 
 - 共需学习 $2C$ 个参数，注意参数是与 batch 无关的。
+- BatchNorm 不改变维度。
 - 在 backpropagation 时，上述 $\gamma_c, \beta_c, \mu, \sigma$ 都会用到。
 
 **Eval Mode**：
@@ -161,11 +162,55 @@ $$
 **注**：
 
 - 最后一层不使用 BatchNorm，因为最后输出不应该假设服从 Gauss 分布。
+- 一般先 BatchNorm 后 Activation，因为能够让激活函数工作在梯度最健康的区间。
 - 有时候还会把 running variance 修正为无偏估计量，也即：
     $$
     \sigma^2_{\text{run}, c} \leftarrow \rho \cdot \sigma^2_{\text{run}, c}
     + (1-\rho) \cdot \frac{m}{m-1} \sigma^2_{B, c}
     $$
+
+### BatchNorm Layer in MLP
+
+完全相同，只不过把对**通道**求均值变为了对**特征维度**求均值。
+
+**Train Mode**：
+
+设当前 mini-batch 为 $B$，包含 $N = |B|$ 个样本。
+激活值 $x \in \mathbb{R}^{N \times D}$，其中 $D$ 为隐藏层神经元个数（特征维度）。
+
+对每个特征维度 $d$，有：
+$$
+\mu_{B, d} = \frac{1}{N}\sum_{n=1}^N x_{n, d}
+$$
+$$
+\sigma_{B, d}^2 = \frac{1}{N}\sum_{n=1}^N (x_{n, d} - \mu_{B, d})^2
+$$
+$$
+\hat x_{n, d} = \frac{x_{n, d} - \mu_{B, d}}{\sqrt{\sigma_{B, d}^2 + \epsilon}}
+$$
+$$
+y_{n, d} = \gamma_d \hat x_{n, d} + \beta_d
+$$
+其中 $\epsilon$ 为小常数，$\gamma_d, \beta_d$ 为需要学习的尺度和平移参数。此时共需学习 $2D$ 个参数，注意参数是与 batch 无关的。
+
+**Eval Mode**：
+
+训练中维护每个特征维度的 running mean and variance：
+$$
+\mu_{\text{run}, d} \leftarrow \rho \cdot \mu_{\text{run}, d} + (1 - \rho) \cdot \mu_{B, d}
+$$
+$$
+\sigma^2_{\text{run}, d} \leftarrow \rho \cdot \sigma^2_{\text{run}, d} + (1 - \rho) \cdot \sigma^2_{B, d}
+$$
+其中 $\rho$ 为动量，通常取 0.9 或 0.99，初始时 $\mu_{\text{run}, d} = 0, \sigma^2_{\text{run}, d} = 1$。
+
+验证/测试时：
+$$
+\hat x_{n,d} = \frac{x_{n,d} - \mu_{\text{run}, d}}{\sqrt{\sigma^2_{\text{run}, d} + \epsilon}}
+$$
+$$
+y_{n,d} = \gamma_d \hat x_{n,d} + \beta_d
+$$
 
 ### BatchNorm Pros
 

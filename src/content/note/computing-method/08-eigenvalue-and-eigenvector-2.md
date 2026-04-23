@@ -38,7 +38,7 @@ $$
 
 对非零向量 $x \in \mathbb{R}^n$，存在 Householder 矩阵 $H$，使得：
 $$
-Hx = -\sigma e_1, \quad \sigma = \text{sign}(x_1)\|x\|_2
+Hx = \sigma e_1, \quad \sigma = -\text{sign}(x_1)\|x\|_2
 $$
 其中 $e_1 = [1,0,\dots,0]^T$。
 
@@ -49,7 +49,10 @@ $$
 Hx = y
 $$
 
-由几何直观，构造 $w = \dfrac{x - y}{\|x - y\|}$ 即可。
+由几何直观，构造 $w = \dfrac{x - y}{\|x - y\|_2}$ 即可。
+
+**注**：
+定理中的 $-\text{sign}(x_1)$ 用于确保计算 $\|x - [-\text{sign}(x_1)\|x\|_2]\|_2$ 时数值稳定，因为此时第一个元素绝对值肯定不会变小。
 
 ### Householder QR 分解
 
@@ -61,7 +64,7 @@ $$
 2. 对 $ k = 1, 2, \dots, n-1 $：
    1. 取 $ x^{(k)} = A^{(k)}[k:n, k] \in \mathbb{R}^{(n-k+1)} $
    2. 构造 Householder 矩阵 $ H^{(k)} \in \mathbb{R}^{(n-k+1) \times (n-k+1)} $ 使
-    $ H^{(k)} x^{(k)} = \text{sign}(x_1^{(k)})\|x^{(k)}\|_2 e_1 $
+    $ H^{(k)} x^{(k)} = -\text{sign}(x_1^{(k)})\|x^{(k)}\|_2 e_1 $
    3. 令 $ \tilde{H}^{(k)} = \begin{bmatrix} I_{k-1} & 0 \\ 0 & H^{(k)} \end{bmatrix} $，注意其仍为 Householder 矩阵
    4. $ A^{(k+1)} = \tilde{H}^{(k)} A^{(k)} $
    5. $ Q^{(k+1)} = Q^{(k)} (\tilde{H}^{(k)})^T $
@@ -94,12 +97,12 @@ R^{(k)} & C^{(k)} \\
 \end{bmatrix}
 $$
 
-由于 $ H^{(k)} D^{(k)} $ 的第一列变为 $ \|x^{(k)}\|_2 e_1 $，故 $ A^{(k+1)} $ 的左上角 $ k \times k $ 块
+由于 $ H^{(k)} D^{(k)} $ 的第一列变为 $ -\text{sign}(x_1^{(k)})\|x^{(k)}\|_2 e_1 $，故 $ A^{(k+1)} $ 的左上角 $ k \times k $ 块
 
 $$
 \begin{bmatrix}
 R^{(k)} & C^{(k)}_{:,1} \\
-0 & \|x^{(k)}\|_2
+0 & -\text{sign}(x_1^{(k)})\|x^{(k)}\|_2
 \end{bmatrix}
 $$
 
@@ -116,6 +119,32 @@ $$
 满足归纳假设。
 
 **复杂度**：$\mathcal{O}(2n^3/3)$ 次浮点运算，优于 Givens。但稀疏时 Givens 更优。
+
+### Householder QR 分解代码
+
+```python
+n = A.shape[0]
+Q = np.eye(n)
+R = np.copy(A)
+
+for k in range(n - 1):
+    x = R[k:, k]  # (n - k,)
+    norm_x = np.linalg.norm(x)
+
+    if norm_x < 1e-15:  # 全 0 列则跳过
+        continue
+
+    y = np.zeros((n - k,))  # (n - k,)
+    y[0] = -np.sign(x[0]) * norm_x
+    w = (x - y) / np.linalg.norm(x - y)  # (n - k,)
+
+    # H = np.eye(n) - 2 * np.outer(w, w)
+    sub_R = R[k:, k:]  # (n - k, n - k)
+    sub_Q = Q[:, k:]  # (n, n - k)
+
+    sub_R -= 2 * np.outer(w, w @ sub_R)
+    sub_Q -= 2 * np.outer(sub_Q @ w, w)
+```
 
 ### Givens 旋转变换
 

@@ -204,7 +204,7 @@ $$
    若 $\mathbf{x} = \mathbf{0}$，两边均为 0，成立。  
    若 $\mathbf{x} \neq \mathbf{0}$，令 $\mathbf{u} = \frac{\mathbf{x}}{\|\mathbf{x}\|}$，则 $\|\mathbf{u}\| = 1$。由诱导范数定义：
    $$
-   \|A\| = \max_{\|\mathbf{y}\|=1} \|A\mathbf{y}\| \ge \|A\mathbf{u}\| = \frac{\|A\mathbf{x}\|}{\|\mathbf{x}\|}。
+   \|A\| = \max_{\|\mathbf{y}\|=1} \|A\mathbf{y}\| \ge \|A\mathbf{u}\| = \frac{\|A\mathbf{x}\|}{\|\mathbf{x}\|}
    $$
    两边乘以 $\|\mathbf{x}\|$ 即可。
 2. **非负性**：$\|A\| \ge 0$，且 $\|A\| = 0 \iff A = 0$。

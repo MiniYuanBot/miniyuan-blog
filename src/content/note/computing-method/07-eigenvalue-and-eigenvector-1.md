@@ -496,8 +496,8 @@ $$
 解得：
 $$
 \begin{aligned}
-\tau &= \frac{a_{qq} - a_{pp}}{2a_{pq}} \\
-t &= \frac{\text{sign}(\tau)}{|\tau| + \sqrt{1+\tau^2}} \\
+\tau &= \frac{a_{pp} - a_{qq}}{2a_{pq}} \\
+t &= -\frac{\text{sign}(\tau)}{|\tau| + \sqrt{1+\tau^2}} \\
 c &= \frac{1}{\sqrt{1+t^2}} \\
 s &= ct
 \end{aligned}
@@ -570,11 +570,11 @@ while k < N:
         break
     
     # 计算旋转参数
-    tau = (A[q, q] - A[p, p]) / (2 * A[p, q])
+    tau = (A[p, p] - A[q, q]) / (2 * A[p, q])
     if tau >= 0:
-        t = 1 / (tau + np.sqrt(1 + tau**2))
+        t = -1 / (tau + np.sqrt(1 + tau**2))
     else:
-        t = -1 / (-tau + np.sqrt(1 + tau**2))
+        t = 1 / (-tau + np.sqrt(1 + tau**2))
     c = 1 / np.sqrt(1 + t**2)
     s = c * t
     
