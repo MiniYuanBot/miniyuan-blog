@@ -406,6 +406,8 @@ $$
 \text{IoU} = \frac{\text{TP}}{\text{TP} + \text{FP} + \text{FN}}
 $$
 
+**注**：本质上只要是两个集合，就可以用 IoU 计算相似度。
+
 **mIoU**：
 mean IoU 可用于评估对多类的整体分隔能力，也即对每个类计算 IoU，再取平均。
 $$
@@ -416,8 +418,18 @@ $$
 **注**：
 对类别不平衡问题，mIoU 能公平考虑每个类的分割性能；
 
+### Soft IoU Loss
+
+本质上 train objection 为 Loss function，而 test objection 为 Evaluation metrics，两者往往不一致：
+
+- **Loss Function**：作为训练目标，必须可导
+- **Evaluation Metrics**：真实任务需求，可能不可导
+
+我们希望构造合适的 Loss function 以对齐 Evaluation metrics，从而缩小 surrogate gap。
+
 **Soft IoU Loss**：
-标准 IoU 基于离散的二值掩码，不可导，无法直接通过反向传播优化。Soft IoU Loss 将其连续化。
+
+标准 IoU 基于离散的二值掩码，不可导。Soft IoU Loss 将其连续化。
 
 设网络经 Sigmoid 或 Softmax 输出的概率图为 $p$，对应 one-hot 标签为 $y$。定义**软交集**与**软并集**：
 
