@@ -12,11 +12,6 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-- 常见架构模板（卷积网络）：
-  - [(Conv - **BN** - ReLU) *N - Pool?]* m - (FC - BN - ReLU) * K - FC - Softmax
-  - 注意：一般最后一层不做 BatchNorm。
-- 深度网络训练技巧：归一化（**BatchNorm** / **GroupNorm**）、残差连接（**Residual / Skip**）、正则化与数据增强（Data Augmentation / Dropout）
-
 ## Set a loss function
 
 对于一个具体的图像识别问题，假设进行图像识别的类别总数已知，也即 **closed vocabulary** 问题。
@@ -97,13 +92,17 @@ $$
 
 ---
 
-## Normalization
+## Handle Underfitting
+
+对于 Underfitting 的问题，解决的本质就是将模型复杂化，也即加深网络。为了避免加深网络时结构上的问题提出了 **Normalization** 和 **Residual Link**。
+
+### Normalization
 
 对于深层神经网络，由于层与层之间的参数分布差异会随训练逐渐显著，而每次 backpropagation 使用相同的学习率，可能导致最终浅层网络与深层网络的 error 差异显著。
 
 解决办法是进行 Batch Normalization。通过对 mini-batch 内每个激活做归一化来稳定训练、加速收敛，并在一定程度上起到正则化作用。
 
-### BatchNorm Layer in CNN
+#### BatchNorm Layer in CNN
 
 **Train Mode**：
 
@@ -161,7 +160,7 @@ $$
 
 **注**：
 
-- 最后一层不使用 BatchNorm，因为最后输出不应该假设服从 Gauss 分布。
+- 一般只用于 hidden layers。output layer **不使用** BatchNorm，因为最后输出不应该假设服从 Gauss 分布。
 - 一般先 BatchNorm 后 Activation，因为能够让激活函数工作在梯度最健康的区间。
 - 有时候还会把 running variance 修正为无偏估计量，也即：
     $$
@@ -169,7 +168,7 @@ $$
     + (1-\rho) \cdot \frac{m}{m-1} \sigma^2_{B, c}
     $$
 
-### BatchNorm Layer in MLP
+#### BatchNorm Layer in MLP
 
 完全相同，只不过把对**通道**求均值变为了对**特征维度**求均值。
 
@@ -212,7 +211,7 @@ $$
 y_{n,d} = \gamma_d \hat x_{n,d} + \beta_d
 $$
 
-### BatchNorm Pros
+#### BatchNorm Pros
 
 - BatchNorm 最初的想法是减少 **internal covariate shift**（内部协变量偏移），也即网络中间层的输入分布在训练过程中不断漂移，导致训练困难。
     而 BatchNorm 归一化了每层输入的分布，减少了这种 shift
@@ -220,13 +219,13 @@ $$
     从而使梯度方向更一致、尺度更稳定，允许更大的学习率、更快收敛。
 - 存在 batch dependence，也即同一 batch 中的样本会相互影响。从而引入了微小的 **batch noise** 带来轻微的正则化。
 
-### BatchNorm Cons
+#### BatchNorm Cons
 
 - 也是由于 batch dependence 的存在，当 batch size 很小时，batch mean / variance 不稳定，
     并且训练时使用 batch mean / variance，验证/测试时使用 running mean / variance，导致**性能不一致**。
 - 本质上 BatchNorm 假设了所有 $N \times H \times W$ 个数值独立同分布，从而对**分布高度相关**的实例不适用。
 
-### Other Normalizations
+#### Other Normalizations
 
 - **LayerNorm**：按单个样本做归一化，常用于 RNN / Transformer。
 - **InstanceNorm**：按单个样本的单个通道做归一化，常用于具有明显样本风格的图像工作。
@@ -236,68 +235,159 @@ $$
 
 **注**：
 
-- 当蓝色覆盖 $N$ 的维度时即不会有 batch dependence，故这三者均没有。
+- 蓝色覆盖 $N$ 的维度就不会有 batch dependence，故后三者均没有。
 - 实际上，实验证明 BatchNorm 的问题在 batch size 足够大时影响很小，并且效果也是最好的。当资源有限时，使用 GroupNorm 是一种权宜之计。
 
+### Residual Link
+
+也称为 **Skip Link**。
+
+当加深神经网络时：
+
+- backpropagation 视角：越底层的梯度计算链越长，数值越难控制，训练效果越差；
+- forward 视角：底层的模型差，顶层的模型好也没用。
+
+**核心思想**：
+希望在已训练好的神经网络上继续加深，理论上不会变的更差。
+不妨学习**残差**（output - input），那么当加深无益时，只需让 Residual block 趋于 0 即可，这比 Plain layers 学习一个恒等映射容易的多。
+
+![图 2：Residual Link](/images/note/cv-intro/06-deep-learning-3-02-residual-link.png)
+
+**Pros**：
+
+- backpropagation 视角：Residual Link 提供了 bypass，可以缓解梯度消失或爆炸。
+- loss landscape 视角：网络加深时，loss landscape 会逐渐远离 convex（凸性），变得 chaotic（混沌），显然更容易被 local minimal 截胡。
+    增加 Residual Link 可以使得 loss landscape 变得更平坦。
+
 ---
 
-## 结构性解决方式：残差连接（Residual / Skip）
+## Handle Overfitting
 
-- ResNet 提出的残差块把恒等映射加入层内：
-  - 原始块：y = F(x) + x
-- 从反向传播视角，skip link 为梯度提供了旁路（bypass），缓解梯度消失/爆炸并促进训练更深的网络。
-- 课件引用研究：skip connections 促成更平坦的最小值（flat minima），从而改善可训练性和泛化。
+本质上是把数据中的噪声也当作模型的一部分学习了。
+所以我们应当让 **data variability** 与 **model capacity** 匹配，要么适当降低模型复杂度，要么想办法增加数据量。
 
-## Loss Landscape（损失地形）
+### Early Stopping
 
-- 随着网络加深，损失地形可能由近似凸转为高度混沌（chaotic），导致训练困难。skip connections 有助于保持可控的损失地形。
+当验证集的 accuracy 持续下降时就提前停止训练。打不过就放弃吧qwq
 
-**Q1: 残差网络能无限深入吗？**  
-> 虽然残差结构显著缓解了深层训练难题，但无限加深并不总是带来好处，仍受计算资源、数据量和正则化等因素制约。
+### Data Augmentation
 
-**Q2: “平坦最小值”为什么更好？**  
-> 平坦最小值意味着在参数微小扰动下损失变化不敏感，通常与更好的泛化性能相关。
+通过数据增强的方式，**增大 data variability**。
 
----
+![图 3：常见的数据增强手段](/images/note/cv-intro/06-deep-learning-3-03-data-augmentation.png)
 
-## Regularization（正则化）、Data Augmentation 与 Dropout
+**注**：
+DA 的 **Magnitude**（强度）很重要。
 
-目标是减少模型在训练集上学习噪声（overfitting），提升在未见数据上的泛化能力。
+- 过强的 DA 可能会造成 error，对模型有害无益，
+- 过弱则作用有限。
 
-### 常见正则化技术
+通常通过超参数调优或人工检验确定。人工检验的标准就是输入数据人脑能否正确识别。
 
-- L2 正则化（权重衰减）：在损失上加项 λ ||W||^2：
+### Regularization
+
+通过对权重的限制，**降低 model capacity**。
+
+**常见类型**：
 
 $$
-\mathcal{L}_{reg} = \mathcal{L}_{main} + \frac{\lambda}{2}\|W\|^2
+\mathcal{L}_{reg} = \mathcal{L}_{main} + R(\theta)
 $$
+其中 $R(\theta)$ 的常见形式有：
 
-- Dropout（丢弃法）：
-  - 训练时随机以概率 p 将神经元输出置 0（相当于随机子网络训练）。
-  - 测试时通常按保留概率做缩放（或在训练时缩放激活）。
-  - 目的是减少神经元之间的共同适应性，作为一种模型正则化方法。
-- Early stopping（提前停止）：根据验证集性能停止训练，避免过拟合。
-- BatchNorm 也起到一定正则化效果（因 batch 内统计带来的噪声）。
+- **Ridge Regression** / **L2 regularization**：
+    $$
+    R(\theta)
+    = \frac{\lambda}{2}\|W\|_2^2
+    = \frac{\lambda}{2}\sum_{\text{layer } L} \sum_{i,j,\dots} (W^{(L)}_{i,j,\dots})^2
+    $$
+    其中 $\lambda$ 被称为 **weight decay**，因为对权重求梯度时：
+    $$
+    \frac{\partial \mathcal{L}_{reg}}{\partial W} = \frac{\partial \mathcal{L}_{main}}{\partial W} + \lambda W
+    $$
+    从而在更新权重时：
+    $$
+    \begin{aligned}
+    W_{t+1}
+    &= W_t - \alpha \frac{\partial \mathcal{L}_{reg}}{\partial W} \\
+    &= W_t - \alpha \left( \frac{\partial \mathcal{L}_{main}}{\partial W} + \lambda W_t \right) \\
+    &= \underbrace{(1 - \alpha \lambda)}_{\text{恒定权重衰减}} W_t - \alpha \frac{\partial \mathcal{L}_{main}}{\partial W}
+    \end{aligned}
+    $$
+    可见权重的**衰减比例为 $\alpha \lambda$**。
+- **Lasso Regression** / **L1 regularization**：
+    $$
+    R(\theta)
+    = \lambda\|W\|_1
+    = \lambda \sum_{\text{layer } L} \sum_{i,j,\dots} |W^{(L)}_{i,j,\dots}|
+    $$
+    对权重求**次梯度**时：
+    $$
+    \frac{\partial \mathcal{L}_{reg}}{\partial W} = \frac{\partial \mathcal{L}_{main}}{\partial W} + \lambda \cdot \text{sign}(W)
+    $$
+    其中 $\text{sign}(\cdot)$ 按 element wise 理解。从而在更新权重时：
+    $$
+    \begin{aligned}
+    W_{t+1}
+    &= W_t - \alpha \left( \frac{\partial \mathcal{L}_{main}}{\partial W} + \lambda \cdot \text{sign}(W_t) \right) \\[4pt]
+    &= W_t - \alpha \frac{\partial \mathcal{L}_{main}}{\partial W} - \underbrace{\alpha\lambda \cdot \text{sign}(W_t)}_{\text{向零推动的恒定步长}}
+    \end{aligned}
+    $$
+    可见 L1 regularization 会以**恒定步长 $\alpha\lambda$** 向零推动权重，使不重要的权重归零，产生稀疏解。
+- **Elastic net** / **L1 + L2**：
+    $$
+    R(\theta)
+    = \lambda_1\|W\|_1 + \frac{\lambda_2}{2}\|W\|_2^2
+    = \sum_{\text{layer } L} \sum_{i,j,\dots} \left( \lambda_1 |W^{(L)}_{i,j,\dots}|
+    + \frac{\lambda_2}{2} (W^{(L)}_{i,j,\dots})^2 \right)
+    $$
+    显然其同时具有 **L2 的权重衰减效应**和 **L1 的稀疏化效应**。
 
-#### Dropout 的数学/实践要点
+**注**：
 
-- 训练阶段：对于每个神经元 i，采样 r_i ∼ Bernoulli(1-p)，输出变为 r_i * a_i。
-- 测试阶段：使用全部神经元，但将输出乘以 (1-p) 或在训练时对激活做缩放（inverted dropout），以保证期望一致。
-- 适用场景：对大型全连接层较有效，卷积层上通常使用较少或不用（现代 CNN 更依赖 BN）。
+- 使用 L1 时不可导，但是可以使用次梯度进行最优化。
+- $\theta$ 包含了所有可学习的参数，比如权重 $W$，偏置 $b$，BN 层的 $\gamma, \beta$ 等等。而我们 regularization 时一般**只使用权重 $W$**。
 
-#### 数据增强的细化
+### Dropout
 
-- Magnitude（强度）控制很重要：过强会破坏关键信息，过弱作用有限。通常通过超参数调优或经验设定。
+通过丢弃（置零）一些神经元输出的激活值，**降低 model capacity**。
 
-**Q1: Dropout 与 BatchNorm 可以一起用吗？**  
-> 在实践中，BatchNorm 已带来一定正则化效果，很多卷积网络在使用 BatchNorm 后可以减少或不使用 Dropout；对于大 FC 层仍常见使用 Dropout。
+**Train Mode**：
 
-**Q2: L2 与 Dropout 哪个更重要？**  
-> 两者侧重点不同：L2 限制权重大小，Dropout 引入结构噪声以避免共同适应。常结合使用，效果更稳健。
+对每个神经元的输出，以概率 $p$ 将其置 0，以概率 $1-p$ 保留。
+也即对某一层的输出向量 $\mathbf{a} = (a_1, a_2, \dots, a_n)^\top$，采样同维度随机向量：
+$$
+\mathbf{r} \sim \text{Bernoulli}(1-p)^n
+$$
+输出：
+$$
+\mathbf{y} = \mathbf{r} \odot \mathbf{a}
+$$
+其中 $\odot$ 为逐元素乘。
 
----
+由于每次前向传播都**重新独立采样**，相当于同时训练大量不同的随机子网络。
+可以打破神经元之间的**co-adaptation**（共适应），防止网络过度依赖某些特定的连接。
 
-## 小结
+**Eval Mode**：
 
-**Q2: 学习率太大导致训练发散，怎么办？**  
-> 尝试减小 lr、加上 warmup、使用梯度裁剪（gradient clipping），或临时换到更稳健的优化器（如 Adam）观察变化。
+使用全部神经元，不做随机丢弃，以利用完整模型。
+但直接这样，train 输出期望只有 eval 输出期望的 $1-p$，故需修正。
+
+| 方法 | train mode | eval mode |
+| ---- | ------ | ------ |
+| **Standard Dropout** | 直接置零 | 输出乘以 $(1-p)$ |
+| **Inverted Dropout** | 保留的输出除以 $(1-p)$ | 无需任何操作 |
+
+Inverted Dropout 的优势在于测试阶段代码更简洁、推理更快，因此现代框架通常默认采用这种方式。
+
+**注**：
+Dropout 对大型 FC 较有效，Conv 层上通常不用 Dropout 而用 BN。
+
+### BatchNorm
+
+BatchNorm 也起到一定正则化效果。
+
+- BN 约束激活前的输出服从高斯分布，降低了 model capacity。
+- BN 的均值和方差是基于 mini-batch 的估计量，其中引入了 Batch noise，可以防止网络过度依赖某些特定的连接。
+
+所以在 CNN 中，由于 BN 的存在，我们可以不再依赖 Dropout。

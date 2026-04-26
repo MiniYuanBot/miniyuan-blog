@@ -1,6 +1,6 @@
 ---
 title: '知识点梳理'
-excerpt: '26 春 计算方法 L01'
+excerpt: '26 春 计算方法期中知识点梳理'
 author: 'miniyuan'
 position: 'Beijing'
 tags:

@@ -200,7 +200,7 @@ $$
 - $\mathbf{a}^{(L)}$ 为最终输出
 - $g_\ell: \mathbb{R}^{n_\ell} \to \mathbb{R}^{n_\ell}$ 是逐元素激活函数
 
-![图 1：神经网络示意图](/images/note/cv-intro/04-deep-learning-1-01-neural-network.jpg)
+![图 1：神经网络示意图，其中有竖线的@@橙色圆圈@@代表 neurons，@@有向边@@代表 params](/images/note/cv-intro/04-deep-learning-1-01-neural-network.jpg)
 
 **紧凑形式**：
 
@@ -569,15 +569,45 @@ $$
 | **FN** | False Negatives | 1 预测为 0 的数量 |
 | **TN** | True Negatives | 0 预测为 0 的数量 |
 
-- 准确率：$$\text{accuracy} = \dfrac{\text{TP}}{\text{TOT}}$$
-- 精确率：$$\text{precision} = \dfrac{\text{TP}}{\text{TP}+\text{FP}}$$
-- 召回率：$$\text{recall} = \dfrac{\text{TP}}{\text{TP}+\text{FN}}$$
-- F1-score：$$2\dfrac{\text{precision}\cdot\text{recall}}{\text{precision}+\text{recall}}$$
+- 准确率：
+   $$
+   \text{Accuracy} = \dfrac{\text{TP}+\text{TN}}{\text{TOT}}
+   $$
+- 精确率：
+   $$
+   \text{Precision} = \dfrac{\text{TP}}{\text{TP}+\text{FP}}
+   $$
+- 召回率：
+   $$
+   \text{Recall} = \dfrac{\text{TP}}{\text{TP}+\text{FN}}
+   $$
+- F1-score：
+   $$
+   2\dfrac{\text{Precision}\cdot\text{Recall}}{\text{Precision}+\text{Recall}}
+   $$
 - 混淆矩阵（Confusion Matrix）：展示 TP/FP/TN/FN 的分布
-- 泛化间隙（Generalization Gap）：$\text{generalization gap} = \mathbb{E}_{\text{test}}[\text{loss}] - \mathbb{E}_{\text{train}}[\text{loss}]$。
-   由过拟合造成，可通过增加数据、数据增强、正则化、简化模型、早停缓解。
+- 泛化间隙（Generalization Gap）：
+   $$
+   \text{Generalization Gap} = \mathbb{E}_{\text{test}}[\text{loss}] - \mathbb{E}_{\text{train}}[\text{loss}]
+   $$
 
 ![图 8：欠拟合与过拟合图示 | width=100%](/images/note/cv-intro/04-deep-learning-1-08-underfitting-and-overfitting.png)
+
+**注**：
+
+- Loss 降低不代表 Accuracy 升高。例如：
+
+   | 样本 | 训练前预测 ($p_1$, $p_2$) | 结果 | 训练后预测 ($p_1$, $p_2$) | 结果 |
+   | ---- | ------------------- | ---- | ----------------- | ---- |
+   | A | (0.51, 0.49) | 正确 | (0.99, 0.01) | 正确 |
+   | B | (0.51, 0.49) | 正确 | (0.49, 0.51) | 错误 |
+
+   | 指标 | 训练前 | 训练后 |
+   | ---- | ------ | ----- |
+   | Accuracy | 100% | 50% |
+   | Loss | 更高 | 更低 |
+
+- 我们的根本目标还是升高 Accuracy，但是由于 Accuracy 不可导，所以只能以相关且可导的量 Loss 作为优化目标。
 
 ---
 
