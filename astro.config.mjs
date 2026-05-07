@@ -4,23 +4,21 @@ import { rehypeHeadingIds } from '@astrojs/markdown-remark'
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import unocss from 'unocss/astro';
-import vercel from '@astrojs/vercel'
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import remarkImageCaption from './src/plugins/remark-image-caption.js';
 
 // https://astro.build/config
 export default defineConfig({
-	// TODO: change to actual website
-	site: 'https://example.com',
+	site: 'https://miniyuan.site',
 
-	adapter: vercel(),
 	// output: 'server',
+	output: 'static', // default
 
 	image: {
 		responsiveStyles: true,  // 自动生成响应式图片样式
 		service: {
-			entrypoint: 'astro/assets/services/sharp'  // 使用Sharp库处理图片优化
+			entrypoint: 'astro/assets/services/sharp'  // 使用 Sharp 库处理图片优化
 		}
 	},
 
