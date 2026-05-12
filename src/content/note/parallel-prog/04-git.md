@@ -788,3 +788,84 @@ git merge feature/new-feature
 git push origin main
 git branch -d feature/new-feature  # 删除功能分支
 ```
+
+## 浅克隆示例
+
+以下是针对**大型仓库**的 `--depth=1` 浅克隆完整工作流。
+
+1. 初始克隆
+
+   ```bash
+   git clone --depth=1 <仓库URL>
+   cd <仓库名>
+   ```
+
+   **默认行为**：只下载默认分支（如 `develop`）的最新 1 个 commit，体积最小。
+
+2. 切换到远程已有分支
+
+   浅克隆默认看不到其他分支，必须先让 Git 跟踪它们：
+
+   ```bash
+   # 解除 single-branch 限制，允许跟踪所有远程分支
+   git remote set-branches origin '*'
+
+   # 拉取所有分支的引用（仍保持浅克隆，只更新指针不下载历史）
+   git fetch --depth=1 origin
+
+   # 现在可以检出任意远程分支
+   git checkout -b feature/xxx origin/feature/xxx
+   ```
+
+   若只缺某个特定分支，也可精准拉取：
+
+   ```bash
+   git fetch --depth=1 origin feature/xxx
+   git checkout -b feature/xxx origin/feature/xxx
+   ```
+
+3. 创建新分支并建立远程跟踪
+
+   ```bash
+   # 基于当前浅层 HEAD 创建新分支
+   git checkout -b my-new-branch
+
+   # 工作、add、commit ...
+
+   # 首次推送并建立 upstream（这是关键，-u 让本地与远程关联）
+   git push -u origin my-new-branch
+   ```
+
+   之后 VSCode 就会正常显示**拉取/推送/同步**。
+
+4. 日常更新
+
+   ```bash
+   # 直接指定远程分支拉取
+   git pull origin <当前分支名>
+   ```
+
+   或配置好 upstream 后简写：
+
+   ```bash
+   git pull
+   ```
+
+5. 当需要另一个分支的上下文
+
+   ```bash
+   # 只拉取那个分支的最新1个commit
+   git fetch --depth=1 origin <目标分支>
+
+   # 临时切换过去查看
+   git checkout origin/<目标分支>
+   ```
+
+6. 当需要完整历史
+
+   ```bash
+   # 一键解除浅克隆，拉取全部历史
+   git fetch --unshallow
+   ```
+
+   此后与正常 `git clone` 无任何区别。
