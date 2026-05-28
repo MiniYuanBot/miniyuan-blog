@@ -140,6 +140,8 @@ export const typographyConfig: TypographyOptions = {
 
         // ========== Tables ==========
         'table': {
+            'display': 'block',
+            'overflow-x': 'auto',
             'font-size': '.875em',
             width: '100%',
             'border-collapse': 'collapse',
