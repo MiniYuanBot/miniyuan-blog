@@ -1,5 +1,5 @@
 ---
-title: '函数逼近（最小二乘法）'
+title: '函数逼近（最佳平方逼近，其他有关内容）'
 excerpt: '26 春 计算方法 L13'
 author: 'miniyuan'
 position: 'Beijing'
