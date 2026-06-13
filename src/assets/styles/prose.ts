@@ -143,7 +143,10 @@ export const typographyConfig: TypographyOptions = {
             'display': 'block',
             'overflow-x': 'auto',
             'font-size': '.875em',
-            width: '100%',
+            'width': 'fit-content',
+            'max-width': '100%',
+            'margin-left': 'auto',
+            'margin-right': 'auto',
             'border-collapse': 'collapse',
         },
         'thead': {

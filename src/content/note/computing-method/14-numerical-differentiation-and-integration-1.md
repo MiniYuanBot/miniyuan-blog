@@ -13,83 +13,69 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-## 数值微分与数值积分
+## 数值微分
 
-**数值微分**（Numerical Differentiation）与**数值积分**（Numerical Integration）是计算数学的核心工具，用于在函数解析形式未知或原函数难以显式表达时，通过离散节点上的函数值近似计算导数与定积分。
+### 核心思想
 
-- **数值微分**：基于差商或插值多项式，用有限步长 $h$ 逼近导数定义中的极限过程
-- **数值积分**：构造逼近被积函数的多项式 $P(x)$，以 $\int_a^b P(x)\,\mathrm{d}x$ 近似 $\int_a^b f(x)\,\mathrm{d}x$，核心问题为求积节点 $x_k$ 与权重 $A_k$ 的选取
-
----
-
-## 1. 数值微分
-
-### 定义与核心思想
-
-设 $f(x)$ 在区间内有定义，给定步长 $h>0$，通过节点 $x, x\pm h$ 上的函数值构造**差商**（Difference Quotient）近似导数：
-
+设 $f(x)$ 在区间内有定义，给定步长 $h>0$，通过节点 $x, x\pm h$ 上的函数值构造**差商**近似导数：
 $$
 f'(x) = \lim_{h\to 0}\frac{f(x+h)-f(x)}{h}
 $$
 
-当 $h$ 充分小且非零时，差商可作为导数的实用近似。
+### 数学基础
 
-### 数学基础：Taylor 展开与误差分析
-
-**Taylor 公式**（带 Lagrange 余项）：
-
+**Taylor 公式**（Lagrange 余项）：
 $$
-f(x+h) = f(x) + \frac{h}{1!}f'(x) + \frac{h^2}{2!}f''(x) + \cdots + \frac{h^{n-1}}{(n-1)!}f^{(n-1)}(x) + \frac{h^n}{n!}f^{(n)}(x+\theta h),\quad 0<\theta<<1
+f(x+h)
+= f(x) + \frac{h}{1!}f'(x) + \frac{h^2}{2!}f''(x)
++ \cdots + \frac{h^{n-1}}{(n-1)!}f^{(n-1)}(x) + \frac{h^n}{n!}f^{(n)}(x+\theta h)
 $$
 
-#### 向前差商（Forward Difference）
+其中 $0 \lt \theta \lt 1$。
+
+### 向前差商
 
 $$
 f'(x) \approx \frac{f(x+h)-f(x)}{h}
 $$
 
 **误差推导**：将 $f(x+h)$ 在 $x$ 处 Taylor 展开至二阶：
-
 $$
 f(x+h) = f(x) + hf'(x) + \frac{h^2}{2}f''(x+\theta_1 h)
 $$
 
 整理得：
-
 $$
 f'(x) - \frac{f(x+h)-f(x)}{h} = -\frac{h}{2}f''(x+\theta_1 h) = O(h)
 $$
 
 **截断误差**：一阶精度，主项系数 $-\frac{h}{2}f''(x)$。
 
-#### 向后差商（Backward Difference）
+### 向后差商
 
 $$
 f'(x) \approx \frac{f(x)-f(x-h)}{h}
 $$
 
-**误差推导**：将 $f(x-h)$ 在 $x$ 处 Taylor 展开：
-
+**误差推导**：将 $f(x-h)$ 在 $x$ 处 Taylor 展开至二阶：
 $$
 f(x-h) = f(x) - hf'(x) + \frac{h^2}{2}f''(x-\theta_2 h)
 $$
 
 整理得：
-
 $$
 f'(x) - \frac{f(x)-f(x-h)}{h} = -\frac{h}{2}f''(x-\theta_2 h) = O(h)
 $$
 
 **截断误差**：一阶精度。
 
-#### 中心差商（Central Difference）
+### 中心差商
 
 $$
 f'(x) \approx \frac{f(x+h)-f(x-h)}{2h}
 $$
 
 **误差推导**：分别展开 $f(x+h)$ 与 $f(x-h)$ 至三阶：
-
 $$
 \begin{aligned}
 f(x+h) &= f(x) + hf'(x) + \frac{h^2}{2}f''(x) + \frac{h^3}{6}f'''(x+\theta_1 h) \\
@@ -97,48 +83,45 @@ f(x-h) &= f(x) - hf'(x) + \frac{h^2}{2}f''(x) - \frac{h^3}{6}f'''(x-\theta_2 h)
 \end{aligned}
 $$
 
-两式相减，$f(x)$ 与 $f''(x)$ 项抵消：
-
+两式相减得：
 $$
 f(x+h)-f(x-h) = 2hf'(x) + \frac{h^3}{6}\left[f'''(x+\theta_1 h) + f'''(x-\theta_2 h)\right]
 $$
 
 整理得：
-
 $$
 f'(x) - \frac{f(x+h)-f(x-h)}{2h} = -\frac{h^2}{12}\left[f'''(x+\theta_1 h) + f'''(x-\theta_2 h)\right] = O(h^2)
 $$
 
-**截断误差**：二阶精度，误差随 $h^2$ 衰减。
+**截断误差**：二阶精度。
 
-> **几何直观**：向前/向后差商分别用右/左割线斜率逼近切线斜率；中心差商用对称割线，利用函数凹凸性的对称抵消使精度提升一阶。
+**几何直观**：向前/向后差商分别用右/左割线斜率逼近切线斜率，而中心差商用对称割线，利用函数**凹凸性的对称**抵消，使精度提升一阶。
 
-### 计算公式：插值型数值微分
+### 插值型数值微分
 
-当函数形式未知，仅知离散节点 $\{x_i\}_{i=0}^n$ 上的函数值 $y_i=f(x_i)$ 时，构造 $n$ 次 Lagrange 插值多项式 $\varphi_n(x)$，以 $\varphi_n^{(k)}(x)$ 近似 $f^{(k)}(x)$。
+当函数形式未知，仅知离散节点 $\{x_i\}_{i=0}^n$ 上的函数值 $y_i=f(x_i)$ 时，
+可以构造 $n$ 次 Lagrange 插值多项式 $\varphi_n(x)$，以 $\varphi_n^{(k)}(x)$ 近似 $f^{(k)}(x)$。
 
-**插值余项**：
+**误差推导**：
 
+已知插值余项为
 $$
-R_n(x) = f(x) - \varphi_n(x) = \frac{f^{(n+1)}(\xi)}{(n+1)!}\omega_{n+1}(x),\quad \omega_{n+1}(x)=\prod_{j=0}^n(x-x_j)
+R_n(x) = f(x) - \varphi_n(x) = \frac{f^{(n+1)}(\xi)}{(n+1)!}\omega_{n+1}(x)
 $$
 
-对余项求导得导数近似误差：
+其中 $\omega_{n+1}(x)=\prod_{j=0}^n(x-x_j)$。
 
+对余项求导得近似误差：
 $$
 R_n'(x) = \frac{\mathrm{d}}{\mathrm{d}x}\left[\frac{f^{(n+1)}(\xi)}{(n+1)!}\right]\omega_{n+1}(x) + \frac{f^{(n+1)}(\xi)}{(n+1)!}\omega_{n+1}'(x)
 $$
 
-**节点处的导数误差**：当 $x=x_i$ 时 $\omega_{n+1}(x_i)=0$，故
-
+**节点处的误差**：当 $x=x_i$ 时 $\omega_{n+1}(x_i)=0$，故
 $$
 R_n'(x_i) = \frac{f^{(n+1)}(\xi)}{(n+1)!}\omega_{n+1}'(x_i)
 $$
 
-#### 两点公式（Lagrange 线性插值）
-
-取节点 $x_0, x_1$，步长 $h=x_1-x_0>0$，线性插值多项式：
-
+特殊地，取两节点 $x_0, x_1$，步长 $h=x_1-x_0>0$，则线性插值多项式：
 $$
 \varphi_1(x) = f(x_0)\frac{x-x_1}{x_0-x_1} + f(x_1)\frac{x-x_0}{x_1-x_0} = \frac{f(x_1)(x-x_0)-f(x_0)(x-x_1)}{h}
 $$
@@ -149,43 +132,13 @@ $$
 \varphi_1'(x) = \frac{f(x_1)-f(x_0)}{h}
 $$
 
-此即向前差商（若 $x=x_0$）或向后差商（若 $x=x_1$）的插值理论基础。
-
-### 算法实现
-
-#### 差商法数值微分
-
-```python
-def forward_diff(f, x, h):
-    """向前差商：O(h)精度"""
-    return (f(x + h) - f(x)) / h
-
-def backward_diff(f, x, h):
-    """向后差商：O(h)精度"""
-    return (f(x) - f(x - h)) / h
-
-def central_diff(f, x, h):
-    """中心差商：O(h^2)精度"""
-    return (f(x + h) - f(x - h)) / (2 * h)
-```
-
-#### 步长折半实验（例题 14.1）
-
-对 $f(x)=e^x$ 在 $x=1$ 处，取 $h=0.1$ 并不断折半至 $10^{-8}$，误差拟合结果：
-
-| 方法 | 误差阶数 | 拟合公式 |
-| :--- | :--- | :--- |
-| 向前差商 | $O(h)$ | $e_1(h) \approx 1.3704\,h^{1.0003}$ |
-| 向后差商 | $O(h)$ | $e_2(h) \approx 1.3394\,h^{0.9987}$ |
-| 中心差商 | $O(h^2)$ | $e_3(h) \approx 0.4535\,h^{2.0002}$ |
-
-**注**：实际计算中，当 $h$ 过小（约 $<10^{-5}$）时，中心差商因浮点舍入误差累积导致精度反而下降，呈现"U 型"误差曲线。
+此即向前差商（若 $x=x_0$）或向后差商（若 $x=x_1$）的一般形式。
 
 ---
 
-## 2. 数值积分
+## 数值积分
 
-### 问题描述与代数精度
+### 问题描述
 
 定积分 $I=\int_a^b f(x)\,\mathrm{d}x$ 的数值逼近一般形式：
 
@@ -195,39 +148,13 @@ $$
 
 其中 $x_k$ 为求积节点，$A_k$ 为求积系数。
 
-**定义 14.1（代数精度）**：若求积公式对次数不超过 $m$ 的多项式均精确成立，但对 $m+1$ 次多项式不精确成立，则称该公式具有 **$m$ 次代数精度**。
+**定义**（代数精度）：
+
+若求积公式对次数不超过 $m$ 的多项式均精确成立，但对 $m+1$ 次多项式不精确成立，则称该公式具有 **$m$ 次代数精度**。
 
 **注**：代数精度是衡量求积公式质量的核心指标，精度越高，对光滑函数的逼近越好。
 
-#### 例题 14.2：确定系数使代数精度最高
-
-求积公式：
-
-$$
-\int_0^1 f(x)\,\mathrm{d}x \approx A_0 f(0) + A_1 f(1) + B_0 f'(0)
-$$
-
-含 3 个待定系数，令 $f(x)=1, x, x^2$ 精确成立：
-
-$$
-\begin{cases}
-\displaystyle\int_0^1 1\,\mathrm{d}x = 1 = A_0 + A_1 \\[6pt]
-\displaystyle\int_0^1 x\,\mathrm{d}x = \frac{1}{2} = A_1 + B_0 \\[6pt]
-\displaystyle\int_0^1 x^2\,\mathrm{d}x = \frac{1}{3} = A_1
-\end{cases}
-\Rightarrow
-\begin{cases}
-A_0 = \dfrac{2}{3} \\[6pt]
-A_1 = \dfrac{1}{3} \\[6pt]
-B_0 = \dfrac{1}{6}
-\end{cases}
-$$
-
-验证 $f(x)=x^3$：左边 $=\frac{1}{4}$，右边 $=\frac{1}{3}$，不相等。故该公式具有 **2 次代数精度**。
-
-### Newton-Cotes 积分
-
-#### 数学基础：Lagrange 插值构造
+### 数学基础
 
 将 $[a,b]$ 作 $n$ 等分，节点 $x_i=a+ih$（$i=0,1,\dots,n$），$h=\frac{b-a}{n}$。以 $P_n(x)$ 为 $f(x)$ 的 $n$ 次 Lagrange 插值多项式：
 
@@ -247,7 +174,7 @@ $$
 R(f) = \int_a^b \frac{f^{(n+1)}(\xi(x))}{(n+1)!}\omega_{n+1}(x)\,\mathrm{d}x,\quad \omega_{n+1}(x)=\prod_{j=0}^n(x-x_j)
 $$
 
-#### 计算公式：Newton-Cotes 系数推导
+### Newton-Cotes 积分
 
 作变量替换 $x = a + th$（$t\in[0,n]$），则：
 
