@@ -187,10 +187,14 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 ### RTT 估计与 RTO
 
 - 平滑 RTT（RTTS）：
-  $$ \text{RTTS}_{new} = (1-\alpha)\times \text{RTTS}_{old} + \alpha \times \text{RTT}_{sample} $$
-  > RFC 6298 推荐 α = 1/8 = 0.125
+  $$
+  \text{RTTS}_{new} = (1-\alpha)\times \text{RTTS}_{old} + \alpha \times \text{RTT}_{sample}
+  $$
+  RFC 6298 推荐 α = 1/8 = 0.125
 - Karn 算法（修正）：对发生重传的报文段不使用该样本更新 RTTS；每次重传使 RTO 增大（乘以 γ，典型 γ = 2）。
-  $$ \text{RTO}_{new} = \gamma \times \text{RTO}_{old} $$
+  $$
+  \text{RTO}_{new} = \gamma \times \text{RTO}_{old}
+  $$
 
 ### Nagle 算法 与 糊涂窗口综合症（Silly Window Syndrome）
 
@@ -208,35 +212,51 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 - 接收方通告 **rwnd**（接收窗口大小）表示可接收剩余字节数。
 - 发送方实际可发送的窗口：
-  $$ \text{send\_window} = \min(\text{rwnd}, \text{cwnd}) $$
-  > rwnd：由接收方通告； cwnd：拥塞窗口（由拥塞控制决定）
+  $$
+  \text{send\_window} = \min(\text{rwnd}, \text{cwnd})
+  $$
+  rwnd：由接收方通告； cwnd：拥塞窗口（由拥塞控制决定）
+
+流量控制与拥塞控制对比：
+
+| | **流量控制** | **拥塞控制** |
+| -------- | ---------------------- | ---------------------------- |
+| **目标** | 防止**发送方**淹没**接收方** | 防止**发送方**淹没**网络** |
+| **作用域** | 端到端（点对点） | 全局（整个网络路径） |
+| **触发原因** | 接收方处理速度慢、缓存溢出 | 网络中间设备（路由器）队列溢出、丢包 |
+| **核心变量** | 接收窗口 **rwnd** | 拥塞窗口 **cwnd** |
+| **主要机制** | 滑动窗口、停等协议 | 慢启动、拥塞避免、快重传、快恢复 |
+| **信息来源** | 接收方通过 ACK 反馈窗口大小 | 发送方通过丢包/延迟推断网络状况 |
 
 ## 拥塞控制（TCP Reno 为例）
 
 ### 总体思想
 
-- 使用发送端维护的**拥塞窗口 cwnd** 来反映网络可用容量，配合接收方 rwnd 限制真实发送窗口。
-- 拥塞事件判断：
-  - 重传定时器超时：严重，假定网络拥塞
-  - 收到 3 个重复 ACK：轻度拥塞 / 丢失个别分组
+使用发送端维护的**拥塞窗口 cwnd** 来反映网络可用容量，配合接收方 rwnd 限制真实发送窗口。
 
-### 慢开始（Slow Start）
+拥塞事件判断：
 
-- 初始 cwnd = 1（报文段单位，旧标准 1-2，RFC 5681 推荐 2-4）
-- 每收到一个对新报文段的确认，cwnd 加 1（按报文段计）；每轮传输 cwnd 指数级增长。
+- 重传定时器超时：严重拥塞
+- 收到 3 个重复 ACK：轻度拥塞
+
+### 慢开始
+
+- 初始 cwnd = 1（以报文段作为单位）
+- 每收到一个对新报文段的确认，cwnd 加 1；每轮传输 cwnd 指数级增长。
 - 设置慢开始门限 ssthresh，当 cwnd >= ssthresh 时转为拥塞避免。
 
-### 拥塞避免（Congestion Avoidance）
+### 拥塞避免
 
-- 当 cwnd >= ssthresh 时，每经过一个 RTT（或每收到一个轮次中的 ACK）使 cwnd 线性增加（典型为每 RTT 增加 1 MSS）。
+- 当 cwnd >= ssthresh 时，每经过一个 RTT 使 cwnd 线性增加（如增加一个 MSS）。
+- 一般近似实现为每收到一个轮次中的 ACK，cwnd += 1/cwnd
 
-### 快重传与快恢复（Fast Retransmit / Fast Recovery）
+### 快重传与快恢复
 
-- 快重传：收到 3 个重复 ACK 立即重传怀疑丢失的分段（避免超时等待）。
-- 快恢复（Reno）：在收到 3 dupACK 时：
+- 快重传：收到 3 个重复 ACK 立即重传怀疑丢失的分段，避免超时等待。
+- 快恢复（Reno）：在收到 3 dup ACK 时：
   - ssthresh = cwnd / 2
   - cwnd = ssthresh （或 cwnd = ssthresh + 3MSS，具体实现略有差异）
-  - 进入拥塞避免而非慢开始（避免退回到指数增长）
+  - 进入拥塞避免而非慢开始
 
 ### 算法流程概览
 
@@ -244,36 +264,38 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 - 当发生 3 dup ACK：触发快重传 + 快恢复（避免慢开始）
 - 当发生超时：ssthresh = cwnd/2，cwnd = 1，进入慢开始
 
-## 路由器队列管理与 AQM（主动队列管理）
+## 路由器队列管理与 AQM
 
-### Tail-drop（尾部丢弃）
+### Tail-drop
 
-- FIFO 队列，满则丢弃到达分组，可能导致**全局同步**（大量连接同时进入慢开始）。
+FIFO 队列，满则丢弃到达分组，可能导致**全局同步**（大量连接同时进入慢开始）。
 
-### RED（Random Early Detection）
+### RED
 
-- 参数：Th_min、Th_max、p_max
+由于路由器可能导致全局同步的问题，所以我们需要使用 AQM（主动队列管理）。RED（Random Early Detection）就是一种常见的 AQM。
+
+- 参数：Th_min、Th_max、p_max，权重系数 w_q（通常 0.001~0.002）
 - 维护平均队列长度 Lav：
+  - 更新：每到达一个分组，Lav = (1 - w_q)·Lav + w_q·L，其中 L 为当前瞬时队列长度
   - 若 Lav < Th_min：p = 0（接受）
   - 若 Lav > Th_max：p = 1（丢弃）
-  - 若 Th_min <= Lav <= Th_max：以概率 p（0 < p < 1）随机丢弃入队分组（可使不同连接随机退避，减轻全局同步）
+  - 若 Th_min <= Lav <= Th_max：以概率 p（0 < p < p_max）随机丢弃入队分组
 - 丢弃概率 p 通常从 0 线性增至 p_max。
 
 ## TCP 连接管理
 
 ### 三次握手（建立连接）
 
-- 客户端发送 SYN, seq = x
-- 服务器应答 SYN=1, ACK=1, seq = y, ack = x+1
-- 客户端发送 ACK=1, seq = x+1, ack = y+1
-- 目的：确认双方存在、协商初始序号与一些选项、防止旧请求误用
+- 客户端发送 SYN = 1, seq = x
+- 服务器应答 SYN = 1, ACK = 1, seq = y, ack = x+1
+- 客户端发送 ACK = 1, seq = x+1, ack = y+1
 
 ### 四次挥手（释放连接）
 
-- 主动方发送 FIN (seq = u)
-- 被动方 ACK (ack = u+1)，进入 CLOSE_WAIT
-- 被动方发送 FIN (seq = w)，主动方 ACK (ack = w+1)
-- 主动方等待 TIME_WAIT（通常 2×MSL）以确保最后 ACK 的可靠传输与消除已延迟分组
+- 主动方发送 FIN = 1, ACK = 1, seq = u, ack = v
+- 被动方发送 ACK = 1, seq = v, ack = u+1，进入 CLOSE_WAIT（半关闭状态，被动方可能继续发送数据，seq 从 v 递增）
+- 被动方发送 FIN = 1, ACK = 1, seq = w, ack = u+1
+- 主动方发送 ACK = 1, seq = u+1, ack = w+1，进入 TIME_WAIT（通常为 2*MSL）
 
 ### TCP 有限状态机（简述）
 
