@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/package.json",
   "name": "miniyuan-blog",
   "type": "module",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -10,24 +10,35 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/markdown-remark": "^7.0.0",
+    "@astrojs/markdown-remark": "^6.3.0",
     "@astrojs/mdx": "^4.3.13",
     "@astrojs/rss": "^4.0.15",
-    "@unocss/astro": "^66.6.6",
     "astro": "^5.18.0",
     "katex": "^0.16.38",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
+    "shiki": "3.23.0",
     "sharp": "^0.34.5",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.7.0",
     "@types/mdx": "^2.0.13",
+    "@unocss/astro": "^66.6.6",
     "@unocss/preset-typography": "^66.6.0",
     "@unocss/preset-wind3": "^66.6.0",
     "@unocss/reset": "^66.6.0",
     "@unocss/transformer-directives": "^66.6.0",
     "unocss": "^66.6.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "astro": "$astro"
+    },
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "astro": ">=5.18.0 <6.0.0"
+      }
+    }
   }
 }

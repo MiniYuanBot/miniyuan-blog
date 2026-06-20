@@ -13,6 +13,8 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
+<!-- markdownlint-disable MD024 -->
+
 ## 数值微分
 
 ### 核心思想
@@ -127,7 +129,6 @@ $$
 $$
 
 求导得：
-
 $$
 \varphi_1'(x) = \frac{f(x_1)-f(x_0)}{h}
 $$
@@ -141,7 +142,6 @@ $$
 ### 问题描述
 
 定积分 $I=\int_a^b f(x)\,\mathrm{d}x$ 的数值逼近一般形式：
-
 $$
 I \approx I_n \equiv \sum_{k=0}^{n} A_k f(x_k)
 $$
@@ -150,34 +150,30 @@ $$
 
 **定义**（代数精度）：
 
-若求积公式对次数不超过 $m$ 的多项式均精确成立，但对 $m+1$ 次多项式不精确成立，则称该公式具有 **$m$ 次代数精度**。
-
-**注**：代数精度是衡量求积公式质量的核心指标，精度越高，对光滑函数的逼近越好。
+若求积公式对次数不超过 $m$ 的多项式均精确成立，但对 $m+1$ 次多项式不精确成立，则称该公式具有 $m$ 次代数精度。
 
 ### 数学基础
 
-将 $[a,b]$ 作 $n$ 等分，节点 $x_i=a+ih$（$i=0,1,\dots,n$），$h=\frac{b-a}{n}$。以 $P_n(x)$ 为 $f(x)$ 的 $n$ 次 Lagrange 插值多项式：
-
+将 $[a,b]$ 作 $n$ 等分，节点 $x_i=a+ih$（$i=0,1,\dots,n$），$h=\dfrac{b-a}{n}$。
+以 $P_n(x)$ 为 $f(x)$ 的 $n$ 次 Lagrange 插值多项式：
 $$
 P_n(x) = \sum_{i=0}^{n} f(x_i) l_i(x),\quad l_i(x)=\prod_{j\neq i}\frac{x-x_j}{x_i-x_j}
 $$
 
 积分近似：
-
 $$
-\int_a^b f(x)\,\mathrm{d}x \approx \int_a^b P_n(x)\,\mathrm{d}x = \sum_{i=0}^{n}\underbrace{\left[\int_a^b l_i(x)\,\mathrm{d}x\right]}_{A_i} f(x_i)
+\int_a^b f(x)\,\mathrm{d}x \approx \int_a^b P_n(x)\,\mathrm{d}x
+= \sum_{i=0}^{n}\underbrace{\left[\int_a^b l_i(x)\,\mathrm{d}x\right]}_{A_i} f(x_i)
 $$
 
-**积分余项**：
-
+积分余项：
 $$
 R(f) = \int_a^b \frac{f^{(n+1)}(\xi(x))}{(n+1)!}\omega_{n+1}(x)\,\mathrm{d}x,\quad \omega_{n+1}(x)=\prod_{j=0}^n(x-x_j)
 $$
 
-### Newton-Cotes 积分
+## Newton-Cotes 积分
 
 作变量替换 $x = a + th$（$t\in[0,n]$），则：
-
 $$
 \omega_{n+1}(x) = h^{n+1}t(t-1)\cdots(t-n)
 $$
@@ -187,24 +183,23 @@ $$
 $$
 
 代入系数公式 $A_i = \int_a^b l_i(x)\,\mathrm{d}x$：
-
 $$
 \begin{aligned}
-A_i &= \int_a^b \frac{\omega_{n+1}(x)}{(x-x_i)\omega_{n+1}'(x)}\,\mathrm{d}x \\
+A_i &= \int_a^b \frac{\omega_{n+1}(x)}{(x-x_i)\omega_{n+1}'(x_i)}\,\mathrm{d}x \\
 &= \int_0^n \frac{h^{n+1}t(t-1)\cdots(t-n)}{(-1)^{n-i}h^n i!\,(n-i)!\cdot h(t-i)}\,h\,\mathrm{d}t \\
 &= (b-a)\cdot\frac{(-1)^{n-i}}{n\cdot i!\,(n-i)!}\int_0^n t(t-1)\cdots(t-i+1)(t-i-1)\cdots(t-n)\,\mathrm{d}t
 \end{aligned}
 $$
 
-定义 **Newton-Cotes 系数** $C_i^{(n)} = \frac{A_i}{b-a}$，则求积公式统一写为：
+定义 Newton-Cotes 系数 $C_i^{(n)} = \dfrac{A_i}{b-a}$，则求积公式统一写为：
 
 $$
 \int_a^b f(x)\,\mathrm{d}x \approx (b-a)\sum_{i=0}^{n} C_i^{(n)} f(x_i)
 $$
 
-**注**：$C_i^{(n)}$ 仅与 $n$ 有关，与积分区间及被积函数无关，具有通用性。
+**注**：$C_i^{(n)}$ **仅与 $n$ 有关**，与积分区间及被积函数无关，具有通用性。
 
-#### 常用 Newton-Cotes 系数表
+### 常用 Newton-Cotes 系数表
 
 | $n$ | $C_0^{(n)}$ | $C_1^{(n)}$ | $C_2^{(n)}$ | $C_3^{(n)}$ | $C_4^{(n)}$ | $C_5^{(n)}$ | $C_6^{(n)}$ | 公式名称 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -215,41 +210,44 @@ $$
 | 5 | $\frac{19}{288}$ | $\frac{25}{96}$ | $\frac{25}{144}$ | $\frac{25}{144}$ | $\frac{25}{96}$ | $\frac{19}{288}$ | | |
 | 6 | $\frac{41}{840}$ | $\frac{9}{280}$ | $\frac{9}{280}$ | $\frac{34}{105}$ | $\frac{9}{280}$ | $\frac{9}{280}$ | $\frac{41}{840}$ | |
 
-#### 具体积分公式
+### 具体积分公式
 
-**1. 梯形公式（Trapezoidal Rule, $n=1$）**
+1. **梯形公式（$n=1$）**
 
-线性插值 $P_1(x)$ 过 $(a,f(a))$ 与 $(b,f(b))$：
+    线性插值 $P_1(x)$ 过 $(a,f(a))$ 与 $(b,f(b))$：
+    $$
+    \int_a^b f(x)\,\mathrm{d}x \approx \frac{b-a}{2}\bigl[f(a)+f(b)\bigr]
+    $$
 
-$$
-\int_a^b f(x)\,\mathrm{d}x \approx \frac{b-a}{2}\bigl[f(a)+f(b)\bigr]
-$$
+    几何意义：以梯形面积近似曲边梯形面积。
 
-几何意义：以梯形面积近似曲边梯形面积。
+2. **Simpson 公式（$n=2$）**
 
-**2. Simpson 公式（Parabolic Rule, $n=2$）**
+    二次插值过 $a, \dfrac{a+b}{2}, b$ 三点：
+    $$
+    \int_a^b f(x)\,\mathrm{d}x \approx \frac{b-a}{6}\left[f(a)+4f\left(\frac{a+b}{2}\right)+f(b)\right]
+    $$
 
-二次插值过 $a, \frac{a+b}{2}, b$ 三点：
+    几何意义：以抛物线围成面积近似原函数积分。
 
-$$
-\int_a^b f(x)\,\mathrm{d}x \approx \frac{b-a}{6}\left[f(a)+4f\left(\frac{a+b}{2}\right)+f(b)\right]
-$$
+3. **Newton-Cotes 公式（$n=3$）**
+    $$
+    \int_a^b f(x)\,\mathrm{d}x \approx \frac{b-a}{8}\left[f(x_0)+3f(x_1)+3f(x_2)+f(x_3)\right]
+    $$
 
-几何意义：以抛物线围成面积近似原函数积分。
-
-**3. $n=3$ 的 Newton-Cotes 公式**
-
-$$
-\int_a^b f(x)\,\mathrm{d}x \approx \frac{b-a}{8}\left[f(x_0)+3f(x_1)+3f(x_2)+f(x_3)\right]
-$$
-
-其中 $x_1=\frac{2a+b}{3},\; x_2=\frac{a+2b}{3}$。
+    其中 $x_1=\dfrac{2a+b}{3},\; x_2=\dfrac{a+2b}{3}$。
 
 ### 算法实现
 
-#### 通用 Newton-Cotes 求积
+**通用 Newton-Cotes 求积**：
 
 ```python
+# 预定义常用系数
+TRAPEZOIDAL = [0.5, 0.5]
+SIMPSON = [1/6, 4/6, 1/6]
+NC3 = [1/8, 3/8, 3/8, 1/8]
+NC4 = [7/90, 32/90, 12/90, 32/90, 7/90]
+
 def newton_cotes(f, a, b, n, coeffs):
     """
     通用 Newton-Cotes 积分
@@ -258,17 +256,11 @@ def newton_cotes(f, a, b, n, coeffs):
     h = (b - a) / n
     nodes = [a + i * h for i in range(n + 1)]
     return (b - a) * sum(c * f(x) for c, x in zip(coeffs, nodes))
-
-# 预定义常用系数
-TRAPEZOIDAL = [0.5, 0.5]
-SIMPSON = [1/6, 4/6, 1/6]
-NC3 = [1/8, 3/8, 3/8, 1/8]
-NC4 = [7/90, 32/90, 12/90, 32/90, 7/90]
 ```
 
-#### 复化求积（实用优化）
+**复化求积**：
 
-**注**：单区间高次 Newton-Cotes 可能出现 Runge 现象（高次插值振荡），工程上更常用**复化低阶公式**——将 $[a,b]$ 分为 $m$ 个子区间，在每个子区间上应用梯形或 Simpson 公式。
+由于单区间高次 Newton-Cotes 可能出现 Runge 现象，故更常用**复化低阶公式**，也即将 $[a,b]$ 分为 $m$ 个子区间，在每个子区间上应用低阶公式。
 
 ```python
 def composite_simpson(f, a, b, m):
@@ -287,80 +279,263 @@ def composite_simpson(f, a, b, m):
 
 #### 代数精度定理
 
-**定理 14.1**：$n+1$ 个节点的 Newton-Cotes 求积公式至少具有 $n$ 次代数精度。
+- $n+1$ 个节点的 Newton-Cotes 求积公式至少具有 $n$ 次代数精度。
+- 当 $n$ 为偶数时，$n+1$ 个节点的 Newton-Cotes 求积公式至少具有 $n+1$ 次代数精度。
 
-**定理 14.2**：当 $n$ 为**偶数**时，$n+1$ 个节点的 Newton-Cotes 求积公式至少具有 $n+1$ 次代数精度。
+**证明**：
 
-**证明思路（定理 14.2）**：  
-对 $f(x)=x^{n+1}$，需证 $\int_a^b x^{n+1}\,\mathrm{d}x = \sum A_i x_i^{n+1}$。利用对称性，当 $n$ 为偶数时节点关于区间中点对称，被积函数 $x^{n+1}$ 的插值余项积分因奇函数性质在对称区间上为零，故精度额外提升一阶。
+由于 $n+1$ 个节点的 Newton-Cotes 求积公式进行了 $n$ 次 Lagrange 插值，故至少有 $n$ 次代数精度。
+
+只需验证当 $n$ 为偶数时对 $f(x)=x^{n+1}$ 也精确。此时插值余项为：
+$$
+x^{n+1}-P_n(x)=\omega_{n+1}(x),\qquad \omega_{n+1}(x)=\prod_{j=0}^n(x-x_j)
+$$
+
+误差为：
+$$
+R_n(x^{n+1})=\int_a^b \omega_{n+1}(x)\,\mathrm{d}x
+$$
+
+令 $x=a+th$，等距节点 $x_j=a+jh$ 对应 $t_j=j$，则：
+$$
+\omega_{n+1}(x)=h^{n+1}\cdot t(t-1)(t-2)\cdots(t-n)
+$$
+
+于是：
+$$
+R_n(x^{n+1})=h^{n+2}\int_0^n t(t-1)\cdots(t-n)\,\mathrm{d}t
+$$
+
+记 $I=\int_0^n t(t-1)\cdots(t-n)\,\mathrm{d}t$。作代换 $t=n-u$：
+$$
+\begin{aligned}
+I&=\int_n^0 (n-u)(n-1-u)\cdots(-u)\,(-\mathrm{d}u)\\
+&=(-1)^{n+1}\int_0^n u(u-1)\cdots(u-n)\,\mathrm{d}u\\
+&=-I
+\end{aligned}
+$$
+
+故 $I=-I$，即：
+$$
+I=0
+$$
+
+因此 $R_n(x^{n+1})=0$，Newton-Cotes 公式对 $x^{n+1}$ 也精确成立。
 
 #### 梯形公式误差估计
 
-**定理 14.3**：若 $f(x)\in C^2[a,b]$，则梯形公式误差：
-
+若 $f(x)\in C^2[a,b]$，则梯形公式误差：
 $$
 R_1(f) = \int_a^b f(x)\,\mathrm{d}x - \frac{b-a}{2}[f(a)+f(b)] = -\frac{(b-a)^3}{12}f''(\eta),\quad a\leq\eta\leq b
 $$
 
-**推导**：由线性插值余项 $f(x)-P_1(x)=\frac{f''(\xi)}{2}(x-a)(x-b)$，积分得：
+**证明**：
 
+由线性插值余项 $f(x)-P_1(x)=\frac{f''(\xi)}{2}(x-a)(x-b)$，积分得：
 $$
 R_1(f) = \int_a^b \frac{f''(\xi(x))}{2}(x-a)(x-b)\,\mathrm{d}x
 $$
 
 因 $(x-a)(x-b)\leq 0$ 在 $[a,b]$ 上不变号，应用积分中值定理：
-
 $$
 R_1(f) = \frac{f''(\eta)}{2}\int_a^b (x-a)(x-b)\,\mathrm{d}x = -\frac{(b-a)^3}{12}f''(\eta)
 $$
 
-**注**：梯形公式具有一次代数精度（对 $f(x)=x^2$ 验证不精确）。
+**注**：梯形公式具有一次代数精度。
 
 #### Simpson 公式误差估计
 
-**定理 14.4**：若 $f(x)\in C^4[a,b]$，则 Simpson 公式误差：
-
+若 $f(x)\in C^4[a,b]$，则 Simpson 公式误差：
 $$
 R_2(f) = \int_a^b f(x)\,\mathrm{d}x - \frac{b-a}{6}\left[f(a)+4f\left(\frac{a+b}{2}\right)+f(b)\right] = -\frac{(b-a)^5}{2880}f^{(4)}(\eta)
 $$
 
-**注**：Simpson 公式具有三次代数精度（$n=2$ 为偶数，由定理 14.2 至少 $2+1=3$ 次）。
+**证明**：
+
+设 $c=\dfrac{a+b}{2}$，$h=\dfrac{b-a}{2}$。构造三次 Hermite 插值多项式 $H(x)$，使其满足：
+$$
+H(a)=f(a),\quad H(c)=f(c),\quad H'(c)=f'(c),\quad H(b)=f(b)
+$$
+
+这 4 个条件唯一确定一个次数不超过 3 的多项式。
+
+由于 Simpson 公式具有 3 次代数精度，因此：
+$$
+\int_a^b H(x)\,\mathrm{d}x
+=\frac{b-a}{6}\Bigl[H(a)+4H(c)+H(b)\Bigr]
+=\frac{b-a}{6}\Bigl[f(a)+4f(c)+f(b)\Bigr]
+$$
+
+于是误差可写成：
+$$
+R_2(f)=\int_a^b\bigl[f(x)-H(x)\bigr]\,\mathrm{d}x
+$$
+
+对 $H(x)$ 应用重节点差商余项公式，存在 $\xi_x\in(a,b)$ 使得：
+$$
+f(x)-H(x)=\frac{f^{(4)}(\xi_x)}{4!}\,(x-a)(x-c)^2(x-b)
+$$
+
+从而：
+$$
+R_2(f)=\frac{1}{24}\int_a^b f^{(4)}(\xi_x)\,(x-a)(x-c)^2(x-b)\,\mathrm{d}x
+$$
+
+由于 $f^{(4)}$ 连续，且 $(x-a)(x-c)^2(x-b)$ 在 $[a,b]$ 上不变号，由积分第一中值定理，存在 $\eta\in[a,b]$ 使得：
+$$
+R_2(f)=\frac{f^{(4)}(\eta)}{24}\int_a^b(x-a)(x-c)^2(x-b)\,\mathrm{d}x
+$$
+
+作换元 $x=c+th$，则 $x-a=h(t+1)$，$x-b=h(t-1)$，$\mathrm{d}x=h\,\mathrm{d}t$，积分区间 $t\in[-1,1]$：
+$$
+\int_a^b(x-a)(x-c)^2(x-b)\,\mathrm{d}x
+=h^5\int_{-1}^1(t+1)t^2(t-1)\,\mathrm{d}t
+=-\frac{4h^5}{15}
+$$
+
+代回可得：
+$$
+R_2(f)
+=\frac{f^{(4)}(\eta)}{24}\cdot\left(-\frac{4h^5}{15}\right)
+=-\frac{(b-a)^5}{2880}\,f^{(4)}(\eta)
+$$
+
+**注**：Simpson 公式具有三次代数精度。
 
 #### 一般 Newton-Cotes 误差估计
 
-**定理 14.5**：对 $n+1$ 个节点的 Newton-Cotes 公式，
+对 $n+1$ 个节点的 Newton-Cotes 公式，
 
-- 当 $n$ 为**偶数**且 $f\in C^{n+2}[a,b]$ 时：
+- 当 $n$ 为偶数且 $f\in C^{n+2}[a,b]$ 时：
+    $$
+    R_n(f) = \frac{h^{n+3}}{(n+2)!}f^{(n+2)}(\eta)\int_0^n t^2(t-1)\cdots(t-n)\,\mathrm{d}t
+    $$
+
+- 当 $n$ 为奇数且 $f\in C^{n+1}[a,b]$ 时：
+    $$
+    R_n(f) = \frac{h^{n+2}}{(n+1)!}f^{(n+1)}(\eta)\int_0^n t(t-1)\cdots(t-n)\,\mathrm{d}t
+    $$
+
+其中 $h=\dfrac{b-a}{n}$，$a\leq\eta\leq b$。
+
+**证明**：
+
+奇数时显然，下证偶数时。采用 Newton 型插值余项的积分：
+$$
+R_n(f)=\int_a^b \bigl[f(x)-P_n(x)\bigr]\,\mathrm{d}x=\int_a^b f[x_0,x_1,\dots,x_n,x]\,\omega(x)\,\mathrm{d}x
+$$
+其中 $\omega(x)=(x-x_0)(x-x_1)\cdots(x-x_n)$，$f[\cdots]$ 是 $n+1$ 阶差商。
+
+定义：
+$$
+\Omega(x)=\int_a^x \omega(t)\,\mathrm{d}t
+$$
+
+由于节点等距且 $x_0=a,\,x_n=b$，显然 $\omega(a)=\omega(b)=0$。  
+又因 $n$ 为偶数，由对称性可证 $\int_a^b\omega(t)\,\mathrm{d}t=0$，故：
+$$
+\Omega(a)=0,\qquad \Omega(b)=0
+$$
+且 $\Omega(x)$ 在 $[a,b]$ 上不变号。  
+
+对 $R_n(f)$ 分部积分（注意 $\Omega(a)=\Omega(b)=0$，边界项消失）：
+$$
+\begin{aligned}
+R_n(f)&=\int_a^b f[x_0,\dots,x_n,x]\,\omega(x)\,\mathrm{d}x\\
+&=\Bigl[f[x_0,\dots,x_n,x]\,\Omega(x)\Bigr]_a^b-\int_a^b \frac{\mathrm{d}}{\mathrm{d}x}f[x_0,\dots,x_n,x]\,\Omega(x)\,\mathrm{d}x\\
+&=-\int_a^b f[x_0,\dots,x_n,x,x]\,\Omega(x)\,\mathrm{d}x
+\end{aligned}
+$$
+
+其中用到了差商对活跃节点的求导公式：
+$$
+\frac{\mathrm{d}}{\mathrm{d}x}f[x_0,\dots,x_n,x]=f[x_0,\dots,x_n,x,x]
+$$
+
+而 $n+2$ 阶差商等于导数：
+$$
+f[x_0,\dots,x_n,x,x]=\frac{f^{(n+2)}(\xi(x))}{(n+2)!}
+$$
+
+又因为 $\Omega(x)$ 在 $[a,b]$ 上不变号，且 $f^{(n+2)}(\xi(x))$ 连续（$f\in C^{n+2}$），可用积分中值定理提出：
+$$
+R_n(f)=-\frac{f^{(n+2)}(\eta)}{(n+2)!}\int_a^b \Omega(x)\,\mathrm{d}x,\qquad a\leq\eta\leq b
+$$
+
+对 $\int_a^b\Omega(x)\,\mathrm{d}x$ 再做一次分部积分：
+$$
+\int_a^b\Omega(x)\,\mathrm{d}x=\Bigl[x\Omega(x)\Bigr]_a^b-\int_a^b x\,\omega(x)\,\mathrm{d}x=-\int_a^b x\,\omega(x)\,\mathrm{d}x
+$$
+
+令 $x=a+th$，则 $x\omega(x)\,\mathrm{d}x=(a+th)\cdot h^{n+1}t(t-1)\cdots(t-n)\cdot h\,\mathrm{d}t$。
+
+由于 $\int_a^b\omega(x)\,\mathrm{d}x=0$，即 $\int_0^n t(t-1)\cdots(t-n)\,\mathrm{d}t=0$，故：
+$$
+\int_a^b x\,\omega(x)\,\mathrm{d}x=h^{n+3}\int_0^n t^2(t-1)\cdots(t-n)\,\mathrm{d}t
+$$
 
 $$
-R_n(f) = \frac{h^{n+3}}{(n+2)!}f^{(n+2)}(\eta)\int_0^n t^2(t-1)\cdots(t-n)\,\mathrm{d}t
+R_n(f)=\frac{h^{n+3}}{(n+2)!}\,f^{(n+2)}(\eta)\int_0^n t^2(t-1)\cdots(t-n)\,\mathrm{d}t
 $$
 
-- 当 $n$ 为**奇数**且 $f\in C^{n+1}[a,b]$ 时：
+这正是偶数情形的 Newton-Cotes 误差公式。
 
+**注**：误差阶数反映 $n$ 为偶数时具有精度优势，这与代数精度的结论一致。
+
+#### 单区间误差的奇次幂结构
+
+对 $n+1$ 个节点的 Newton-Cotes 公式，设区间长度 $H=b-a$，步长 $h=H/n$，节点 $x_j=a+jh$（$j=0,1,\dots,n$）。其误差
 $$
-R_n(f) = \frac{h^{n+2}}{(n+1)!}f^{(n+1)}(\eta)\int_0^n t(t-1)\cdots(t-n)\,\mathrm{d}t
+E_n(H)=\int_a^b f(x)\,\mathrm{d}x-\sum_{j=0}^n w_j f(x_j)
+$$
+作为 $H$ 的函数，其 Taylor 展开仅含 $H$ 的奇次幂：
+$$
+E_n(H)=
+\begin{cases}
+c_{n+2}H^{n+2}+c_{n+4}H^{n+4}+\cdots,& 2 \nmid n \\[6pt]
+c_{n+3}H^{n+3}+c_{n+5}H^{n+5}+\cdots,& 2 \mid n
+\end{cases}
 $$
 
-其中 $h=\frac{b-a}{n}$，$a\leq\eta\leq b$。
+**证明**：
 
-**注**：误差阶数反映 $n$ 为偶数时精度优势——偶数阶 Newton-Cotes 公式误差为 $O(h^{n+3})$，奇数阶仅为 $O(h^{n+2})$，这与定理 14.2 的代数精度结论一致。
+将区间平移至关于原点对称。令 $x=m+t$，其中 $m=\dfrac{a+b}{2}$，$t\in[-H/2,H/2]$，节点变为 $t_j=-\dfrac{H}{2}+jh$（$j=0,1,\dots,n$）。
 
-### 数值实验与对比（例题 14.3）
+由于节点等距且 $n+1$ 个节点的 Newton-Cotes 权重满足 $w_j=w_{n-j}$，从而该求积公式对任意关于 $t$ 的奇函数精确成立：
+$$
+\int_{-H/2}^{H/2}g(t)\,\mathrm{d}t=0,\qquad \sum_{j=0}^n w_j g(t_j)=0
+$$
 
-计算 $I=\displaystyle\int_{0.5}^1 \sqrt{x}\,\mathrm{d}x$，精确值 $I=\frac{2}{3}(1-0.5^{3/2})=0.43096441$。
+将 $f$ 在 $t=0$（即区间中点）处 Taylor 展开：
+$$
+f(m+t)=\sum_{k=0}^{\infty}\frac{f^{(k)}(m)}{k!}t^k
+$$
 
-| 方法 | 近似值 | 绝对误差 | 相对误差 |
-| :--- | :--- | :--- | :--- |
-| 梯形公式 | $0.42677670$ | $4.19\times 10^{-3}$ | $9.7\times 10^{-3}$ |
-| Simpson 公式 | $0.43093403$ | $3.04\times 10^{-5}$ | $7.0\times 10^{-5}$ |
-| Newton-Cotes ($n=4$) | $0.43096407$ | $3.40\times 10^{-7}$ | $7.9\times 10^{-7}$ |
+误差具有线性性，故
+$$
+E_n(H)=\sum_{k=0}^{\infty}\frac{f^{(k)}(m)}{k!}\underbrace{\left[\int_{-H/2}^{H/2}t^k\,\mathrm{d}t-\sum_{j=0}^n w_j t_j^k\right]}_{e_k(H)}
+$$
 
-**结论**：随着 $n$ 增大，Newton-Cotes 公式收敛迅速；但对一般工程问题，复化 Simpson 公式在稳定性与精度间取得最佳平衡，高次单区间 Newton-Cotes（$n\geq 8$）因系数符号交替可能出现数值不稳定，需谨慎使用。
+- 当 $k$ 为奇数时，$t^k$ 是奇函数，由 Newton-Cotes 的对称性，积分与求积值均为 $0$，故 $e_k(H)=0$。
+- 当 $k$ 为偶数时，$e_k(H)$ 一般非零。作变量替换 $t=Hs$，则
+  $$
+  e_k(H)=H^{k+1}\left[\int_{-1/2}^{1/2}s^k\,\mathrm{d}s-\sum_{j=0}^n w_j s_j^k\right]=C_k\cdot H^{k+1},
+  $$
+  其中 $C_k$ 与 $H$ 无关。
+
+因此求和只遍历偶数 $k$：
+$$
+E_n(H)=\sum_{2 \mid k}\frac{f^{(k)}(m)}{k!}\,C_k\,H^{k+1}
+$$
+
+**注**：这与代数精度的结论一致：
+
+- $n$ 为奇数时，$k=0,1,\dots,n$ 均精确，首项取 $k=n+1$（偶数），对应 $H^{n+2}$；
+- $n$ 为偶数时，$k=0,1,\dots,n+1$ 均精确，首项取 $k=n+2$（偶数），对应 $H^{n+3}$。
 
 ---
 
-### 复杂度与稳定性分析
+## 复杂度与稳定性分析
 
 | 指标 | 梯形公式 | Simpson 公式 | Newton-Cotes ($n$ 阶) |
 | :--- | :--- | :--- | :--- |
@@ -370,4 +545,6 @@ $$
 | **稳定性** | 高（系数同号） | 高（系数同号） | $n\geq 8$ 时系数变号，不稳定 |
 
 **注**：
-实际计算中，步长 $h$ 的选择需在截断误差（希望 $h$ 小）与舍入误差（希望 $h$ 不太小）之间权衡；数值微分的中心差商在 $h\approx\sqrt[3]{\epsilon_{\mathrm{mach}}}$（机器精度）时达到最优，数值积分的复化公式在 $h$ 足够小时呈现单调收敛。
+
+1. 实际计算中，步长 $h$ 的选择需在截断误差（希望 $h$ 小）与舍入误差（希望 $h$ 不太小）之间权衡；
+2. 数值微分的中心差商在 $h\approx\sqrt[3]{\epsilon_{\mathrm{mach}}}$ 时达到最优，数值积分的复化公式在 $h$ 足够小时呈现单调收敛。

@@ -15,47 +15,174 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 ## Gauss 型求积公式
 
-### 主题概述
+### 核心思想
 
-传统 Newton-Cotes 公式采用**等距节点**，在节点数 $n$ 固定时，代数精度最高为 $n$（$n$ 偶数）或 $n-1$（$n$ 奇数）。**Gauss 型求积公式**的核心思想是：在节点数 $n$ 固定时，同时优化**节点位置** $x_k$ 与**权重系数** $A_k$，使得 $2n$ 个待定参数满足 $2n$ 个方程，从而将代数精度提升至 **$2n-1$**。
+Newton-Cotes 公式采用等距节点，在节点数 $n$ 固定时，代数精度最高为 $n$（$n$ 奇数）或 $n-1$（$n$ 偶数）。
 
-对于带权积分 $I = \int_a^b w(x)f(x)\,\mathrm{d}x$，Gauss 型求积公式表示为：
+**Gauss 型求积公式**的核心思想是：在节点数 $n$ 固定时，同时优化节点位置 $x_k$ 与权重系数 $A_k$，使得 $2n$ 个待定参数满足 $2n$ 个方程，从而将代数精度提升至 $2n-1$。
+
+对于带权积分 $I = \int_a^b w(x)f(x)\,\mathrm{d}x$，其中权函数满足：
+
+1. $w(x)\ge 0$ 在 $[a,b]$ 上几乎处处成立；
+2. $\displaystyle\int_a^b w(x)\,\mathrm{d}x>0$，也即 $w(x)$ 不恒为零；
+3. 各阶矩存在，也即 $\displaystyle\mu_k=\int_a^b w(x)x^k\,\mathrm{d}x$ 对所有 $k=0,1,2,\dots$ 都有限。
+
+对应 Gauss 型求积公式表示为：
 $$
 I \approx \sum_{k=1}^{n} A_k f(x_k)
 $$
 
-**应用场景**：高精度数值积分、有限元计算、量子力学期望值计算、概率统计矩估计等。
-
-### 数学基础：正交多项式与代数精度
-
-**定理 16.1**（Gauss 型求积公式的充要条件）
-
-给定权函数 $w(x)\ge 0$，求积公式 $\int_a^b w(x)f(x)\,\mathrm{d}x \approx \sum_{k=1}^n A_k f(x_k)$ 对不高于 $2n-1$ 次多项式精确成立的**充分必要条件**为：以积分节点 $x_k$ 为零点的多项式
+其中：
 $$
-\omega_n(x) = (x-x_1)(x-x_2)\cdots(x-x_n)
-$$
-与任意次数不超过 $n-1$ 的多项式 $q(x)$ 在 $[a,b]$ 上关于权函数 $w(x)$ **正交**：
-$$
-\int_a^b w(x)q(x)\omega_n(x)\,\mathrm{d}x = 0,\qquad \forall\, q(x)\in\mathcal{P}_{n-1}
+A_k=\int_a^b w(x)\ell_k(x)\,\mathrm{d}x,\qquad
+\ell_k(x)=\prod_{\substack{j=1\\j\ne k}}^n\frac{x-x_j}{x_k-x_j}
 $$
 
-**证明思路**：
+### 数学基础
 
-- **必要性**：设 $f(x) = q(x)\omega_n(x) + r(x)$，其中 $\deg q \le n-1$，$\deg r \le n-1$。由于 $f(x_k) = r(x_k)$，且 $\int w(x)q(x)\omega_n(x)\,\mathrm{d}x = 0$，则精确性要求 $\int w(x)r(x)\,\mathrm{d}x = \sum A_k r(x_k)$，这恰好是 $n$ 点插值型求积对 $n-1$ 次多项式的精确性。
-- **充分性**：若正交条件成立，对任意 $\deg f \le 2n-1$，做带余除法 $f = q\omega_n + r$，则 $\deg q \le n-1$，第一项积分消失，剩余 $r(x)$ 次数 $\le n-1$，由 $n$ 个节点的插值唯一性可精确表示。
+**定理**（Gauss 型求积公式的代数精度）
 
-**定理 16.2**（截断误差）
+设 Gauss 型求积公式：
+$$
+\int_a^b w(x)f(x)\,\mathrm{d}x \approx \sum_{k=1}^n A_k f(x_k)
+$$
+
+则该公式对所有次数不超过 $2n-1$ 的多项式精确成立的**充要条件**为：以节点 $x_1,\dots,x_n$ 为零点的 $n$ 次多项式
+$$
+\omega_n(x)=(x-x_1)(x-x_2)\cdots(x-x_n)
+$$
+与任意次数不超过 $n-1$ 的多项式在 $[a,b]$ 上关于权函数 $w(x)$ 正交，即
+$$
+\int_a^b w(x)q(x)\omega_n(x)\,\mathrm{d}x=0,\qquad \forall\,q(x)\in\mathcal{P}_{n-1}
+$$
+
+**证明**：
+
+**引理**（插值型求积的基本性质）：上述 $n$ 点插值型求积公式对任意次数不超过 $n-1$ 的多项式 $p(x)$ 必定精确成立，即
+$$
+\int_a^b w(x)p(x)\,\mathrm{d}x=\sum_{k=1}^n A_k p(x_k)
+$$
+
+*引理证明*：
+
+对 $p(x)$ 而言，插值多项式为：
+$$
+L_{n-1}(x)=\sum_{k=1}^n p(x_k)\ell_k(x)
+$$
+显然 $L_{n-1}(x)\equiv p(x)$。两边乘以 $w(x)$ 积分即得：
+$$
+\int_a^b w(x)p(x)\,\mathrm{d}x=\sum_{k=1}^n p(x_k)\int_a^b w(x)\ell_k(x)\,\mathrm{d}x=\sum_{k=1}^n A_k p(x_k)
+$$
+
+- **充分性**（正交 $\Rightarrow$ 对 $\mathcal{P}_{2n-1}$ 精确）：
+
+设正交条件成立。任取 $f(x)\in\mathcal{P}_{2n-1}$，用 $\omega_n(x)$ 对 $f(x)$ 作带余除法：
+$$
+f(x)=q(x)\omega_n(x)+r(x),
+$$
+其中 $\deg q\le n-1$，$\deg r\le n-1$。
+
+两边乘以 $w(x)$ 并积分：
+$$
+\int_a^b w(x)f(x)\,\mathrm{d}x
+=\underbrace{\int_a^b w(x)q(x)\omega_n(x)\,\mathrm{d}x}_{=0}
++\int_a^b w(x)r(x)\,\mathrm{d}x
+$$
+故
+$$
+\int_a^b w(x)f(x)\,\mathrm{d}x=\int_a^b w(x)r(x)\,\mathrm{d}x
+$$
+
+另一方面，在节点 $x_k$ 处，$\omega_n(x_k)=0$，因此：
+$$
+f(x_k)=q(x_k)\omega_n(x_k)+r(x_k)=r(x_k)
+$$
+
+由于 $r(x)$ 次数 $\le n-1$，由引理知插值型求积对 $r(x)$ 精确：
+$$
+\int_a^b w(x)r(x)\,\mathrm{d}x=\sum_{k=1}^n A_k r(x_k)=\sum_{k=1}^n A_k f(x_k)
+$$
+
+从而：
+$$
+\int_a^b w(x)f(x)\,\mathrm{d}x=\sum_{k=1}^n A_k f(x_k)
+$$
+故公式对任意 $f\in\mathcal{P}_{2n-1}$ 精确成立。
+
+**注**：也即高次由正交性确保，低次由插值自动满足。
+
+- **必要性**（对 $\mathcal{P}_{2n-1}$ 精确 $\Rightarrow$ 正交）：
+
+设求积公式对所有次数不超过 $2n-1$ 的多项式精确成立。任取 $q(x)\in\mathcal{P}_{n-1}$，构造：
+$$
+f(x)=q(x)\omega_n(x)
+$$
+则 $\deg f\le (n-1)+n=2n-1$，故 $f$ 落在精确成立的范围内。
+
+由精确性：
+$$
+\int_a^b w(x)f(x)\,\mathrm{d}x=\sum_{k=1}^n A_k f(x_k)
+$$
+
+但右端中 $f(x_k)=q(x_k)\omega_n(x_k)=0$，因此右端为 $0$。于是
+$$
+\int_a^b w(x)q(x)\omega_n(x)\,\mathrm{d}x=0
+$$
+
+由 $q(x)$ 的任意性，正交条件得证。
+
+**定理**（截断误差）：
 
 设 $f(x)\in C^{2n}[a,b]$，则 Gauss 型求积公式的余项为：
 $$
-R = \int_a^b w(x)f(x)\,\mathrm{d}x - \sum_{k=1}^n A_k f(x_k) = \frac{f^{(2n)}(\eta)}{(2n)!}\int_a^b w(x)\omega_n^2(x)\,\mathrm{d}x,\quad a<\eta<b
+R = \int_a^b w(x)f(x)\,\mathrm{d}x - \sum_{k=1}^n A_k f(x_k)
+= \frac{f^{(2n)}(\eta)}{(2n)!}\int_a^b w(x)\omega_n^2(x)\,\mathrm{d}x
+,\quad a<\eta<b
 $$
 
-**注**：误差公式表明，Gauss 求积的精度随节点数 $n$ 指数级提升，且被积函数光滑性要求较高（需 $2n$ 阶连续可导）。
+**证明**：
+
+类似于 [Simpson 公式误差估计](../14-numerical-differentiation-and-integration-1#simpson-公式误差估计)。
+
+设 $f\in C^{2n}[a,b]$，Gauss 节点为 $x_1,\dots,x_n$。构造 Hermite 插值多项式 $H(x)\in\mathcal{P}_{2n-1}$，使其满足 $2n$ 个插值条件：
+$$
+H(x_k)=f(x_k),\qquad H'(x_k)=f'(x_k),\qquad k=1,2,\dots,n
+$$
+
+这 $2n$ 个条件唯一确定一个次数不超过 $2n-1$ 的多项式。而 Gauss 型求积公式的代数精度为 $2n-1$，因此：
+$$
+\int_a^b w(x)H(x)\,\mathrm{d}x=\sum_{k=1}^n A_k H(x_k)=\sum_{k=1}^n A_k f(x_k)
+$$
+
+于是余项可写成：
+$$
+\begin{aligned}
+R
+&= \int_a^b w(x)\bigl[f(x)-H(x)\bigr]\,\mathrm{d}x \\
+&= \int_a^b w(x)\cdot f[\underbrace{x_1,x_1,\dots,x_n,x_n}_{2n\text{ 个}},x]\cdot\underbrace{(x-x_1)^2(x-x_2)^2\cdots(x-x_n)^2}_{\omega_n^2(x)}
+\end{aligned}
+$$
+
+由于 $f\in C^{2n}$，由重节点差商与导数的关系，存在 $\xi_x\in(a,b)$ 使得：
+$$
+f[x_1,x_1,\dots,x_n,x_n,x]=\frac{f^{(2n)}(\xi_x)}{(2n)!}
+$$
+
+因此：
+$$
+R=\frac{1}{(2n)!}\int_a^b w(x)\,f^{(2n)}(\xi_x)\,\omega_n^2(x)\,\mathrm{d}x
+$$
+
+又因为 $f^{(2n)}$ 连续，$w(x)\omega_n^2(x)$ 在 $[a,b]$ 上不变号，由加权形式的积分第一中值定理，存在 $\eta\in(a,b)$ 使得：
+$$
+R=\frac{f^{(2n)}(\eta)}{(2n)!}\int_a^b w(x)\omega_n^2(x)\,\mathrm{d}x,\qquad a<\eta<b
+$$
+
+**注**：误差公式表明，Gauss 求积的精度随节点数 $n$ 指数级提升，且被积函数光滑性要求较高，需 $2n$ 阶连续可导。
 
 ### 计算公式与推导
 
-#### 1. 区间标准化
+#### 区间标准化
 
 任意区间 $[a,b]$ 可通过仿射变换映射到 $[-1,1]$：
 $$
@@ -65,11 +192,18 @@ $$
 \int_a^b f(x)\,\mathrm{d}x = \frac{b-a}{2}\int_{-1}^{+1} g(t)\,\mathrm{d}t,\quad g(t) = f\left(\frac{a+b}{2}+\frac{b-a}{2}t\right)
 $$
 
-**注**：以下所有特殊 Gauss 公式均在 $[-1,1]$ 或对应标准区间上给出，实际应用时需先进行上述变换。
+**注**：
 
-#### 2. 两点 Gauss-Legendre 公式（$n=2$）
+1. 以下所有特殊 Gauss 公式均在 $[-1,1]$ 或对应标准区间上给出，实际应用时需先进行上述变换。
+2. 以下所有特殊 Gauss 公式均取 $w(x) \equiv 1$。
 
-**直接推导法**（非线性方程组）：
+#### 两点 Gauss-Legendre 公式
+
+$$
+\int_{-1}^1 f(x)\,\mathrm{d}x \approx f\left(-\frac{1}{\sqrt{3}}\right) + f\left(\frac{1}{\sqrt{3}}\right)
+$$
+
+**法一**（非线性方程组）：
 
 要求对 $f(x)=1,x,x^2,x^3$ 精确成立：
 $$
@@ -81,18 +215,15 @@ A_1x_1^3 + A_2x_2^3 = 0
 \end{cases}
 $$
 
-**正交性推导法**（更本质）：
+求解较为困难。
 
-设 $\omega_2(x) = (x-x_1)(x-x_2) = x^2 + px + q$，要求与 $1, x$ 正交：
+**法二**（正交性推导）：
+
+设 $\omega_2(x) = (x-x_1)(x-x_2) = x^2 + px + q$，要求其与 $1, x$ 正交：
 $$
 \begin{cases}
 \int_{-1}^1 (x^2+px+q)\,\mathrm{d}x = 0 \\
 \int_{-1}^1 x(x^2+px+q)\,\mathrm{d}x = 0
-\end{cases}
-\Rightarrow
-\begin{cases}
-\frac{2}{3} + 2q = 0 \\
-\frac{2}{3}p = 0
 \end{cases}
 \Rightarrow
 \begin{cases}
@@ -101,7 +232,7 @@ q = -\frac{1}{3}
 \end{cases}
 $$
 
-解得 $x_{1,2} = \pm\frac{1}{\sqrt{3}} = \pm 0.5773502691\ldots$
+解得 $x_{1,2} = \pm\dfrac{1}{\sqrt{3}}$。
 
 代入 $f(x)=1$ 和 $f(x)=x$ 求权重：
 $$
@@ -112,18 +243,18 @@ A_1 + A_2 = 2 \\
 \Rightarrow A_1 = A_2 = 1
 $$
 
-**两点 Gauss-Legendre 公式**：
-$$
-\int_{-1}^1 f(x)\,\mathrm{d}x \approx f\left(-\frac{1}{\sqrt{3}}\right) + f\left(\frac{1}{\sqrt{3}}\right)
-$$
-
 **注**：仅使用 2 个函数值，即可精确积分到三次多项式，等距 Simpson 公式需 3 个点才能达到同等精度。
 
-#### 3. 一般 Gauss-Legendre 公式
+#### Gauss-Legendre 公式
 
-权函数 $w(x)=1$，区间 $[-1,1]$。Legendre 多项式：
+定义 Legendre 多项式：
 $$
 P_n(x) = \frac{1}{2^n n!}\frac{\mathrm{d}^n}{\mathrm{d}x^n}\left[(x^2-1)^n\right]
+$$
+
+对于区间 $[-1,1]$，权函数 $w(x)=1$，有 Gauss-Legendre 公式：
+$$
+\int_0^{+\infty} f(x)\,\mathrm{d}x \approx \sum_{k=1}^n A_k f(x_k)
 $$
 
 **积分节点**：$P_n(x)$ 的 $n$ 个实根 $x_k\in(-1,1)$（互异且关于原点对称）。
@@ -144,29 +275,28 @@ $$
 | 4 | $\pm 0.8611363115940526$ | $0.3478548451374538$ |
 | | $\pm 0.3399810435848563$ | $0.6521451548625461$ |
 
-**注**：$n$ 点 Gauss-Legendre 公式代数精度为 $2n-1$。节点和权重可通过标准库（如 `scipy.special.roots_legendre`）高效获取，无需手动求解特征值问题。
+**注**：$n$ 点 Gauss-Legendre 公式代数精度为 $2n-1$。
 
-#### 4. Gauss-Laguerre 公式
+#### Gauss-Laguerre 公式
 
-**适用场景**：半无限区间 $[0,+\infty)$，权函数 $w(x)=\mathrm{e}^{-x}$。
-
-$$
-\int_0^{+\infty} \mathrm{e}^{-x}f(x)\,\mathrm{d}x \approx \sum_{k=1}^n A_k f(x_k)
-$$
-
-Laguerre 多项式：
+定义 Laguerre 多项式：
 $$
 L_n(x) = \mathrm{e}^{x}\frac{\mathrm{d}^n}{\mathrm{d}x^n}\left(x^n\mathrm{e}^{-x}\right)
 $$
 
-**节点**：$L_n(x)$ 的零点 $x_k\in(0,+\infty)$。
+对于半无限区间 $[0,+\infty)$，权函数 $w(x)=\mathrm{e}^{-x}$，有 Gauss-Laguerre 公式：
+$$
+\int_0^{+\infty} \mathrm{e}^{-x}f(x)\,\mathrm{d}x \approx \sum_{k=1}^n A_k f(x_k)
+$$
 
-**权重**：
+**积分节点**：$L_n(x)$ 的零点 $x_k\in(0,+\infty)$。
+
+**权重系数**：
 $$
 A_k = \frac{(n!)^2}{x_k\left[L_n'(x_k)\right]^2}
 $$
 
-**常用节点与系数**：
+**常用节点与系数表**：
 
 | $n$ | $x_k$ | $A_k$ |
 | :--- | :--- | :--- |
@@ -176,29 +306,29 @@ $$
 | | $2.294280$ | $0.278518$ |
 | | $6.289945$ | $0.010389$ |
 
-**注**：若实际积分为 $\int_0^\infty g(x)\,\mathrm{d}x$，可改写为 $\int_0^\infty \mathrm{e}^{-x}[\mathrm{e}^{x}g(x)]\,\mathrm{d}x$，令 $f(x)=\mathrm{e}^{x}g(x)$ 套用公式。
+**注**：
+若实际积分为 $\int_0^\infty g(x)\,\mathrm{d}x$，可改写为 $\int_0^\infty \mathrm{e}^{-x}[\mathrm{e}^{x}g(x)]\,\mathrm{d}x$ 然后套用公式。
 
-#### 5. Gauss-Hermite 公式
+#### Gauss-Hermite 公式
 
-**适用场景**：全实轴 $(-\infty,+\infty)$，权函数 $w(x)=\mathrm{e}^{-x^2}$。
-
-$$
-\int_{-\infty}^{+\infty} \mathrm{e}^{-x^2}f(x)\,\mathrm{d}x \approx \sum_{k=1}^n A_k f(x_k)
-$$
-
-Hermite 多项式（ physicists' version ）：
+定义 Hermite 多项式：
 $$
 H_n(x) = (-1)^n\mathrm{e}^{x^2}\frac{\mathrm{d}^n}{\mathrm{d}x^n}\mathrm{e}^{-x^2}
 $$
 
-**节点**：$H_n(x)$ 的零点（关于原点对称）。
+对于全实轴 $(-\infty,+\infty)$，权函数 $w(x)=\mathrm{e}^{-x^2}$，有 Gauss-Hermite 公式：
+$$
+\int_{-\infty}^{+\infty} \mathrm{e}^{-x^2}f(x)\,\mathrm{d}x \approx \sum_{k=1}^n A_k f(x_k)
+$$
 
-**权重**：
+**积分节点**：$H_n(x)$ 的零点（关于原点对称）。
+
+**权重系数**：
 $$
 A_k = \frac{2^{n+1}n!\sqrt{\pi}}{\left[H_n'(x_k)\right]^2}
 $$
 
-**常用节点与系数**：
+**常用节点与系数表**：
 
 | $n$ | $x_k$ | $A_k$ |
 | :--- | :--- | :--- |
@@ -206,28 +336,32 @@ $$
 | 4 | $\pm 1.65068012$ | $0.08131284$ |
 | | $\pm 0.52464762$ | $0.80491409$ |
 
-**注**：量子力学中计算谐振子期望值、概率论中计算正态分布矩时频繁使用。若积分为 $\int_{-\infty}^\infty g(x)\,\mathrm{d}x$，可提取 $\mathrm{e}^{-x^2}$ 因子，令 $f(x)=\mathrm{e}^{x^2}g(x)$。
+**注**：若积分为 $\int_{-\infty}^\infty g(x)\,\mathrm{d}x$，可提取 $\mathrm{e}^{-x^2}$ 因子，令 $f(x)=\mathrm{e}^{x^2}g(x)$。
 
-#### 6. Gauss-Chebyshev 公式
+#### Gauss-Chebyshev 公式
 
-**适用场景**：区间 $[-1,1]$，权函数 $w(x)=\frac{1}{\sqrt{1-x^2}}$（端点奇异性）。
+定义 Chebyshev 多项式：
+$$
+T_n(x)=\cos(n\arccos x)
+$$
 
+对于区间 $[-1,1]$，权函数 $w(x)=\dfrac{1}{\sqrt{1-x^2}}$（端点奇异性），有 Gauss-Chebyshev 公式：
 $$
 \int_{-1}^1 \frac{f(x)}{\sqrt{1-x^2}}\,\mathrm{d}x \approx \frac{\pi}{n}\sum_{k=1}^n f\left(\cos\frac{2k-1}{2n}\pi\right)
 $$
 
-**节点**：Chebyshev 多项式 $T_n(x)=\cos(n\arccos x)$ 的零点：
+**积分节点**：$T_n(x)$ 的零点：
 $$
 x_k = \cos\frac{2k-1}{2n}\pi,\quad k=1,2,\ldots,n
 $$
 
-**权重**：所有权重相等，$A_k = \frac{\pi}{n}$。
+**权重系数**：所有权重相等，$A_k = \dfrac{\pi}{n}$。
 
-**注**：这是极少数权重显式相等、节点有闭式三角函数表达的 Gauss 公式，计算极其高效，常用于滤波器设计、谱方法（Chebyshev 谱配点）。
+**注**：这是极少数权重显式相等、节点有闭式三角函数表达的 Gauss 公式，计算极其高效。
 
 ### 算法实现
 
-#### Gauss-Legendre 求积（通用版）
+**Gauss-Legendre 求积**：
 
 ```python
 import numpy as np
@@ -250,7 +384,7 @@ def gauss_legendre(f, a, b, n):
     return np.sum(weights * f(nodes))
 ```
 
-#### 自适应 Gauss-Legendre（复合版）
+**自适应 Gauss-Legendre**：
 
 ```python
 def composite_gauss_legendre(f, a, b, n, m):
@@ -266,30 +400,29 @@ def composite_gauss_legendre(f, a, b, n, m):
     return total
 ```
 
-**注**：对于光滑性不足或变化剧烈的函数，复合 Gauss 公式比单纯增加单区间节点数更稳健。实际库（如 QUADPACK）采用自适应细分策略而非固定均匀剖分。
-
----
+**注**：对于光滑性不足或变化剧烈的函数，复合 Gauss 公式比单纯增加单区间节点数更稳健。
 
 ### 复杂度分析
 
-| 指标 | Gauss-Legendre | Newton-Cotes (等距) |
+| 指标 | Gauss | Newton-Cotes |
 | :--- | :--- | :--- |
 | **节点数** | $n$ | $n$ |
-| **代数精度** | $2n-1$ | $n$（$n$ 偶数）/ $n-1$（$n$ 奇数） |
+| **代数精度** | $2n-1$ | $n$（$n$ 奇数）/ $n-1$（$n$ 偶数） |
 | **函数求值次数** | $n$ | $n$ |
 | **权重/节点计算** | $O(n^2)$（需解特征值/正交多项式零点） | $O(1)$（解析表达式） |
-| **适用区间** | 有限区间（标准变换） | 有限区间 |
-| **端点奇异性** | 需变换或换用 Chebyshev | 通常失效 |
+| **适用区间** | 各种区间 | 有限区间 |
+| **端点奇异性** | 可变换函数或选用 Chebyshev | 通常失效 |
 
-**注**：Gauss 求积的"隐性成本"在于节点和权重的预计算。对于同一 $n$ 反复使用不同被积函数，节点权重只需计算一次，摊销后边际成本为 $O(n)$ 次函数求值。
+**注**：Gauss 求积的复杂性在于节点和权重的预计算。不过同一 $n$ 的节点权重只需计算一次。
 
 ---
 
 ## 数值积分专题
 
-### 1. 振荡函数的积分
+### 振荡函数的积分
 
-**问题**：计算 $\int_a^b f(x)\cos\omega x\,\mathrm{d}x$ 或 $\int_a^b f(x)\sin\omega x\,\mathrm{d}x$，其中 $f(x)$ 非振荡，$\omega \gg 1$。
+**问题**：
+计算 $\int_a^b f(x)\cos\omega x\,\mathrm{d}x$ 或 $\int_a^b f(x)\sin\omega x\,\mathrm{d}x$，其中 $f(x)$ 非振荡，$\omega \gg 1$。
 
 **困难**：标准 Newton-Cotes 或 Gauss 公式需要极密节点才能捕捉高频振荡，计算量巨大。
 
@@ -308,34 +441,41 @@ $$
 \end{aligned}
 $$
 
-对 $i$ 求和，第一项 telescoping（望远镜求和）：
+对 $i$ 求和，第一项为 telescoping sum：
 $$
-\sum_{i=0}^{n-1} \frac{f(x_{i+1})\sin\omega x_{i+1} - f(x_i)\sin\omega x_i}{\omega} = \frac{f(x_n)\sin\omega x_n - f(x_0)\sin\omega x_0}{\omega}
+\sum_{i=0}^{n-1} \frac{f(x_{i+1})\sin\omega x_{i+1} - f(x_i)\sin\omega x_i}{\omega}
+= \frac{f(x_n)\sin\omega x_n - f(x_0)\sin\omega x_0}{\omega}
 $$
 
 第二项经整理（利用三角恒等式）：
 $$
-\sum_{i=1}^{n-1} f(x_i)\frac{2\cos\omega x_i(1-\cos\omega h)}{\omega^2 h} + \text{边界项}
+\sum_{i=1}^{n-1} f(x_i)\frac{2\cos\omega x_i(1-\cos\omega h)}{\omega^2 h}
+- f(x_0)\frac{\cos\omega x_1-\cos\omega x_0}{\omega^2 h}
+- f(x_n)\frac{\cos\omega x_n-\cos\omega x_{n-1}}{\omega^2 h}
 $$
 
 **误差估计**：
 $$
-\left|\int_a^b f(x)\cos\omega x\,\mathrm{d}x - \int_a^b \varphi(x)\cos\omega x\,\mathrm{d}x\right| \le \frac{b-a}{8}h^2 \max_{x\in[a,b]}|f''(x)|
+\left|\int_a^b f(x)\cos\omega x\,\mathrm{d}x - \int_a^b \varphi(x)\cos\omega x\,\mathrm{d}x\right|
+\le \frac{b-a}{8}h^2 \max_{x\in[a,b]}|f''(x)|
 $$
 
-**注**：误差界与 $\omega$ 无关，这是 Filon 型方法的核心优势。当 $\omega$ 很大时，若 $h$ 固定，经典方法误差随 $\omega$ 增长，而本方法误差保持 $O(h^2)$。
+**注**：误差界与 $\omega$ 无关，这是该方法的核心优势。当 $\omega$ 很大时，若 $h$ 固定，经典方法误差随 $\omega$ 增长，而本方法误差保持 $O(h^2)$。
 
-### 2. 奇异函数的积分
+### 奇异函数的积分
 
 **问题**：$f(x)$ 在 $[a,b]$ 内有奇异点，例如 $x=a$ 处 $f(x)\to\infty$。
 
-**可积条件**：设 $f(x) = \frac{\varphi(x)}{(x-a)^\mu}$，其中 $0<\mu<1$，$|\varphi(x)|\le M$。若 $\mu\ge 1$，积分发散。
+**可积条件**：设 $f(x) = \dfrac{\varphi(x)}{(x-a)^\mu}$，其中 $0<\mu<1$，$|\varphi(x)|\le M$。若 $\mu\ge 1$，积分发散。
 
-**方法一：积分域分解 + Taylor 展开**
+**方法一**（积分域分解 + Taylor 展开）：
 
 将积分分解：
 $$
-I = \underbrace{\int_a^{a+\varepsilon} \frac{\varphi(x)}{(x-a)^\mu}\,\mathrm{d}x}_{I_1} + \underbrace{\int_{a+\varepsilon}^b \frac{\varphi(x)}{(x-a)^\mu}\,\mathrm{d}x}_{I_2}
+I
+=
+\underbrace{\int_a^{a+\varepsilon} \frac{\varphi(x)}{(x-a)^\mu}\,\mathrm{d}x}_{I_1}
++ \underbrace{\int_{a+\varepsilon}^b \frac{\varphi(x)}{(x-a)^\mu}\,\mathrm{d}x}_{I_2}
 $$
 
 对 $\varphi(x)$ 在 $x=a$ 处 Taylor 展开：
@@ -355,7 +495,7 @@ $$
 
 $I_2$ 无奇异性，可用标准数值积分。
 
-**方法二：奇异性消去（推荐）**
+**方法二**（奇异性消去）：
 
 构造：
 $$
@@ -364,15 +504,15 @@ $$
 
 其中 $\varphi_p(x) = \sum_{k=0}^p \frac{(x-a)^k}{k!}\varphi^{(k)}(a)$。第一项分子为 $(x-a)^{p+1}$ 阶，消去奇异性；第二项解析可积。
 
-**注**：实际计算中，若 $\varphi(x)$ 的 Taylor 系数难以获取，也可采用变量替换（如 $x=a+t^r$ 选择 $r$ 使得奇异性消失）。
+**注**：实际计算中，若 $\varphi(x)$ 的 Taylor 系数难以获取，也可采用变量替换法，如 $x=a+t^r$ 选择 $r$ 使得奇异性消失。
 
-### 3. 无限积分域函数的积分
+### 无限积分域函数的积分
 
 **问题**：计算 $I = \int_a^{+\infty} f(x)\,\mathrm{d}x$。
 
 **可积条件**：充分条件为 $\exists\mu>0$ 使得 $\lim_{x\to+\infty} x^{1+\mu}f(x) = C$（有限）。
 
-**方法一：截断 + 渐进展开**
+**方法一**（截断 + 渐进展开）：
 
 选取充分大的 $b$：
 $$
@@ -386,24 +526,24 @@ $$
 
 则尾项可逐项解析积分。
 
-**方法二：变量替换**
+**方法二**（变量替换）：
 
 令 $x = 1/t$（假设 $a>0$）：
 $$
 I = \int_0^{1/a} f\left(\frac{1}{t}\right)\frac{1}{t^2}\,\mathrm{d}t
 $$
 
-转化为有限区间积分，若 $t=0$ 处出现奇异性，则按**奇异函数积分**方法处理。
+转化为有限区间积分，若 $t=0$ 处出现奇异性，则按奇异函数积分方法处理。
 
-**方法三：Gauss-Laguerre / Gauss-Hermite**
+**方法三**（Gauss-Laguerre / Gauss-Hermite）：
 
 若被积函数可表示为 $\mathrm{e}^{-x}f(x)$ 或 $\mathrm{e}^{-x^2}f(x)$，直接套用对应 Gauss 公式。
 
-**注**：截断点 $b$ 的选择需平衡截断误差与计算成本。一般要求 $|f(b)|\cdot b \ll \varepsilon$（$\varepsilon$ 为目标精度）。
+**注**：截断点 $b$ 的选择需平衡截断误差与计算成本。一般要求 $|f(b)|\cdot b \ll \varepsilon$，其中 $\varepsilon$ 为目标精度。
 
-### 4. 自适应数值积分
+### 自适应数值积分
 
-**核心思想**：根据被积函数的**局部变化**动态调整子区间大小。
+**核心思想**：根据被积函数的局部变化动态调整子区间大小。
 
 - **函数变化剧烈**（导数大、曲率大）：细分小区间，使用更密节点。
 - **函数变化平坦**：使用较宽区间。
@@ -420,12 +560,9 @@ $$
 若 $|S(a,b) - [S(a,c)+S(c,b)]| < 15\varepsilon/2$，接受结果；
 否则递归处理 $[a,c]$ 和 $[c,b]$，误差容限各分配 $\varepsilon/2$。
 
-**注**：自适应方法对"大部分平坦、局部尖锐"的被积函数效率极高，但对"处处高频振荡"的函数可能退化为全局细分。现代实现（如 `scipy.integrate.quad`）基于 Gauss-Kronrod 对（7-15 点）进行局部误差估计，而非单纯 Simpson。
-
-### 5. 多重积分
+### 多重积分
 
 **矩形区域上的二重积分**：
-
 $$
 \iint_S f(x,y)\,\mathrm{d}A = \int_a^b\left[\int_c^d f(x,y)\,\mathrm{d}y\right]\mathrm{d}x,\quad S=[a,b]\times[c,d]
 $$
@@ -439,12 +576,7 @@ $$
 \int_c^d f(x,y)\,\mathrm{d}y \approx \frac{d-c}{6}\left[f(x,c) + 4f\left(x,\frac{c+d}{2}\right) + f(x,d)\right]
 $$
 
-外层对 $x$ 再次使用 Simpson：
-$$
-\int_a^b [\cdots]\,\mathrm{d}x \approx \frac{b-a}{6}\cdot\frac{d-c}{6}\times\Big[\text{9 点组合权重}\Big]
-$$
-
-展开后得到九点权重分布：
+外层对 $x$ 再次使用 Simpson，展开后得到九点权重分布：
 $$
 \begin{aligned}
 &\frac{(b-a)(d-c)}{36}\Big[f(a,c) + 4f\left(\frac{a+b}{2},c\right) + f(b,c) \\
@@ -453,7 +585,7 @@ $$
 \end{aligned}
 $$
 
-**注**：高维积分（$d\ge 3$）时，一维公式直接张量积会导致**维度灾难**（节点数随 $n^d$ 增长）。此时应采用 Monte Carlo 方法、拟 Monte Carlo（低差异序列）或稀疏网格（Sparse Grid）技术。
+**注**：高维积分（$d\ge 3$）时，一维公式直接张量积会导致**维度灾难**（节点数随 $n^d$ 增长）。此时需采用改进方法。
 
 ---
 

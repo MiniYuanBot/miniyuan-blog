@@ -1,6 +1,5 @@
 {
-  // Believe on local node_modules
-  "$schema": "./node_modules/astro/tsconfigs/strict.json",
+  "$schema": "https://json.schemastore.org/tsconfig.json",
   "extends": "astro/tsconfigs/strict",
   "include": [
     ".astro/types.d.ts",

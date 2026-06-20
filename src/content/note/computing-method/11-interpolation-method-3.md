@@ -12,6 +12,8 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
+<!-- markdownlint-disable MD024 -->
+
 ## 二维插值
 
 ### 问题定义
@@ -198,28 +200,26 @@ def idft_naive(c):
 
 ## FFT
 
-### 核心思想：分治递归
+### 核心思想
 
 **基本策略**：
 
-将 $N$ 个点的 DFT 问题分解为 **2 个 $N/2$ 个点的 DFT 问题**，重复此过程，直至变成 $N/2$ 个 **2 点 DFT** 问题。
+将 $N$ 个点的 DFT 问题分解为 2 个 $N/2$ 个点的 DFT 问题，重复此过程，直至变成 $N/2$ 个 2 点 DFT 问题。
 
-**前提**：$N = 2^m$（$N$ 为 2 的整数次幂）。
+**前提**：$N = 2^m$，也即 $N$ 为 2 的整数次幂。
 
 **定义单位根**：
-
 $$
 \omega_N = e^{-\mathrm{i}\frac{2\pi}{N}}
 $$
 
 重写 DFT（令 $a_l \equiv f_l/N$）：
-
 $$
 c_k = \frac{1}{N}\sum_{l=0}^{N-1} f_l\, e^{-\mathrm{i}k\frac{2l\pi}{N}}
 = \sum_{l=0}^{N-1} a_l\, \omega_N^{kl}, \quad k=0,1,\cdots,N-1
 $$
 
-### 单位根的关键属性
+### 数学基础
 
 $$
 \omega_N^{k+N/2} = -\omega_N^k
@@ -229,7 +229,7 @@ $$
 \omega_N^{k+N} = \omega_N^k
 $$
 
-当 $N$ 为偶数时（$k = 0,1,\cdots,N/2-1$）：
+且当 $N$ 为偶数时（$k = 0,1,\cdots,N/2-1$）：
 
 $$
 (\omega_N^k)^2 = \omega_{N/2}^k
@@ -243,74 +243,33 @@ $$
 \omega_N^{N/2} = -1
 $$
 
-**直觉**：$\omega_N$ 是复平面单位圆上的等分点，取平方后等价于点数减半。
+### 奇偶分解推导
 
-### 奇偶分解推导（Cooley-Tukey 蝶形结构）
-
-对 $k = 0, 1, \cdots, N/2-1$，将求和按**偶数项**（$l=0,2,\cdots$）和**奇数项**（$l=1,3,\cdots$）分开：
-
+对 $k = 0, 1, \cdots, N/2-1$，将求和按偶数项（$l=0,2,\cdots$）和奇数项（$l=1,3,\cdots$）分开：
 $$
 c_k = \underbrace{\sum_{\substack{l=0,2,\cdots,N-2}} a_l\,(\omega_{N/2}^k)^{l/2}}_{\text{偶数子问题 }E_k}
 + \omega_N^k \underbrace{\sum_{\substack{l=1,3,\cdots,N-1}} a_l\,(\omega_{N/2}^k)^{(l-1)/2}}_{\text{奇数子问题 }O_k}
 $$
 
 利用 $\omega_N^{k+N/2} = -\omega_N^k$，得到：
-
 $$
 c_{k+N/2} = E_k - \omega_N^k\, O_k
 $$
 
-**蝶形运算总结**：
-
+也即：
 $$
-\boxed{
 c_k = E_k + \omega_N^k\, O_k, \quad
 c_{k+N/2} = E_k - \omega_N^k\, O_k, \quad k=0,\cdots,\tfrac{N}{2}-1
-}
 $$
 
 **几何意义**：每次分治将 $N$ 点问题分为两个 $N/2$ 点问题，每层只需 $O(N)$ 的合并工作，共 $\log_2 N$ 层，总复杂度 $O(N\log N)$。
 
-### 例子
-
-以 $N = 2^3 = 8$ 为例说明。
-
-**矩阵分解视角**（$\omega = \omega_8$）：
-
-$$
-\boldsymbol{c} = \underbrace{\mathbf{M}_3}_{\text{第3层}} \cdot \underbrace{\mathbf{M}_2}_{\text{第2层}} \cdot \underbrace{\mathbf{M}_1}_{\text{第1层}} \cdot \underbrace{P\,\boldsymbol{a}}_{\text{位逆序排列}}
-$$
-
-其中每层矩阵 $\mathbf{M}_j$ 是稀疏的（仅有 $2N$ 个非零元），整体将密矩阵向量乘法分解为 $\log_2 N$ 次稀疏矩阵-向量乘法。
-
-**计算量对比**（$N=8$）：
-
-| 算法 | 乘法次数 | 加法次数 |
-| :--- | ---: | ---: |
-| 朴素 DFT | $N^2 = 64$ | $N(N-1) = 56$ |
-| FFT（3 层） | $3 \times 2N = 48$ | $3 \times N = 24$ |
-
-**输入的位逆序（Bit-Reversal）排列**：
-
-| 原始下标 | 二进制 $(b_2 b_1 b_0)$ | 位逆序 $(b_0 b_1 b_2)$ | 新下标 |
-| :---: | :---: | :---: | :---: |
-| 0 | 000 | 000 | 0 |
-| 1 | 001 | 100 | 4 |
-| 2 | 010 | 010 | 2 |
-| 3 | 011 | 110 | 6 |
-| 4 | 100 | 001 | 1 |
-| 5 | 101 | 101 | 5 |
-| 6 | 110 | 011 | 3 |
-| 7 | 111 | 111 | 7 |
-
-故输入顺序为 $a_0, a_4, a_2, a_6, a_1, a_5, a_3, a_7$（与蝶形图一致）。
-
 ### 算法实现
 
-```python
-import numpy as np
+**标准递归**：
 
-# ── 标准递归版 ──────────────────────────────────────────────
+```python
+# 标准递归版
 def fft_recursive(a):
     """递归 FFT，要求 N 为 2 的幂，时间复杂度 O(N log N)"""
     N = len(a)
@@ -322,8 +281,12 @@ def fft_recursive(a):
     
     omega = np.exp(-2j * np.pi * np.arange(N // 2) / N)   # 旋转因子
     return np.concatenate([E + omega * O, E - omega * O])  # 蝶形合并
+```
 
-# ── 原位迭代版（Cooley-Tukey 标准实现）──────────────────────
+**原位迭代**：
+
+```python
+# 原位迭代版
 def fft_iterative(a):
     """迭代 FFT（原位），避免递归开销，内存高效"""
     N = len(a)
@@ -355,8 +318,12 @@ def fft_iterative(a):
                 omega *= omega_len
         length <<= 1
     return a
+```
 
-# ── 向量化版（NumPy 风格）────────────────────────────────────
+**向量化原位迭代**：
+
+```python
+# 向量化版
 def fft_vectorized(a):
     """向量化蝶形，减少 Python 循环"""
     N = len(a)
@@ -381,55 +348,46 @@ def fft_vectorized(a):
     return a
 ```
 
-**原位存储的矩阵演变示意**（以 $N=4$ 为例）：
-
-$$
-\begin{bmatrix}a_0\\a_2\\a_1\\a_3\end{bmatrix}
-\xRightarrow{\text{第1层蝶形}}
-\begin{bmatrix}a_0+a_2\\a_0-a_2\\a_1+a_3\\a_1-a_3\end{bmatrix}
-\xRightarrow{\text{第2层蝶形}}
-\begin{bmatrix}c_0\\c_1\\c_2\\c_3\end{bmatrix}
-$$
-
 ---
 
 ## 基于 FFT 的大数乘法
 
 ### 核心思想
 
-**关键观察**：一个 $n+1$ 位十进制数 $\overline{a_n a_{n-1}\cdots a_0}$ 等于多项式
+**关键观察**：
 
+一个 $n+1$ 位十进制数 $\overline{a_n a_{n-1}\cdots a_0}$ 等于多项式：
 $$
 A(x) = a_0 + a_1 x + \cdots + a_n x^n
 $$
-
 在 $x=10$ 处的求值，即 $A(10) = \overline{a_n a_{n-1}\cdots a_0}$。
 
-**因此**，两个大数相乘 $\Leftrightarrow$ 两个多项式相乘：
-
+因此，两个大数相乘 $\Leftrightarrow$ 两个多项式相乘：
 $$
 C(x) = A(x)\cdot B(x), \quad \deg C = n+m
 $$
 
-得到 $C(x)$ 的系数后，再用**秦九韶算法**以 $O(n+m)$ 计算 $C(10)$，即得乘积。
+得到 $C(x)$ 的系数后，再用秦九韶算法以 $O(n+m)$ 计算 $C(10)$，即得乘积。
 
-### FFT 大数乘法步骤
+### 算法流程
 
-**算法流程**（总时间复杂度 $O(N\log N)$，其中 $N > 2n$）：
+**总时间复杂度：** $O(N\log N)$，其中 $N > 2n$。
 
-输入：n+1 位大数 A，m+1 位大数 B（n ≥ m）
-输出：乘积 A × B
+**输入：** $n+1$ 位大数 $A$，$m+1$ 位大数 $B$（$n \ge m$）  
+**输出：** 乘积 $A \times B$
 
-1. 将 A、B 的各位数字作为多项式系数，零填充至长度 N（N 为大于 2n 的最小 2 的幂次）
-2. FFT(A) → 频域 F_A；FFT(B) → 频域 F_B          # O(N log N)
-3. 逐点相乘：H[k] = F_A[k] × F_B[k]，k=0,…,N-1   # O(N)
-4. IFFT(H) → 时域 C（多项式 C(x) 的系数）          # O(N log N)
-5. 对 C 的系数做进位处理（因系数可能 > 9）
-6. 用秦九韶算法计算 C(10)                           # O(n+m)
+| 步骤 | 操作 | 时间复杂度 |
+| :---: | :--- | :---: |
+| 1 | 将 $A$、$B$ 的各位数字作为多项式系数，零填充至长度 $N$（取大于 $2n$ 的最小 2 的幂次） | — |
+| 2 | $\text{FFT}(A) \to$ 频域 $F_A$；$\text{FFT}(B) \to$ 频域 $F_B$ | $O(N\log N)$ |
+| 3 | 逐点相乘：$H[k] = F_A[k] \cdot F_B[k]$，$k=0,\dots,N-1$ | $O(N)$ |
+| 4 | $\text{IFFT}(H) \to$ 时域 $C$（多项式 $C(x)$ 的系数） | $O(N\log N)$ |
+| 5 | 对 $C$ 的系数做进位处理（系数可能 $> 9$） | — |
+| 6 | 用秦九韶算法计算 $C(10)$ | $O(n+m)$ |
 
 ---
 
-## 五、复杂度汇总
+## 复杂度汇总
 
 | 算法 | 时间复杂度 | 空间复杂度 | 适用条件 |
 | :--- | :---: | :---: | :--- |

@@ -22,6 +22,10 @@ export const typographyConfig: TypographyOptions = {
             // 'border-bottom': '1px solid hsl(var(--border))',
             'padding-bottom': '0.3rem',
         },
+        'h4': {
+            'font-size': '1.1em',
+            'padding-bottom': '0.2rem',
+        },
 
         // Anchor link icons that appear on heading hover
         'h1>a, h2>a, h3>a, h4>a, h5>a, h6>a': {
