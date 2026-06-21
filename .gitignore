@@ -22,6 +22,12 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
+# local scripts
+script/
+
+# agent prompts and skills
+prompt/
+
 # temp folder
 temp/
 .vscode/
