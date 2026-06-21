@@ -207,13 +207,6 @@ export const typographyConfig: TypographyOptions = {
         '.dark code': {
             'background-color': 'hsl(var(--muted) / 0.3)',
         },
-
-        // ========== Responsive ==========
-        '@media (max-width: 640px) blockquote::after': {
-            'font-size': '8rem',
-            top: '2rem',
-            right: '-1rem',
-        },
     },
 }
 

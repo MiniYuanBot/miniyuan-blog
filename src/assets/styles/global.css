@@ -94,6 +94,24 @@ span.katex-display {
     padding-inline-start: 0.5rem;
 }
 
+/* ========== PlantUML diagrams ========== */
+.prose .plantuml-diagram {
+    max-width: 100%;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+}
+
+.prose .plantuml-diagram svg,
+.prose .plantuml-diagram img {
+    display: inline-block;
+    max-width: none;
+    height: auto;
+    margin: 0;
+    vertical-align: top;
+}
+
 /* ========== Animations ========== */
 @keyframes fade-in-up {
 	0% {
@@ -114,5 +132,14 @@ span.katex-display {
 @media (prefers-reduced-motion: reduce) {
 	.animate-fade-in-up {
 		animation: 100ms fade-in-up forwards;
+	}
+}
+
+/* ========== Responsive Typography ========== */
+@media (max-width: 640px) {
+	.prose blockquote::after {
+		font-size: 8rem;
+		top: 2rem;
+		right: -1rem;
 	}
 }

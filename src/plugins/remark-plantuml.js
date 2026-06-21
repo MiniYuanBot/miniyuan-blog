@@ -4,6 +4,7 @@ import { encode } from 'plantuml-encoder';
 const SERVER = 'https://www.plantuml.com/plantuml/svg';
 
 const COMMON_STYLE = `
+allowmixing
 hide circle
 skinparam classAttributeIconSize 0
 skinparam shadowing false
@@ -52,7 +53,7 @@ export default function remarkPlantuml() {
                 } catch {
                     parent.children[index] = {
                         type: 'html',
-                        value: `<img src="${url}" alt="PlantUML" class="plantuml-diagram" style="max-width:100%" />`
+                        value: `<div class="plantuml-diagram"><img src="${url}" alt="PlantUML" /></div>`
                     };
                 }
             })

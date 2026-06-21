@@ -373,7 +373,6 @@ note right of Modem
 不变式：发送数据前必须处于 connected 状态。
 end note
 
-[*] --> idle
 idle --> dialing : dial(pno)
 dialing --> connected : connected
 connected --> idle : hangup()
