@@ -7,6 +7,7 @@ import unocss from 'unocss/astro';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import remarkImageCaption from './src/plugins/remark-image-caption.js';
+import remarkPlantuml from './src/plugins/remark-plantuml.js';
 
 // https://astro.build/config
 export default defineConfig({
@@ -45,7 +46,11 @@ export default defineConfig({
 	],
 
 	markdown: {
-		remarkPlugins: [remarkMath, remarkImageCaption],
+		remarkPlugins: [
+			remarkMath,
+			remarkImageCaption,
+			remarkPlantuml,
+		],
 		rehypePlugins: [
 			rehypeKatex,
 			rehypeHeadingIds,

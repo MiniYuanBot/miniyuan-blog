@@ -15,10 +15,11 @@
     "@astrojs/rss": "^4.0.15",
     "astro": "^5.18.0",
     "katex": "^0.16.38",
+    "plantuml-encoder": "^1.4.0",
     "rehype-katex": "^7.0.1",
     "remark-math": "^6.0.0",
-    "shiki": "3.23.0",
     "sharp": "^0.34.5",
+    "shiki": "3.23.0",
     "unist-util-visit": "^5.1.0"
   },
   "devDependencies": {
