@@ -30,5 +30,6 @@ prompt/
 
 # temp folder
 temp/
+
 .vscode/
 .vercel

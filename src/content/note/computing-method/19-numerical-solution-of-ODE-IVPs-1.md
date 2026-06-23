@@ -74,7 +74,19 @@ $$
 
 **定义**（绝对稳定性）：
 
-对模型方程 $y' = \lambda y\ (\lambda \in \mathbb{C})$，给定步长 $h$，若计算 $y_n$ 时引入的误差在后续计算中绝对值不增长，则称该方法对该 $h$ 与 $\lambda$ **绝对稳定**。
+对模型方程 $y' = \lambda y\ (\lambda \in \mathbb{C})$，设数值方法的单步格式为：
+$$
+y_{n+1} = R(\lambda h)\, y_n
+$$
+若有：
+$$
+\bigl|R(\lambda h)\bigr| \leq 1
+$$
+则称该方法对 $h$ 与 $\lambda$ **绝对稳定**，并称
+$$
+\mathcal{S} = \bigl\{ z \in \mathbb{C} : \bigl|R(z)\bigr| \leq 1 \bigr\}
+$$
+为**绝对稳定区域**。
 
 ### 显式、隐式与单步、多步
 

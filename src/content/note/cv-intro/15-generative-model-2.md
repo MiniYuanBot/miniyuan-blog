@@ -6,7 +6,6 @@ position: 'Beijing'
 tags:
   - 'CV'
   - '计算机视觉'
-  - 'Generative Models'
 pubDate: 'June 7 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
@@ -21,15 +20,6 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 Diffusion Model 可以从上一讲的 **Variational Autoencoder**（VAE）自然延伸而来：VAE 使用一个 latent code 解释图像，而 Diffusion 将 latent 变量展开成很长的马尔可夫链，用多步小扰动逐渐把数据变成噪声，再学习反向去噪过程。其训练目标最终可以简化为一句话：**给干净图像加已知噪声，然后训练网络预测这部分噪声**。
 
-### 期末考试安排
-
-- 时间：6 月 24 日 14:00-16:00。
-- 范围：Lecture 9 到 Lecture 15，可能综合使用期中前技术。
-- 形式：多选题、简答题、计算题。
-- 允许携带一页 A4 cheat sheet。
-
-**注**：题目为英文；简答和简单计算可以中文作答，但课程术语建议使用英文。
-
 ## Diffusion Models
 
 ### 从 VAE 到层级隐变量模型
@@ -37,7 +27,6 @@ Diffusion Model 可以从上一讲的 **Variational Autoencoder**（VAE）自然
 单层 VAE 的生成过程为 $z\to x$。一个 latent code 需要同时编码 object category、shape、pose、texture 与 fine details，这对高维图像生成非常困难。若 decoder 使用简单高斯条件分布，多个合理输出还会被均值化，导致图像模糊。
 
 自然的扩展是引入多个 latent variables。以两个隐变量为例：
-
 $$
 p_\theta(x,z_1,z_2)=p(z_1)p_\theta(z_2\mid z_1)p_\theta(x\mid z_2)
 $$
@@ -61,7 +50,6 @@ Diffusion Model 定义一组变量：
 ### 单步加噪
 
 前向过程定义为逐步向图像加入高斯噪声：
-
 $$
 q(x_t\mid x_{t-1})
 =
@@ -69,7 +57,6 @@ q(x_t\mid x_{t-1})
 $$
 
 其中 $\beta_t$ 是预设的 **Noise Schedule**（噪声调度），控制第 $t$ 步加入多少噪声。令 $\alpha_t=1-\beta_t$，可写成重参数化形式：
-
 $$
 x_t=\sqrt{\alpha_t}x_{t-1}+\sqrt{1-\alpha_t}\epsilon_{t-1},
 \quad
@@ -81,13 +68,11 @@ $$
 ### Diffusion Kernel
 
 由于每一步都是线性高斯变换，可以直接从 $x_0$ 跳到任意 $x_t$。定义：
-
 $$
 \bar{\alpha}_t=\prod_{i=1}^{t}\alpha_i
 $$
 
 则有：
-
 $$
 q(x_t\mid x_0)
 =
@@ -95,7 +80,6 @@ q(x_t\mid x_0)
 $$
 
 采样形式为：
-
 $$
 x_t=\sqrt{\bar{\alpha}_t}x_0+\sqrt{1-\bar{\alpha}_t}\epsilon,
 \quad
@@ -107,13 +91,11 @@ $$
 ### Noise Schedule
 
 DDPM 中常用线性噪声调度：
-
 $$
 \beta_t=\beta_{\min}+\frac{t-1}{T-1}(\beta_{\max}-\beta_{\min})
 $$
 
 典型设置为 $\beta_{\min}\approx10^{-4}$、$\beta_{\max}=0.02$、$T=1000$。设计目标是让 $\bar{\alpha}_T\to0$，使：
-
 $$
 q(x_T\mid x_0)\approx\mathcal{N}(0,I)
 $$
@@ -125,7 +107,6 @@ $$
 ### 反向分布建模
 
 生成图像需要从噪声 $x_T$ 逐步恢复到数据 $x_0$。真实反向分布 $q(x_{t-1}\mid x_t)$ 不可直接得到，因此引入可学习模型：
-
 $$
 p_\theta(x_{t-1}\mid x_t)
 =
@@ -137,7 +118,6 @@ $$
 ### ELBO 目标
 
 Diffusion Model 的联合分布为：
-
 $$
 p_\theta(x_{0:T})
 =
@@ -145,7 +125,6 @@ p(x_T)\prod_{t=1}^{T}p_\theta(x_{t-1}\mid x_t)
 $$
 
 对 $\log p_\theta(x_0)$ 使用变分下界可得：
-
 $$
 \log p_\theta(x_0)
 \ge
@@ -164,7 +143,6 @@ $$
 | $L_0$ | 最后一步重建数据 $x_0$ |
 
 其中核心项为：
-
 $$
 L_{t-1}
 =
@@ -181,7 +159,6 @@ $$
 ### 噪声预测参数化
 
 DDPM 的关键简化是：不直接预测 $\mu_\theta$，而是让网络预测加到 $x_0$ 上的噪声 $\epsilon$。均值可由预测噪声重参数化为：
-
 $$
 \mu_\theta(x_t,t)
 =
@@ -192,7 +169,6 @@ x_t-\frac{1-\alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t,t)
 $$
 
 最终训练目标可简化为：
-
 $$
 \mathcal{L}
 =
@@ -221,7 +197,6 @@ $$
 2. 随机采样时间步 $t\in\{1,\dots,T\}$。
 3. 采样高斯噪声 $\epsilon\sim\mathcal{N}(0,I)$。
 4. 用 Diffusion Kernel 构造噪声图：
-
 $$
 x_t=\sqrt{\bar{\alpha}_t}x_0+\sqrt{1-\bar{\alpha}_t}\epsilon
 $$
@@ -257,7 +232,6 @@ $$
 ### 其他视角：Score 与 SDE
 
 Diffusion 也可从 **Score Function** 角度理解。对任意分布 $p(x)$，score function 定义为：
-
 $$
 s(x)=\nabla_x\log p(x)
 $$
@@ -265,7 +239,6 @@ $$
 它是一个指向高概率密度区域的向量场。Score-based generative model 训练网络近似数据分布在不同噪声水平下的 score，从而指导样本从噪声区域移动到数据高密度区域。
 
 连续时间下，加噪过程还可写成 **Stochastic Differential Equation**（SDE）：
-
 $$
 d\mathbf{x}=f(\mathbf{x},t)dt+g(t)d\mathbf{w}
 $$
@@ -277,31 +250,26 @@ $$
 ### 基本思想
 
 **Flow Matching** 提供了另一种生成视角：从噪声分布 $p_{\mathrm{noise}}$ 到数据分布 $p_{\mathrm{data}}$ 学习一个连续速度场。设：
-
 $$
 z\sim p_{\mathrm{noise}},\quad x\sim p_{\mathrm{data}},\quad t\sim\mathrm{Uniform}(0,1)
 $$
 
 使用线性插值得到中间状态：
-
 $$
 x_t=(1-t)x+tz
 $$
 
 对应速度为：
-
 $$
 v=z-x
 $$
 
 因为：
-
 $$
 \frac{dx_t}{dt}=z-x=v
 $$
 
 因此训练网络 $v_\theta(x_t,t)$ 预测该速度场：
-
 $$
 \mathcal{L}
 =
@@ -328,7 +296,6 @@ $$
 1. 采样初始点 $x_1\sim p_{\mathrm{noise}}$。
 2. 选择步数 $T$，例如 $T=50$。
 3. 从 $t=1$ 向 $t=0$ 数值积分：
-
 $$
 x_{t-\Delta t}=x_t-v_\theta(x_t,t)\Delta t
 $$
@@ -340,13 +307,11 @@ Flow Matching 的采样本质上是在解一个 **ODE**（常微分方程），�
 ### 与 Diffusion 的统一形式
 
 更一般地，可写成：
-
 $$
 x_t=a_t x+b_t z
 $$
 
 网络预测某个目标：
-
 $$
 c_t x+d_t z
 $$
@@ -363,7 +328,6 @@ $$
 ### 条件 Flow Matching
 
 若希望进行条件生成，只需将条件 $y$ 加入网络：
-
 $$
 v_\theta(x_t,t,y)
 $$
@@ -381,7 +345,6 @@ $$
 ### Autoencoder 压缩
 
 先训练一个 encoder-decoder：
-
 $$
 x\in\mathbb{R}^{H\times W\times3}
 \to
@@ -389,7 +352,6 @@ z\in\mathbb{R}^{\frac{H}{D}\times\frac{W}{D}\times C}
 $$
 
 例如：
-
 $$
 256\times256\times3\to32\times32\times16
 $$
@@ -405,7 +367,6 @@ LDM 中的 autoencoder 通常是 VAE 变体：
 3. 为避免 VAE decoder 输出模糊，可加入 **Discriminator**，使用 GAN loss 提升重构图像的真实感。
 
 因此现代 LDM pipeline 可概括为：
-
 $$
 \text{VAE}+\text{GAN}+\text{Diffusion}
 $$
@@ -443,7 +404,6 @@ $$
 | 时间步 $t$ | timestep embedding + normalization modulation | 所有 diffusion 模型 |
 
 以 cross-attention 为例，条件信号 $y$ 先经过领域编码器 $\tau(y)$，被去噪信号 $x_t$ 经过网络得到特征 $\phi(x_t)$，再构造：
-
 $$
 Q=W_Q\phi(x_t),\quad K=W_K\tau(y),\quad V=W_V\tau(y)
 $$
@@ -492,7 +452,6 @@ DiT 的核心问题是如何注入条件，尤其是 timestep $t$ 与文本条�
 ### Text-to-Video Pipeline
 
 视频生成将 latent 从二维扩展到三维时空张量：
-
 $$
 z_t\in\mathbb{R}^{T\times H'\times W'\times C}
 $$

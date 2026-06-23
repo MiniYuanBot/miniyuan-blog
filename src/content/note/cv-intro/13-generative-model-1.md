@@ -6,22 +6,11 @@ position: 'Beijing'
 tags:
   - 'CV'
   - '计算机视觉'
-  - 'Generative Models'
 pubDate: 'May 24 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
-
-## Generative Model I
-
-### 课程定位
-
-本讲进入 **Generative Models**（生成模型）基础，重点讨论三类经典生成范式：**Autoregressive Model**（自回归模型）、**Variational Autoencoder**（VAE，变分自编码器）与 **Generative Adversarial Network**（GAN，生成对抗网络）。
-
-生成模型的核心目标是学习数据分布，并从该分布中采样得到新数据。相比传统判别式视觉任务中“给图像分标签”，生成模型更关注“什么样的数据是合理的”，以及“如何在条件约束下生成多种可能输出”。现代文本生成、文生图、图生视频和世界模型都属于这一方向。
-
-**注**：本讲是生成模型第一部分，扩散模型将在后续课程中讨论。可以将 Diffusion Model 理解为更复杂的、层级化多隐变量生成模型。
 
 ## Generative vs Discriminative Models
 
@@ -36,13 +25,11 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 | **Conditional Generative Model** | $p(X\mid Y)$ | 给定条件生成数据，如类别到图像、文本到图像 |
 
 三者可由联合分布联系起来：
-
 $$
 p(X,Y)=p(X)p(Y\mid X)=p(Y)p(X\mid Y)
 $$
 
 由贝叶斯公式可得：
-
 $$
 p(X\mid Y)=\frac{p(Y\mid X)p(X)}{p(Y)}
 $$
@@ -52,7 +39,6 @@ $$
 ### 概率竞争方式的差异
 
 判别式模型在给定 $X$ 后，让所有可能标签竞争概率质量：
-
 $$
 \sum_{y\in \mathcal{Y}} p(y\mid X)=1
 $$
@@ -92,7 +78,6 @@ $$
 ### 生成模型的训练目标
 
 若模型显式给出密度 $p_\theta(X)$，最常见目标是 **Maximum Likelihood Estimation**（MLE，最大似然估计）：
-
 $$
 \max_\theta \sum_{X_i\in\mathcal{D}}\log p_\theta(X_i)
 $$
@@ -104,7 +89,6 @@ $$
 ### 语言模型作为自回归生成
 
 对序列 $x_1,\dots,x_T$，**Autoregressive Model** 使用链式法则分解联合概率：
-
 $$
 p(x_1,\dots,x_T)=\prod_{t=1}^{T}p(x_t\mid x_1,\dots,x_{t-1})
 $$
@@ -131,12 +115,12 @@ Transformer 中的 **Causal Mask** 保证位置 $t$ 只能看到 $1,\dots,t-1$ �
 
 AE 可以学习低维表示，但不是完整生成模型。原因是普通 AE 不约束隐变量 $Z$ 的分布，因此无法可靠地从隐空间采样一个新 $Z$ 并生成合理图像。
 
-**VAE** 将 AE 概率化：假设隐变量服从先验分布 $p(Z)$，通常为标准正态分布 $\mathcal{N}(0,I)$；Decoder 建模条件分布 $p_\theta(X\mid Z)$。生成时先采样 $Z\sim p(Z)$，再由 Decoder 生成 $X$。
+**VAE** 将 AE 概率化：假设隐变量服从先验分布 $p(Z)$，通常为标准正态分布 $\mathcal{N}(0,I)$；
+Decoder 建模条件分布 $p_\theta(X\mid Z)$。生成时先采样 $Z\sim p(Z)$，再由 Decoder 生成 $X$。
 
 ### 边际似然与不可解积分
 
 VAE 希望最大化数据边际似然：
-
 $$
 p_\theta(X)=\int p(Z)p_\theta(X\mid Z)\,dZ
 $$
@@ -144,7 +128,6 @@ $$
 该积分需要对所有可能隐变量 $Z$ 积分。即使假设 $p(Z)$ 与 $p_\theta(X\mid Z)$ 都是高斯，由于 Decoder 的均值和方差由神经网络输出，积分通常没有解析解。
 
 朴素 Monte Carlo 近似为：
-
 $$
 p_\theta(X)\approx \frac{1}{K}\sum_{k=1}^{K}p_\theta(X\mid Z_k),\quad Z_k\sim p(Z)
 $$
@@ -154,7 +137,6 @@ $$
 ### 变分后验与 ELBO
 
 真实后验为：
-
 $$
 p_\theta(Z\mid X)=\frac{p(Z)p_\theta(X\mid Z)}{p_\theta(X)}
 $$
@@ -162,7 +144,6 @@ $$
 由于分母 $p_\theta(X)$ 不可解，后验也不可解。VAE 引入可学习的变分后验 $q_\phi(Z\mid X)$ 来近似真实后验 $p_\theta(Z\mid X)$。通常 $q_\phi$ 由 Encoder 参数化，并输出高斯分布的均值与方差。
 
 对 $\log p_\theta(X)$ 可分解为：
-
 $$
 \log p_\theta(X)
 =
@@ -172,7 +153,6 @@ $$
 $$
 
 第三项是 $q_\phi$ 与真实后验之间的 KL 散度，非负且不可直接计算。因此前两项构成对数似然下界：
-
 $$
 \log p_\theta(X)\ge
 \mathbb{E}_{q_\phi}[\log p_\theta(X\mid Z)]
@@ -192,7 +172,6 @@ $$
 ### 高斯 KL 与重构损失
 
 若 $q_\phi(Z\mid X)=\mathcal{N}(\mu,\operatorname{diag}(\sigma^2))$，且 $p(Z)=\mathcal{N}(0,I)$，则 KL 项有解析形式：
-
 $$
 D_{\mathrm{KL}}(q_\phi(Z\mid X)\|\mathcal{N}(0,I))
 =
@@ -201,7 +180,6 @@ D_{\mathrm{KL}}(q_\phi(Z\mid X)\|\mathcal{N}(0,I))
 $$
 
 若进一步把 Decoder 的协方差固定为单位矩阵，则重构对数似然等价于最小化均方误差：
-
 $$
 \|X-\mu_{X\mid Z}\|_2^2
 $$
@@ -211,7 +189,6 @@ $$
 ### Reparameterization Trick
 
 为了从 $q_\phi(Z\mid X)$ 采样并让梯度回传到 Encoder，VAE 使用 **Reparameterization Trick**（重参数化技巧）：
-
 $$
 Z=\mu_{Z\mid X}+\varepsilon\odot\sigma_{Z\mid X},
 \quad
@@ -254,7 +231,6 @@ VAE 生成图像常出现 **Blurry Problem**（模糊问题）。在高斯似然
 “变分”来自 **Variational Inference**（变分推断）。在概率隐变量模型中，真实后验 $p_\theta(Z\mid X)$ 往往不可解，于是引入一族可计算分布 $q_\phi(Z\mid X)$，在分布函数空间中寻找最接近真实后验的近似。
 
 固定 $\theta$ 时，最大化 ELBO 等价于最小化：
-
 $$
 D_{\mathrm{KL}}(q_\phi(Z\mid X)\|p_\theta(Z\mid X))
 $$
@@ -264,7 +240,6 @@ $$
 ### 多隐变量 VAE
 
 VAE 可以扩展到多个隐变量。例如有 $Z_1,Z_2$ 时，可考虑联合分布：
-
 $$
 p_\theta(X,Z_1,Z_2)=p(Z_1)p_\theta(Z_2\mid Z_1)p_\theta(X\mid Z_2)
 $$
@@ -276,7 +251,6 @@ $$
 ### 对抗学习思想
 
 **GAN** 不显式建模 $p(X)$，而是学习一个从噪声到图像的生成器：
-
 $$
 G: Z\mapsto X,\quad Z\sim p(Z)
 $$
@@ -286,7 +260,6 @@ $$
 ### Minimax 目标
 
 原始 GAN 是一个双人极小极大博弈：
-
 $$
 \min_G \max_D
 \left[
@@ -313,7 +286,6 @@ $$
 ### Saturating Loss 与 Non-Saturating Loss
 
 原始生成器目标来自极小化：
-
 $$
 \mathbb{E}_{z\sim p(z)}[\log(1-D(G(z)))]
 $$
@@ -321,7 +293,6 @@ $$
 训练早期，生成样本质量很差，$D(G(z))\approx 0$。此时 $\log(1-D(G(z)))$ 容易进入饱和区，生成器梯度很小，训练困难。
 
 实践中常使用 **Non-Saturating Loss**：
-
 $$
 \max_G \mathbb{E}_{z\sim p(z)}[\log D(G(z))]
 $$
@@ -376,7 +347,6 @@ GAN 的生成器没有直接优化一个可解释的似然目标，因此评估�
 4. 计算两个高斯分布之间的 Fréchet 距离。
 
 FID 公式为：
-
 $$
 \mathrm{FID}
 =

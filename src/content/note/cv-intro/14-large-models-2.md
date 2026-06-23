@@ -6,44 +6,27 @@ position: 'Beijing'
 tags:
   - 'CV'
   - '计算机视觉'
-  - 'Foundation Models'
 pubDate: 'May 31 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-## Large Models II: Video Transformers and Multi-modal Foundation Model
-
-### 课程定位
-
-本讲延续上一讲的 **Vision Transformer**（ViT）与多模态建模，进入两个主题：
-
-1. **Video Transformers**：如何将图像 Transformer 扩展到视频，并处理时间维度带来的 token 爆炸。
-2. **Foundation Models**（基础模型）：如何通过大规模自监督或弱监督预训练，得到可迁移到多任务、多模态场景的通用模型。
-
-视频可以看作图像加上时间维度。若图像 token 已经由二维 patch 构成，那么视频就是由时间维度上的一系列 patch token 组成。核心困难在于：视频 token 数量远大于图像，标准 self-attention 的 $O(N^2)$ 复杂度会迅速不可承受。
-
-后半部分则讨论从 **CLIP**、**CoCa** 到 **LLaVA**、**Flamingo**、**Qwen2-VL**、**Molmo** 的演进。主线是：视觉模型不再只做固定类别分类，而是逐步接入语言模型，形成可开放回答、可对话、可理解图文视频内容的多模态基础模型。
-
 ## Video Transformers
 
 ### 视频表示与 token 爆炸
 
 设单帧图像大小为 $224\times224$，ViT 使用 $16\times16$ patch，则每帧有：
-
 $$
 14\times14=196
 $$
 
 个视觉 token。若输入 $T=16$ 帧，则 token 数约为：
-
 $$
 196\times16=3136
 $$
 
 标准 self-attention 需要计算所有 token 两两之间的关系，复杂度为：
-
 $$
 O((TN)^2)=O(T^2N^2)
 $$
@@ -68,7 +51,6 @@ Video Transformer 的效率改进大致分为两类：
 最直接的做法是 **Joint Space-Time Attention**：将所有帧的所有 patch token 展平成一个长序列，然后做标准 self-attention。
 
 若每帧有 $N$ 个 token，共 $T$ 帧，则共有 $TN$ 个 token，attention matrix 大小为：
-
 $$
 TN\times TN
 $$
@@ -83,13 +65,11 @@ $$
 2. **Spatial Attention**：对每一帧内部的 patch token 做 attention。
 
 复杂度从：
-
 $$
 O(T^2N^2)
 $$
 
 降低为：
-
 $$
 O(NT^2 + TN^2)=O(TN(T+N))
 $$
@@ -122,7 +102,6 @@ $$
 **Multiscale Vision Transformer**（MViT）的思路是：随着网络加深，逐步减少 token 数量、增加特征通道数。这与 CNN / ResNet 中空间分辨率逐层降低、语义抽象逐层增强的设计类似。
 
 在 attention 中，计算成本主要来自 query 与 key 的两两匹配。MViT 可以通过 pooling 或 strided convolution 对 token 做下采样，尤其是减少 **Key** 和 **Value** 的长度：
-
 $$
 \operatorname{Attention}(Q,K,V)
 =
@@ -204,13 +183,11 @@ Tubelet 的优点是减少 token 数并让低层 token 自带短时运动信息�
 训练目标是让同一图文对的向量相似度高，不匹配图文对的相似度低。
 
 对于一个 batch 中的 $N$ 个图文对，设图像特征为 $I_i$，文本特征为 $T_j$，相似度为：
-
 $$
 s_{ij}=\frac{I_i^\top T_j}{\tau}
 $$
 
 其中 $\tau$ 为 temperature。图像到文本方向的对比损失可写为：
-
 $$
 L_{I\rightarrow T}
 =
@@ -220,7 +197,6 @@ L_{I\rightarrow T}
 $$
 
 文本到图像方向类似，最终常取二者平均：
-
 $$
 L=\frac{1}{2}(L_{I\rightarrow T}+L_{T\rightarrow I})
 $$

@@ -6,7 +6,6 @@ position: 'Beijing'
 tags:
   - 'CV'
   - '计算机视觉'
-  - '3D Vision'
 pubDate: 'May 6 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
@@ -15,9 +14,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 ## Multiple 3D Representations
 
-### 课程定位
-
-本讲延续三维视觉基础，核心问题是 **3D Representation**（三维表征）：如何在计算机中表示、理解与处理三维世界，并进一步连接到渲染、学习与神经场景表征。
+### 3D Representations Overview
 
 三维数据的表示形式很多，常见类型包括：
 
@@ -42,7 +39,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 - **Regular Representation**：如多视角图像、深度图、体素，数据排列规则，便于索引与使用 CNN 类结构。
 - **Irregular Representation**：如网格、点云、隐式表征，直接围绕物体表面或表面附近的几何结构建模，更接近真实三维几何。
 
-**注**：三维视觉中没有一种表征适合所有任务。表征选择本质上是在存储效率、几何精度、可微性、渲染效率和下游学习便利性之间取舍。
+---
 
 ## Depth Image and Voxels
 
@@ -61,14 +58,12 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 ### Depth Backprojection
 
 假设已知深度相机的内参矩阵 $K$。对深度图上的像素 $(u,v)$，其深度为 $Z$，相机投影关系为：
-
 $$
 u = \alpha \frac{X}{Z} + c_x,\quad
 v = \beta \frac{Y}{Z} + c_y
 $$
 
 其中 $\alpha,\beta$ 为焦距相关参数，$c_x,c_y$ 为主点坐标。反解得到：
-
 $$
 X = \frac{(u-c_x)Z}{\alpha},\quad
 Y = \frac{(v-c_y)Z}{\beta}
@@ -91,6 +86,8 @@ $$
 - 不是天然的表面表征，需要进一步判断表面在哪里；
 - 简单上采样无法恢复已丢失的细节，会引入量化误差。
 
+---
+
 ## Depth Sensors
 
 ### Stereo Sensors
@@ -106,21 +103,22 @@ $$
 
 ### Triangulation and Disparity
 
-双目系统中，两个相机光心 $O,O'$ 之间有固定 **Baseline** $B$。空间点 $P$ 分别投影到左右图像中的 $p,p'$。若能找到对应点，就可以通过两条相机射线的交会恢复 $P$ 的三维位置，这一过程称为 **Triangulation**（三角化）。
+双目系统中，两个相机光心 $O,O'$ 之间有固定 **Baseline** $B$。空间点 $P$ 分别投影到左右图像中的 $p,p'$。
+若能找到对应点，就可以通过两条相机射线的交会恢复 $P$ 的三维位置，这一过程称为 **Triangulation**（三角化）。
 
 校正后的双目图像中，对应点通常位于同一水平扫描线。定义视差：
-
 $$
 d = u - u'
 $$
 
 深度为：
-
 $$
 Z = \frac{fB}{d}
 $$
 
 其中 $f$ 为焦距，$B$ 为双目基线。视差越大，深度越小；视差越小，点越远。
+
+![图 1：双目图像视差到深度](/images/note/cv-intro/10-3d-vision-2-01-stereo-geometry.png)
 
 ### Epipolar Geometry
 
@@ -148,6 +146,8 @@ $$
 4. 通过三角化恢复深度。
 
 **注**：主动方法可以在黑暗环境中工作，也能缓解无纹理问题，但对透明、高反光材质仍然敏感。
+
+---
 
 ## Mesh
 
@@ -178,18 +178,11 @@ $$
 
 **Indexed Face Set** 常用于 OBJ、OFF、WRL 等格式。面片通常按逆时针顺序保存顶点索引，使法向量可由右手定则确定并指向外侧。
 
-### Summary of Polygonal Meshes
-
-多边形网格是光滑表面的分段线性近似。顶点、边、面是其基本元素。真实扫描数据往往首先得到点云，但网格常用于可视化、渲染以及为机器学习算法生成监督信号。
-
-**注**：从点云到网格需要 **Surface Reconstruction**（表面重建）；若直接由人工或 CAD 建模得到网格，则不需要该步骤。
-
 ## Point Cloud
 
 ### Basic Definition
 
 **Point Cloud**（点云）是物体表面采样点的集合，通常以 $N \times 3$ 数组存储。它是不规则且无序的数据结构：
-
 $$
 P = \{\mathbf{x}_i \in \mathbb{R}^3\}_{i=1}^{N}
 $$
@@ -240,7 +233,6 @@ FPS 结果通常比纯均匀采样更规则，但迭代过程难以并行，计�
 点云是无序集合，通常没有天然的一一对应关系，因此距离度量需要直接作用在集合上。
 
 **Chamfer Distance**（CD）定义为双向最近点距离：
-
 $$
 d_{\text{CD}}(S_1,S_2)=
 \frac{1}{|S_1|}\sum_{\mathbf{x}\in S_1}\min_{\mathbf{y}\in S_2}\|\mathbf{x}-\mathbf{y}\|_2
@@ -250,16 +242,17 @@ $$
 
 它不要求建立一一对应，计算相对简单，是点云重建和生成任务中常用的监督信号。
 
-**Earth Mover's Distance**（EMD）源于 **Optimal Transport**（最优传输），要求在两个点集之间建立匹配，使总搬运代价最小。它更关注全局分布匹配，但计算更昂贵，且通常要求两个点集点数接近。
+**Earth Mover's Distance**（EMD）源于 **Optimal Transport**（最优传输），要求在两个点集之间建立匹配，使总搬运代价最小。它更关注全局分布匹配，但计算更昂贵，且通常要求两个点集点数相等。
 
 **注**：点云可看成“表面 + 采样”。若采样本身不均匀，距离度量可能把采样噪声当作几何差异，从而影响学习监督。
+
+---
 
 ## Implicit Representation
 
 ### SDF
 
 **Implicit Representation**（隐式表征）不直接列出表面点，而是用函数定义几何。最典型形式是：
-
 $$
 F(x,y,z)=0
 $$
@@ -318,19 +311,21 @@ $$
 
 **注**：训练 DeepSDF 通常仍需要已有网格或点云来计算监督信号，但学习到的连续形状空间可用于重建、补全和生成。
 
+---
+
 ## Neural Radiance Field
 
 ### Novel View Synthesis
 
 **Neural Radiance Field**（NeRF）的目标是 **Novel View Synthesis**（新视角合成）：给定同一场景的若干已知相机位姿图像，学习一个连续场景表征，并渲染未见过视角下的图像。
 
-传统三维视觉管线通常是：
+传统三维视觉 Pipeline 通常是：
 
 1. 从多视角图像重建显式三维几何；
 2. 为几何估计纹理、材质或外观；
-3. 使用图形学管线从新相机位姿渲染图像。
+3. 使用图形学 Pipeline 从新相机位姿渲染图像。
 
-NeRF 的思路是绕过显式几何重建，直接学习一个可微的神经场景表征，并通过可微体渲染训练。
+NeRF 的思路是绕过显式几何重建，直接端到端学习一个可微的神经场景表征，并通过可微体渲染训练。
 
 ### Volume Rendering
 
@@ -341,7 +336,6 @@ NeRF 的思路是绕过显式几何重建，直接学习一个可微的神经场
 - **Transmittance** $T(t)$：光线从近端传播到 $t$ 仍未被遮挡的概率。
 
 连续体渲染积分为：
-
 $$
 \mathbf{C}=
 \int_{t_n}^{t_f}
@@ -349,7 +343,6 @@ T(t)\sigma(t)\mathbf{c}(t)\,dt
 $$
 
 其中：
-
 $$
 T(t)=\exp\left(-\int_{t_n}^{t}\sigma(s)\,ds\right)
 $$
@@ -380,7 +373,8 @@ $$
 F_\theta:(\mathbf{x},\mathbf{d})\mapsto(\sigma,\mathbf{c})
 $$
 
-其中 $\mathbf{x}=(x,y,z)$ 是空间坐标，$\mathbf{d}$ 是观察方向。密度 $\sigma$ 主要由位置决定，颜色 $\mathbf{c}$ 同时依赖位置与视角方向，以建模高光、反射等 **Non-Lambertian** 外观。
+其中 $\mathbf{x}=(x,y,z)$ 是空间坐标，$\mathbf{d}$ 是观察方向。
+密度 $\sigma$ 主要由位置决定，颜色 $\mathbf{c}$ 同时依赖位置与视角方向，以建模高光、反射等 **Non-Lambertian** 外观。
 
 **Training Pipeline**：
 

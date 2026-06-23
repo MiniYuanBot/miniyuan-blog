@@ -43,7 +43,8 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 **标量函数对向量导数**：
 
-若 $f:\mathbb{R}^n\to\mathbb{R}$，则
+若 $f:\mathbb{R}^n\to\mathbb{R}$，则：
+
 $$
 \frac{\partial f}{\partial\boldsymbol{x}}
 =
@@ -146,10 +147,6 @@ $$
 
 **注**：
 判断实对称矩阵正定性的 **Sylvester 准则**，$\mathbf{A}$ 正定当且仅当 $\mathbf{A}$ 的所有顺序主子式均大于零。
-
----
-
-以下是统一修改后的完整章节，已按一般形式（带权基函数）重写，并在末尾给出多项式特例，同时新增正交函数族作用分析。
 
 ---
 

@@ -6,39 +6,32 @@ position: 'Beijing'
 tags:
   - 'CV'
   - '计算机视觉'
-  - 'Sequential Models'
 pubDate: 'May 10 2026'
 # updatedDate
 heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-## 3D Deep Learning 收尾
-
-### 课程定位
-
-本讲标题为 **Sequential Models**（序列模型），但课程前半部分先收尾三维深度学习内容：从 **PointNet++** 的层级点云特征学习讲到 **Sparse Convolution**（稀疏卷积）。后半部分正式进入 **RNN**、**LSTM** 与 **GRU**，讨论序列建模、语言模型采样以及循环网络的梯度问题。
-
-三维视觉任务与二维视觉任务高度对应，例如 classification、segmentation、detection 等感知任务都可以迁移到 3D 数据上。区别在于 3D 数据表征更复杂：点云、体素、网格、隐式函数等都不是标准二维栅格，因此网络结构必须处理不规则性、空间邻域和计算复杂度。
-
 ## PointNet++
 
-### PointNet 的局限
+### PointNet Weakness
 
 **PointNet** 直接处理无序点集。其基本流程是：
 
-1. 输入点云坐标 $XYZ$。
+1. 输入点云坐标 $(X, Y, Z)$。
 2. 对每个点独立使用共享 **MLP**，得到逐点 latent feature。
 3. 对所有点特征做 **Max Pooling**，得到全局特征。
 4. 用全局特征完成 classification，或与逐点特征拼接后完成 segmentation。
 
 其核心优势是 **permutation invariance**（置换不变性）。由于点云是集合而不是序列，点的输入顺序不应影响最终结果。PointNet 通过共享 MLP 和对称池化函数实现这一性质。
 
-但 PointNet 的主要问题是缺少局部几何建模。每个点本质上只经过 single-point receptive field 的 $1\times1$ 处理，随后直接全局 pooling。这类似于对图像中每个像素独立做 $1\times1$ conv 后直接全局池化，难以捕捉局部结构。
+但 PointNet 的主要问题是缺少局部几何建模。
+每个点本质上只经过 single-point receptive field 的 $1\times1$ 处理，随后直接全局 pooling。
+这类似于对图像中每个像素独立做 $1\times1$ conv 后直接全局池化，难以捕捉局部结构。
 
 **注**：点云的 $XYZ$ 坐标本身携带空间位置信息，因此 PointNet 在一些任务上仍然有效；但当任务依赖局部形状、曲面结构或 part-level pattern 时，仅靠单点特征明显不足。
 
-### PointNet++ 的核心思想
+### PointNet++ Motivation
 
 **PointNet++** 的基本思想是：在局部区域内递归应用 PointNet，从而实现层级化点集特征学习。
 
@@ -50,7 +43,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 相比 PointNet 直接从单点跳到全局，PointNet++ 更接近 CNN 的层级 receptive field：低层聚合小邻域，高层聚合更大尺度的结构。
 
-### 局部邻域定义
+### Local Neighborhood Features
 
 PointNet++ 需要先为每个中心点定义局部邻域。常见方法包括 **KNN** 和 **Ball Query**。
 
@@ -83,7 +76,7 @@ PointNet++ 通常采用 **Ball Query**。球半径是超参数，表示局部区
 
 通过多层 Set Abstraction，点云分辨率逐层降低，特征维度逐层升高。分类任务最终可得到少量点甚至单个全局特征，再接 fully connected layers 输出 class scores。
 
-### Segmentation 与上采样
+### Segmentation Upsampling
 
 点云 segmentation 需要输出 per-point label，因此仅有低分辨率全局特征不够，还必须恢复到原始点分辨率。PointNet++ 通过插值和 skip connection 实现 feature propagation。
 
@@ -93,19 +86,18 @@ PointNet++ 通常采用 **Ball Query**。球半径是超参数，表示局部区
 2. 对新增点，寻找低分辨率点集中的若干 nearest neighbors。
 3. 按距离倒数对邻居特征做加权插值：
 
-$$
-f_{\text{new}} =
-\frac{\sum_{i=1}^{3} f_i / d_i}{\sum_{i=1}^{3} 1 / d_i}
-$$
+    $$
+    f_{\text{new}} =
+    \frac{\sum_{i=1}^{3} f_i / d_i}{\sum_{i=1}^{3} 1 / d_i}
+    $$
 
-其中 $f_i$ 是邻居点特征，$d_i$ 是新点到邻居点的距离。
-
+    其中 $f_i$ 是邻居点特征，$d_i$ 是新点到邻居点的距离。
 4. 将插值特征与 encoder 中同分辨率的 skip feature 拼接。
 5. 再通过 unit PointNet 或 MLP 更新逐点特征，最终输出 per-point class scores。
 
 **注**：PointNet++ 的 decoder 并不是简单复制特征，而是插值后再通过可学习网络更新局部特征，因此可以看作点云上的 up-convolution。
 
-### PointNet++ 与 CNN 的差异
+### PointNet++ vs CNN
 
 若把图像看成带颜色的二维点云，$(u,v)$ 是坐标，$(r,g,b)$ 是特征，那么理论上 PointNet++ 也可以处理图像。但它与 CNN 有本质差异。
 
@@ -120,15 +112,13 @@ CNN 的 $3\times3$ 卷积核中不同位置有不同参数，因此天然支持�
 
 ## Sparse Convolution
 
-### Voxel Networks 的动机
+### Voxel Networks Motivation
 
 另一类处理 3D 数据的思路是将点云或形状体素化为规则三维栅格，再使用 **3D CNN**。体素表示的优点是规则、可索引，能够直接继承二维卷积中的局部卷积、平移等变性和层级特征结构。
 
 但 dense voxel grid 的复杂度很高。若分辨率为 $N\times N\times N$，存储和计算量随 $O(N^3)$ 增长。低分辨率体素会带来明显信息损失，高分辨率体素又难以承受内存和计算开销。
 
-**注**：PPT 中用 $30^3$ 的 occupancy grid 说明，即使看似很低的三维分辨率，体素数量也已接近 $224\times224$ 图像像素数的一半；若提高到 $128^3$，开销会迅速膨胀。
-
-### 稀疏性的利用
+### Sparsity Exploitation
 
 真实三维物体通常主要由表面构成，空间中绝大多数体素为空。**Sparse Convolution** 的核心思想是：
 
@@ -138,7 +128,7 @@ CNN 的 $3\times3$ 卷积核中不同位置有不同参数，因此天然支持�
 
 这样既保留了规则网格的索引优势，又显著降低了 dense 3D convolution 的冗余计算。
 
-### 优缺点与适用场景
+### Voxel vs Point Cloud
 
 | 方法 | 优点 | 局限 |
 | :--- | :--- | :--- |
@@ -151,7 +141,7 @@ CNN 的 $3\times3$ 卷积核中不同位置有不同参数，因此天然支持�
 
 ## Sequence Modeling
 
-### 序列数据与任务类型
+### Sequential Task
 
 序列数据具有顺序性和因果性，例如文本、语音、视频帧和时间序列。序列建模的核心目标是根据历史信息预测未来或生成后续元素：
 
@@ -198,11 +188,9 @@ RNN 的训练使用 **Backpropagation Through Time**（BPTT）。由于展开后
 2. 只在该窗口内展开 RNN 并反向传播。
 3. 窗口外的长期依赖不会直接受到训练约束。
 
-**注**：若训练窗口长度为 $\Delta T$，模型很难从梯度信号中学习长于 $\Delta T$ 的 temporal relationship。这是 RNN 处理 long-term dependence 的重要限制之一。
+**注**：若训练窗口长度为 $\Delta T$，模型无法从梯度信号中学习长于 $\Delta T$ 的 temporal relationship。这是 RNN 处理 long-term dependence 的重要限制之一。
 
 ## RNN Language Model
-
-### 字符级语言模型
 
 以 **Character-Level Language Model** 为例，给定训练字符串 "HELLO"，模型在每个时间步用当前字符预测下一个字符：
 
@@ -215,7 +203,7 @@ RNN 的训练使用 **Backpropagation Through Time**（BPTT）。由于展开后
 
 **注**：embedding layer 有时可使用固定的 pretrained word embedding，也可以随语言模型一起训练。
 
-### 采样策略
+### Sampling Strategy
 
 语言模型生成时，需要从当前 softmax 概率分布中选择下一个 token。不同采样策略在确定性、多样性和计算成本之间取舍。
 
@@ -229,14 +217,9 @@ RNN 的训练使用 **Backpropagation Through Time**（BPTT）。由于展开后
 
 Beam Search 的 $K$ 称为 **beam size**。$K$ 越大，搜索覆盖面越广，但计算成本越高。
 
-**注**：即使生成结果局部看似合理，若训练和测试时都受有限序列长度限制，模型仍可能无法捕捉长距离全局关系，生成“局部通顺但整体无意义”的文本。
-
-## RNN 的梯度问题
-
-### Gradient Vanishing 与 Explosion
+### Gradient Vanishing and Explosion
 
 RNN 展开后相当于很深的网络，梯度需要沿时间反向传播。对最后一步 loss $L_T$ 而言，梯度会包含大量连乘项：
-
 $$
 \frac{\partial L_T}{\partial W}
 \propto
@@ -248,27 +231,23 @@ $$
 $$
 
 由于：
-
 $$
 \tanh'(x)=1-\tanh^2(x)\in[0,1]
 $$
 
-时间步较长时，连乘会导致两类问题：
+时间步较长时，连乘会导致两类问题（下面的谱半径包含了前面的因子）：
 
 - **Gradient Vanishing**：若整体雅可比矩阵的谱半径小于 1，梯度随时间距离指数衰减。
 - **Gradient Explosion**：若谱半径大于 1，梯度随时间距离指数增长。
 
-Gradient Explosion 可通过 **gradient clipping** 或 rescaling 缓解；Gradient Vanishing 更难处理，因为远处的梯度信号会被近处信号淹没，模型参数主要学习 short-term effects，而不是 long-term effects。
+Gradient Explosion 可通过 **gradient clipping** 或 rescaling 缓解；
+Gradient Vanishing 更难处理，导致模型参数主要学习 short-term effects，而不是 long-term effects。
 
-### 长期依赖为何困难
-
-语言模型中常见的长期依赖包括主谓一致、指代关系和跨句信息。例如一句话前面出现 "tickets"，很久之后的空格也应预测 "tickets"。若远处梯度已经衰减，RNN 无法从该训练样本中学习这类依赖关系。
-
-提高 RNN 容量可以使用 **Multilayer RNNs**，即在每个时间步堆叠多层 RNN。但多层结构主要增强表示能力，并不能从根本上解决时间方向的梯度消失问题。
+**注**：提高 RNN 容量可以使用 **Multilayer RNNs**，即在每个时间步堆叠多层 RNN。但多层结构主要增强表示能力，并不能从根本上解决时间方向的梯度消失问题。
 
 ## LSTM
 
-### 基本设计
+### Motivation
 
 **LSTM**（Long Short-Term Memory）通过引入独立的 **cell state** $c_t$ 缓解长期依赖问题。每个时间步同时维护：
 
@@ -277,10 +256,9 @@ Gradient Explosion 可通过 **gradient clipping** 或 rescaling 缓解；Gradie
 
 LSTM 可以对 cell state 执行 read、erase 和 write，这些操作由门控向量动态控制。门的取值来自 sigmoid，范围在 $0$ 到 $1$ 之间，表示某一维信息保留或通过的程度。
 
-### 门控公式
+### Gate Formula
 
 将上一时刻 hidden state 与当前输入拼接为 $[h_{t-1},x_t]$，LSTM 计算四组信号：
-
 $$
 \begin{aligned}
 i_t &= \sigma(W_i[h_{t-1},x_t]+b_i) \\
@@ -293,7 +271,6 @@ $$
 其中 $i_t$ 是 **input gate**，$f_t$ 是 **forget gate**，$o_t$ 是 **output gate**，$\tilde{c}_t$ 是候选 cell content。
 
 状态更新为：
-
 $$
 \begin{aligned}
 c_t &= f_t \odot c_{t-1} + i_t \odot \tilde{c}_t \\
@@ -303,10 +280,9 @@ $$
 
 其中 $\odot$ 表示 element-wise multiplication。
 
-### 梯度流解释
+### LSTM Advantages
 
 LSTM 的关键在于 cell state 的加性更新：
-
 $$
 c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t
 $$
@@ -315,12 +291,9 @@ $$
 
 **注**：LSTM 并不严格保证梯度永不消失或爆炸；如果 forget gate 长期接近 0，旧信息仍会被清除。但相比 vanilla RNN，它在实践中显著改善了 long-term dependence。
 
-## GRU 与总结
-
 ### GRU
 
 **GRU**（Gated Recurrent Unit）是 LSTM 的简化变体。它不显式区分 hidden state 和 cell state，而是用两个门控制信息更新：
-
 $$
 \begin{aligned}
 r_t &= \sigma(W_r[h_{t-1},x_t]) \\
@@ -334,7 +307,7 @@ $$
 
 GRU 参数量少于 LSTM，结构更简洁，在许多任务中效果接近 LSTM。
 
-### 从 RNN 到 Attention
+### From RNN to Attention
 
 RNN、LSTM 和 GRU 都是因果序贯处理结构。它们在 $t$ 时刻通常只能直接访问 $1$ 到 $t$ 的历史信息，长距离交互必须经过 hidden state 逐步传递。
 

@@ -357,7 +357,6 @@ for shape in [RegularPolygon(), AxisAlignedRectangle()]:
 
 ```plantuml
 @startuml
-[*] --> 预定
 预定 --> 等待 : 座位不足
 预定 --> 确认 : 支付成功
 等待 --> 确认 : 候补成功
@@ -365,7 +364,6 @@ for shape in [RegularPolygon(), AxisAlignedRectangle()]:
 确认 --> 取消 : 退票
 取消 --> 归档
 使用 --> 归档
-归档 --> [*]
 @enduml
 ```
 

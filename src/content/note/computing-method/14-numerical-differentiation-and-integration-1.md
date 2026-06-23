@@ -29,8 +29,8 @@ $$
 **Taylor 公式**（Lagrange 余项）：
 $$
 f(x+h)
-= f(x) + \frac{h}{1!}f'(x) + \frac{h^2}{2!}f''(x)
-+ \cdots + \frac{h^{n-1}}{(n-1)!}f^{(n-1)}(x) + \frac{h^n}{n!}f^{(n)}(x+\theta h)
+=f(x)+\frac{h}{1!}f'(x)+\frac{h^2}{2!}f''(x)
++\cdots+ \frac{h^{n-1}}{(n-1)!}f^{(n-1)}(x) + \frac{h^n}{n!}f^{(n)}(x+\theta h)
 $$
 
 其中 $0 \lt \theta \lt 1$。
@@ -51,8 +51,6 @@ $$
 f'(x) - \frac{f(x+h)-f(x)}{h} = -\frac{h}{2}f''(x+\theta_1 h) = O(h)
 $$
 
-**截断误差**：一阶精度，主项系数 $-\frac{h}{2}f''(x)$。
-
 ### 向后差商
 
 $$
@@ -68,8 +66,6 @@ $$
 $$
 f'(x) - \frac{f(x)-f(x-h)}{h} = -\frac{h}{2}f''(x-\theta_2 h) = O(h)
 $$
-
-**截断误差**：一阶精度。
 
 ### 中心差商
 
@@ -94,8 +90,6 @@ $$
 $$
 f'(x) - \frac{f(x+h)-f(x-h)}{2h} = -\frac{h^2}{12}\left[f'''(x+\theta_1 h) + f'''(x-\theta_2 h)\right] = O(h^2)
 $$
-
-**截断误差**：二阶精度。
 
 **几何直观**：向前/向后差商分别用右/左割线斜率逼近切线斜率，而中心差商用对称割线，利用函数**凹凸性的对称**抵消，使精度提升一阶。
 
