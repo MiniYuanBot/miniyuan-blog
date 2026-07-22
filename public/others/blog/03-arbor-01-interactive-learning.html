@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FCFCFD">
+<title>交互式 Arbor 协议演示</title>
+<script>
+  (() => {
+    const stored = localStorage.getItem('theme');
+    const target = !stored || stored === 'system'
+      ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : stored;
+    document.documentElement.classList.toggle('dark', target === 'dark');
+    document.querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', target === 'dark' ? '#0B0B10' : '#FCFCFD');
+  })();
+</script>
+<style>
+  @font-face{
+    font-family:"Atkinson";
+    src:url("/fonts/atkinson-regular.woff") format("woff");
+    font-weight:400;
+    font-style:normal;
+    font-display:swap;
+  }
+  @font-face{
+    font-family:"Atkinson";
+    src:url("/fonts/atkinson-bold.woff") format("woff");
+    font-weight:700;
+    font-style:normal;
+    font-display:swap;
+  }
+  :root{
+    --black:220 20% 10%;
+    --white:0 0% 100%;
+    --accent-hsl:233 100% 57%;
+    --accent-dark-hsl:233 100% 27%;
+    --background:0 0% 100%;
+    --foreground:220 20% 10%;
+    --gray:215 20% 50%;
+    --gray-light:215 20% 92%;
+    --gray-dark:218 20% 45%;
+    --muted:210 40% 96%;
+    --muted-foreground:215 16% 47%;
+    --border:214 32% 91%;
+    --card:0 0% 99%;
+    --card-foreground:220 25% 18%;
+
+    --bg:hsl(var(--background));
+    --surface:hsl(var(--card));
+    --surface-strong:hsl(var(--white));
+    --ink:hsl(var(--foreground));
+    --ink2:hsl(var(--muted-foreground));
+    --ink3:hsl(var(--gray));
+    --line:hsl(var(--border));
+    --line-strong:hsl(var(--gray-light));
+    --accent:hsl(var(--accent-hsl));
+    --accent-deep:hsl(var(--accent-dark-hsl));
+    --accent-soft:hsl(var(--accent-hsl) / .10);
+    --accent-line:hsl(var(--accent-hsl) / .28);
+    --amber:#d97706;
+    --red:#dc2626;
+    --violet:#7c3aed;
+    --slate:#64748b;
+    --orange:#ea580c;
+    --reg:#737373;
+    --shadow:0 12px 32px rgba(15,23,42,.08);
+    --shadow-soft:0 4px 16px rgba(15,23,42,.08);
+    --topo-dot:hsl(var(--gray-light));
+    --switch-bg:hsl(220 20% 10%);
+    --switch-fg:hsl(0 0% 100%);
+    --switch-muted:hsl(215 20% 72%);
+    --code-bg:hsl(var(--muted));
+    --state-bg:hsl(var(--card) / .96);
+    --mono:ui-monospace,'SF Mono','Cascadia Code',Consolas,'Courier New',monospace;
+    --sans:"Atkinson",system-ui,-apple-system,'PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;
+    color-scheme:light;
+  }
+  .dark{
+    --black:0 0% 100%;
+    --white:220 47% 6%;
+    --accent-hsl:233 100% 67%;
+    --accent-dark-hsl:233 100% 77%;
+    --background:222 47% 6%;
+    --foreground:0 0% 100%;
+    --gray:220 9% 66%;
+    --gray-light:220 13% 18%;
+    --gray-dark:215 20% 80%;
+    --muted:217 33% 17%;
+    --muted-foreground:215 20% 65%;
+    --border:217 33% 17%;
+    --card:220 20% 12%;
+    --card-foreground:0 0% 100%;
+    --amber:#f59e0b;
+    --red:#f87171;
+    --violet:#a78bfa;
+    --slate:#94a3b8;
+    --orange:#fb923c;
+    --reg:#a3a3a3;
+    --shadow:0 16px 38px rgba(0,0,0,.35);
+    --shadow-soft:0 8px 22px rgba(0,0,0,.30);
+    --topo-dot:hsl(var(--gray-light));
+    --switch-bg:hsl(222 47% 6%);
+    --switch-fg:hsl(var(--foreground));
+    --switch-muted:hsl(var(--muted-foreground));
+    --code-bg:hsl(217 33% 20%);
+    --state-bg:hsl(220 20% 12% / .96);
+    color-scheme:dark;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    font-family:var(--sans);background:var(--bg);color:var(--ink);
+    line-height:1.75;-webkit-font-smoothing:antialiased;padding:36px 18px 56px;
+  }
+  .page{max-width:960px;margin:0 auto}
+  .page-head{
+    display:flex;justify-content:space-between;gap:18px;align-items:flex-start;
+    margin-bottom:22px;
+  }
+  .head-copy{min-width:0}
+  .page-head .kicker{
+    display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);
+    font-size:11px;letter-spacing:.08em;color:var(--accent-deep);
+    background:var(--accent-soft);border:1px solid var(--accent-line);
+    border-radius:7px;padding:3px 9px;margin-bottom:12px;font-weight:700;
+  }
+  .page-head h1{font-size:30px;font-weight:700;letter-spacing:0;margin-bottom:7px;line-height:1.2}
+  .page-head .sub{color:var(--ink2);font-size:14px;max-width:780px}
+  .page-foot{margin-top:22px;color:var(--ink3);font-size:12px;font-family:var(--mono)}
+  .theme-btn{
+    flex:none;border:1px solid hsl(var(--border) / .8);border-radius:8px;background:var(--surface);
+    color:var(--ink);font-size:12.5px;font-weight:700;font-family:var(--sans);
+    padding:7px 10px;cursor:pointer;box-shadow:0 1px 2px rgba(15,23,42,.04);
+    transition:background .2s,color .2s,border-color .2s;
+  }
+  .theme-btn:hover{background:hsl(var(--gray-light) / .70)}
+
+  .arb{
+    background:var(--surface);border:1px solid hsl(var(--border) / .50);border-radius:8px;
+    padding:22px 24px;box-shadow:var(--shadow);overflow:hidden;
+  }
+  .scene-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+  .scene-tab{
+    padding:6px 12px;border-radius:7px;border:1px solid hsl(var(--border) / .70);background:var(--bg);
+    font-size:12.5px;cursor:pointer;transition:all .15s;user-select:none;font-weight:700;color:var(--ink2);
+    display:flex;align-items:center;gap:7px;
+  }
+  .scene-tab .dot{width:7px;height:7px;border-radius:50%;background:var(--ink3);flex:none}
+  .scene-tab:hover{border-color:var(--accent-line);color:var(--ink);background:var(--accent-soft)}
+  .scene-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .scene-tab.active .dot{background:#fff !important}
+  .scene-tab[data-tone="g"] .dot{background:var(--accent)}
+  .scene-tab[data-tone="a"] .dot{background:var(--amber)}
+  .scene-tab[data-tone="r"] .dot{background:var(--red)}
+  .scene-tab[data-tone="v"] .dot{background:var(--violet)}
+  .scene-tab[data-tone="s"] .dot{background:var(--slate)}
+  .scene-tab[data-tone="o"] .dot{background:var(--orange)}
+
+  .arb-topo{
+    position:relative;height:330px;background:var(--bg);
+    background-image:radial-gradient(var(--topo-dot) 1px,transparent 1px);background-size:22px 22px;
+    border-radius:8px;border:1px solid var(--line);margin-bottom:14px;overflow:hidden;
+  }
+  .arb-node{
+    position:absolute;width:64px;height:54px;border-radius:8px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    font-size:12px;font-weight:600;border:1.5px solid transparent;z-index:3;transition:box-shadow .3s;
+  }
+  .arb-rank{background:var(--accent-soft);color:var(--accent-deep);border-color:var(--accent-line)}
+  .arb-switch{background:var(--switch-bg);color:var(--switch-fg);border-color:var(--switch-bg);width:76px;height:50px;border-radius:8px}
+  .arb-switch .nrole{color:var(--switch-muted)}
+  .arb-responder{box-shadow:0 0 0 2.5px var(--accent)}
+  .arb-node .nid{font-size:13.5px;font-weight:700;font-family:var(--mono)}
+  .arb-node .nrole{font-size:9.5px;margin-top:2px;opacity:.8;letter-spacing:.02em}
+
+  .arb-link{
+    position:absolute;height:2px;background:var(--line-strong);border-radius:2px;
+    transform-origin:left center;z-index:1;transition:background .3s;
+  }
+  .arb-link.on{height:3px}
+  .arb-link.credit{background:var(--amber)}
+  .arb-link.req{background:var(--accent)}
+  .arb-link.master{background:var(--violet);height:4px}
+  .arb-link.aggmiss{background:var(--red)}
+  .arb-link.repair{background:var(--orange)}
+  .arb-link.end{background:var(--slate)}
+  .arb-link.reg{background:var(--reg)}
+
+  .arb-pkt{
+    position:absolute;width:24px;height:24px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:9.5px;color:#fff;font-weight:700;font-family:var(--mono);z-index:10;
+    transition:all .65s cubic-bezier(.4,0,.2,1);pointer-events:none;
+    box-shadow:0 2px 8px rgba(0,0,0,.18);
+  }
+  .pkt-c{background:var(--amber)}
+  .pkt-r{background:var(--accent)}
+  .pkt-m{background:var(--violet);width:27px;height:27px;font-size:10.5px}
+  .pkt-a{background:var(--red)}
+  .pkt-re{background:var(--orange)}
+  .pkt-e{background:var(--slate)}
+  .pkt-reg{background:var(--reg);width:28px;height:28px}
+
+  .arb-state{
+    position:absolute;background:var(--state-bg);border:1px solid var(--line);
+    border-radius:8px;padding:7px 11px;font-size:10.8px;line-height:1.55;font-family:var(--mono);
+    box-shadow:var(--shadow-soft);z-index:4;max-width:168px;transition:opacity .3s;color:var(--ink);
+  }
+  .arb-state.hide{opacity:0;pointer-events:none}
+  .arb-state .grn{color:var(--accent-deep);font-weight:700}
+  .arb-state .red{color:var(--red);font-weight:700}
+
+  .slot-box{
+    position:absolute;left:50%;bottom:12px;transform:translateX(-50%);
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:8px;padding:8px 14px;font-size:11px;z-index:5;
+    box-shadow:var(--shadow-soft);
+    display:flex;gap:18px;align-items:center;transition:opacity .3s;
+  }
+  .slot-box.hide{opacity:0;pointer-events:none}
+  .sl-grp{display:flex;align-items:center;gap:8px}
+  .slot-box .sl-hd{
+    font-weight:700;color:var(--ink2);font-size:10.5px;font-family:var(--mono);letter-spacing:.04em;
+    white-space:nowrap;
+  }
+  .slot-row{display:flex;gap:5px}
+  .slot-chip{
+    width:28px;height:28px;border-radius:6px;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:9.5px;
+    background:var(--bg);color:var(--ink3);font-weight:600;font-family:var(--mono);
+    line-height:1.15;text-align:center;
+  }
+  .slot-chip.occ{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-deep)}
+  .slot-chip.pin{background:#fdf2e3;border-color:var(--amber);color:var(--amber)}
+  .slot-chip.miss{background:#fbeae8;border-color:var(--red);color:var(--red)}
+  .dark .slot-chip.pin{background:rgba(245,158,11,.12)}
+  .dark .slot-chip.miss{background:rgba(248,113,113,.12)}
+
+  .arb-controls{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+  .arb-btn{
+    padding:7px 16px;border:1px solid var(--accent);border-radius:8px;background:var(--accent);
+    color:#fff;font-size:12.5px;cursor:pointer;transition:all .15s;font-weight:700;font-family:var(--sans);
+  }
+  .arb-btn:hover{filter:brightness(.94)}
+  .arb-btn:disabled{background:var(--bg);border-color:var(--line);color:var(--ink3);cursor:not-allowed}
+  .arb-btn.ghost{background:transparent;color:var(--ink2);border-color:var(--line)}
+  .arb-btn.ghost:hover{border-color:var(--accent-line);color:var(--ink);background:var(--accent-soft)}
+  .arb-stepcnt{font-size:12px;color:var(--ink3);min-width:86px;font-family:var(--mono);text-align:center}
+
+  .arb-info{
+    background:var(--bg);border:1px solid hsl(var(--border) / .65);border-radius:8px;padding:16px 20px;font-size:13.5px;
+    line-height:1.75;border-left:3px solid var(--accent);
+  }
+  .arb-info.warn{border-left-color:var(--amber)}
+  .arb-info.err{border-left-color:var(--red)}
+  .arb-info h4{margin:0 0 8px;font-size:14.5px;color:var(--ink);font-weight:700}
+  .arb-info ul{margin:6px 0;padding-left:20px}
+  .arb-info li{margin:3px 0}
+  .arb-info b{font-weight:650}
+  .arb-info code{
+    font-family:var(--mono);font-size:.875em;background:var(--code-bg);
+    padding:1.5px 6px;border-radius:5px;color:var(--ink);
+  }
+  .arb-info .tag{
+    display:inline-block;padding:1px 9px;border-radius:99px;font-size:11px;font-weight:600;
+    margin-right:4px;white-space:nowrap;border:1px solid transparent;
+  }
+  .tag-g{background:var(--accent-soft);color:var(--accent-deep);border-color:var(--accent-line)}
+  .tag-a{background:#fdf2e3;color:var(--amber);border-color:#f0dcbc}
+  .tag-r{background:#fbeae8;color:var(--red);border-color:#f0c8c4}
+  .tag-v{background:#efecfa;color:var(--violet);border-color:#d8d2f0}
+  .tag-s{background:#edf1f4;color:var(--slate);border-color:#d3dde3}
+  .tag-o{background:#fceee4;color:var(--orange);border-color:#f2d3bc}
+  .dark .tag-a{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.30)}
+  .dark .tag-r{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.30)}
+  .dark .tag-v{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.30)}
+  .dark .tag-s{background:rgba(148,163,184,.12);border-color:rgba(148,163,184,.30)}
+  .dark .tag-o{background:rgba(251,146,60,.12);border-color:rgba(251,146,60,.30)}
+
+  .arb-legend{display:flex;gap:16px;margin-top:14px;font-size:12px;flex-wrap:wrap;color:var(--ink2)}
+  .arb-legitem{display:flex;align-items:center;gap:6px}
+  .arb-legdot{width:10px;height:10px;border-radius:50%}
+
+  .pulse{animation:arbPulse .8s ease-in-out 2}
+  @keyframes arbPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+  @media (max-width:720px){
+    body{padding:22px 12px 40px}
+    .page-head{display:block}
+    .theme-btn{margin-top:14px}
+    .arb{padding:16px 14px}
+    .arb-topo{height:360px}
+    .slot-box{left:12px;right:12px;transform:none;overflow:auto;gap:10px}
+    .page-head h1{font-size:25px}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="page-head">
+    <div class="head-copy">
+      <div class="kicker">ARBOR / INTERACTIVE</div>
+      <h1>交互式协议演示</h1>
+      <div class="sub">4-rank 拓扑：r0 = Responder，r1 / r2 / r3 = Requester，sw0 根级聚合、sw1 叶级聚合。选择场景后用「下一步」逐步推演——覆盖注册握手、正常路径、Push 广播，以及丢包、失配、退化、尾部丢失、拥塞五类异常路径。</div>
+    </div>
+    <button class="theme-btn" id="themeToggle" type="button" aria-label="Toggle theme">System</button>
+  </div>
+
+  <div class="arb">
+    <div class="scene-tabs" id="sceneTabs">
+      <div class="scene-tab" data-scene="register" data-tone="s"><span class="dot"></span>注册握手</div>
+      <div class="scene-tab active" data-scene="normal" data-tone="g"><span class="dot"></span>正常 AllReduce</div>
+      <div class="scene-tab" data-scene="push" data-tone="v"><span class="dot"></span>Push 广播</div>
+      <div class="scene-tab" data-scene="drop" data-tone="o"><span class="dot"></span>丢包 → Repair</div>
+      <div class="scene-tab" data-scene="aggmiss" data-tone="r"><span class="dot"></span>AGG_MISS 失配</div>
+      <div class="scene-tab" data-scene="fanin1" data-tone="a"><span class="dot"></span>2-rank 退化</div>
+      <div class="scene-tab" data-scene="tail" data-tone="s"><span class="dot"></span>尾部丢失 → END</div>
+      <div class="scene-tab" data-scene="ce" data-tone="o"><span class="dot"></span>拥塞 CE 回显</div>
+    </div>
+
+    <div class="arb-topo" id="arbTopo">
+      <div class="arb-link" id="L-r0-sw0" style="left:78px;top:110px;width:120px;transform:rotate(22deg)"></div>
+      <div class="arb-link" id="L-r1-sw0" style="left:78px;top:206px;width:120px;transform:rotate(-22deg)"></div>
+      <div class="arb-link" id="L-r2-sw1" style="right:78px;top:172px;width:130px;transform:rotate(-7deg)"></div>
+      <div class="arb-link" id="L-r3-sw1" style="right:78px;top:250px;width:130px;transform:rotate(-36deg)"></div>
+      <div class="arb-link" id="L-sw0-sw1" style="left:50%;top:50%;width:180px;transform:translate(-50%,-50%)"></div>
+
+      <div class="arb-node arb-rank arb-responder" id="N-r0" style="left:14px;top:80px">
+        <div class="nid">r0</div><div class="nrole">Responder</div>
+      </div>
+      <div class="arb-node arb-rank" id="N-r1" style="left:14px;top:178px">
+        <div class="nid">r1</div><div class="nrole">Requester</div>
+      </div>
+      <div class="arb-node arb-switch" id="N-sw0" style="left:50%;top:50%;transform:translate(-150px,-27px)">
+        <div class="nid">sw0</div><div class="nrole">Root agg</div>
+      </div>
+      <div class="arb-node arb-switch" id="N-sw1" style="left:50%;top:50%;transform:translate(72px,-27px)">
+        <div class="nid">sw1</div><div class="nrole">Leaf agg</div>
+      </div>
+      <div class="arb-node arb-rank" id="N-r2" style="right:14px;top:150px">
+        <div class="nid">r2</div><div class="nrole">Requester</div>
+      </div>
+      <div class="arb-node arb-rank" id="N-r3" style="right:14px;top:230px">
+        <div class="nid">r3</div><div class="nrole">Requester</div>
+      </div>
+
+      <div class="slot-box hide" id="slotBox">
+        <div class="sl-hd">sw0 slots</div>
+        <div class="slot-row" id="slotRow0"></div>
+        <div class="sl-hd" style="margin-top:9px">sw1 slots</div>
+        <div class="slot-row" id="slotRow1"></div>
+      </div>
+
+      <div class="arb-state hide" id="S-r0" style="left:10px;top:10px"></div>
+      <div class="arb-state hide" id="S-sw0" style="left:33%;top:10px"></div>
+      <div class="arb-state hide" id="S-sw1" style="right:33%;top:10px"></div>
+      <div class="arb-state hide" id="S-r1" style="left:10px;bottom:10px"></div>
+      <div class="arb-state hide" id="S-r2" style="right:10px;top:84px"></div>
+      <div class="arb-state hide" id="S-r3" style="right:10px;top:10px"></div>
+    </div>
+
+    <div class="arb-controls">
+      <button class="arb-btn ghost" id="btnPrev" onclick="prevStep()" disabled>上一步</button>
+      <span class="arb-stepcnt"><span id="stepNum">0</span> / <span id="stepTotal">0</span></span>
+      <button class="arb-btn" id="btnNext" onclick="nextStep()">下一步</button>
+      <button class="arb-btn ghost" onclick="resetScene()">重置</button>
+    </div>
+
+    <div class="arb-info" id="infoPanel"></div>
+
+    <div class="arb-legend">
+      <div class="arb-legitem"><div class="arb-legdot" style="background:#8a8578"></div>REGISTER 信标</div>
+      <div class="arb-legitem"><div class="arb-legdot" style="background:var(--amber)"></div>Credit 下行</div>
+      <div class="arb-legitem"><div class="arb-legdot" style="background:var(--accent)"></div>Request 上行</div>
+      <div class="arb-legitem"><div class="arb-legdot" style="background:var(--violet)"></div>Master 聚合产物</div>
+      <div class="arb-legitem"><div class="arb-legdot" style="background:var(--red)"></div>AGG_MISS 失配</div>
+      <div class="arb-legitem"><div class="arb-legdot" style="background:var(--orange)"></div>Repair 恢复</div>
+      <div class="arb-legitem"><div class="arb-legdot" style="background:var(--slate)"></div>END 握手</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== THEME ==========
+const THEME_LABELS = { system: 'System', dark: 'Dark', light: 'Light' };
+function resolveTheme(theme){
+  return theme === 'system'
+    ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : theme;
+}
+function applyTheme(theme){
+  const saved = theme || localStorage.getItem('theme') || 'system';
+  const target = resolveTheme(saved);
+  document.documentElement.classList.toggle('dark', target === 'dark');
+  document.querySelector('meta[name="theme-color"]')
+    ?.setAttribute('content', target === 'dark' ? '#0B0B10' : '#FCFCFD');
+  const btn = $('themeToggle');
+  if(btn){
+    btn.dataset.theme = saved;
+    btn.textContent = THEME_LABELS[saved] || saved;
+  }
+}
+function cycleTheme(){
+  const themes = ['system', 'dark', 'light'];
+  const current = localStorage.getItem('theme') || 'system';
+  const next = themes[(themes.indexOf(current) + 1) % themes.length];
+  localStorage.setItem('theme', next);
+  applyTheme(next);
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  if((localStorage.getItem('theme') || 'system') === 'system') applyTheme('system');
+});
+window.addEventListener('storage', e => {
+  if(e.key === 'theme') applyTheme(e.newValue || 'system');
+});
+
+// ========== SCENE DATA ==========
+// 每个 step 的 action 都是自包含快照：updateUI 先 clearAll，再由 action 声明本步需要的一切。
+const scenes = {
+  register: {
+    name: "注册握手 REGISTER",
+    tone: "",
+    steps: [
+      { title: "场景：提交新 message", text: `requester 异步提交 message m：先为所有相关 channel 预留 <code>message_id</code>、sequence 区间与固定数据分片，<b>原子发布</b>后才发送 <span class="tag tag-s">REGISTER</span>。<br><br>• REGISTER 携带 <code>message_id</code> 与 <code>offset_a = start_sequence</code>（作为 message epoch）<br>• 置 <code>repair=1</code> → 加速器<b>旁路</b>，不建任何聚合状态<br>• 每条 subchannel 都要注册`, action: s => { showState('S-r1','message m published<br>REGISTER ready'); showState('S-r2','message m published<br>REGISTER ready'); showState('S-r3','message m published<br>REGISTER ready'); showState('S-r0','registrations[m]:<br>bitmap = ∅'); } },
+      { title: "Step 1: REGISTER 上行 — 信标限速", text: `全组 requester 沿各自上行路径发送 REGISTER。<br><br>• 加速器对 <code>repair=1</code> 的包<b>无条件旁路</b><br>• <b>信标限速</b>：整个 channel 每隔 <code>max(F,2)</code> 个 MTU 线速时间最多发一个 REGISTER<br>• F 个 requester 在 responder 侧的总信标流量恒为 <b>O(ρB)</b>，不随排队 message 数增长`, action: s => { linkOn('L-r1-sw0','reg'); linkOn('L-r2-sw1','reg'); linkOn('L-r3-sw1','reg'); linkOn('L-sw0-sw1','reg'); linkOn('L-r0-sw0','reg'); showState('S-sw0','REGISTER → bypass'); showState('S-sw1','REGISTER → bypass'); showState('S-r0','registrations[m]:<br>bitmap = ∅'); spawn('N-r1','N-sw0','REG','pkt-reg',450); spawn('N-r2','N-sw1','REG','pkt-reg',450); spawn('N-r3','N-sw1','REG','pkt-reg',450); after(450,()=>{ spawn('N-sw0','N-r0','REG','pkt-reg',500); spawn('N-sw1','N-sw0','REG','pkt-reg',450); }); } },
+      { title: "Step 2: Responder 位图登记", text: `r0 收到 REGISTER：<br><br>• 以 <code>(message_id, epoch)</code> 定位 registration 项<br>• <code>seen[sub] |= bit(src_rank)</code>，按 subchannel 分别登记<br>• 本地 meta 已同 epoch 提交 + 位图收齐 → 该 subchannel <b>就绪</b><br><br>只有全组在某条 subchannel 上都就绪，它才能发 normal credit。`, action: s => { showState('S-r0','registrations[m]:<br>seen[s0]: r1 ✓ r2 ✓ r3 ✓<br>local meta ✓<br>→ <span class="grn">READY</span>'); pulse('N-r0'); } },
+      { title: "Step 3: 首份 credit 充当 REGISTER_ACK", text: `确认载体（二选一）：<br><br>• 该 subchannel 的<b>首份 normal credit 即注册确认</b>（稳态主路径）<br>• 其它已收齐的 <code>(message, subchannel)</code> 发 header-only <span class="tag tag-s">REGISTER_ACK</span><br><br>ACK 或首份 credit 丢失也无妨：requester 的后续 REGISTER 会再次开放 ACK 发送。重复 ACK 只确认 readiness，<b>不授予 DATA 发送</b>。`, action: s => { linkOn('L-r0-sw0','credit'); linkOn('L-sw0-sw1','credit'); linkOn('L-r1-sw0','credit'); linkOn('L-r2-sw1','credit'); linkOn('L-r3-sw1','credit'); showState('S-r0','first credit(k)<br>= REGISTER_ACK'); spawn('N-r0','N-sw0','C','pkt-c',500); after(200,()=>{ spawn('N-sw0','N-r1','C','pkt-c',500); spawn('N-sw0','N-sw1','C','pkt-c',500); }); after(500,()=>{ spawn('N-sw1','N-r2','C','pkt-c',450); spawn('N-sw1','N-r3','C','pkt-c',450); }); after(800,()=>{ showState('S-r1','registered ✓'); showState('S-r2','registered ✓'); showState('S-r3','registered ✓'); }); } },
+      { title: "Step 4: 注册门不变量（协议违例处理）", text: `正常协议中，response 不应早于本地 message 状态。找不到已发布 message 的 payload response 或 credit = <b>协议违例</b>：<br><br>• 直接丢弃 + <code>log_protocol_violation</code><br>• <b>不暂存、不重试、不降级</b><br>• 若该包携带未完成交付或许可，responder 的未完成 credit 定时器随后触发整组 repair 兜底<br><br>V3 因此删除了 V2 的 <code>parked_responses</code> 与 <code>blocked_credits</code>，正常路径不维护早到包暂存状态。`, action: s => { showState('S-r1','gate: message?<br>no → drop +<br><span class="red">protocol_violation</span>'); showState('S-r0','credit timeout<br>→ repair (兜底)'); } },
+    ]
+  },
+
+  normal: {
+    name: "正常 AllReduce",
+    tone: "",
+    steps: [
+      { title: "准备", text: `4-rank AllReduce，r0 为 Responder，r1/r2/r3 为 Requester。<br>本地值：r0=10, r1=20, r2=30, r3=40。期望聚合结果 = 100。<br><br>Responder 先完成 offset p 的 commit，现在 piggyback 发放 offset k 的 credit。`, action: s => { showSlotBox(); setSlots([{id:0},{id:1},{id:2},{id:3}], [{id:0},{id:1},{id:2},{id:3}]); } },
+      { title: "Step 1: Responder 发放 Credit k + Piggyback", text: `r0 发出 <span class="tag tag-a">RESPONSE</span>，同时携带：<br>• <code>payload_offset=p</code>（上一页结果）<br>• <code>credit_offset=k</code>（下一页授权）<br>• <code>agg_depth=0</code>（位置栈为空，沿途压栈）<br><br><b>Piggyback</b>：返回结果的同时授权发送，省一次往返。`, action: s => { linkOn('L-r0-sw0','credit'); showState('S-r0','credit_issued: 1 (k)<br>payload_bound: p<br>first_sent: t0'); spawn('N-r0','N-sw0','C','pkt-c',700); } },
+      { title: "Step 2: sw0 根级 — 压栈 agg_loc[0]", text: `Credit 到达 sw0（根级聚合点）。<br><br>• <code>allocator.next()</code> 分配 <b>slot #0</b><br>• <b>压栈</b>：<code>agg_loc[0]=0, agg_depth=1</code><br>• 写入 <code>owner=(flow_key, k)</code><br>• 组播复制给 r1 和 sw1<br><br>栈底 <code>agg_loc[0]</code> 永远是根级；先分配压栈，再向子树复制。`, action: s => { linkOn('L-r0-sw0','credit'); linkOn('L-r1-sw0','credit'); linkOn('L-sw0-sw1','credit'); showSlotBox(); setSlots([{id:0,occ:true,txt:'k'},{id:1},{id:2},{id:3}], [{id:0},{id:1},{id:2},{id:3}]); showState('S-r0','credit_issued: 1 (k)'); showState('S-sw0','slot[0]: owner=(fk,k)<br>count: 0/3<br>agg_loc[0]=0 ✓'); spawn('N-sw0','N-r1','C','pkt-c',500); spawn('N-sw0','N-sw1','C','pkt-c',500); } },
+      { title: "Step 3: sw1 Leaf 级 — 压栈 agg_loc[1]", text: `Credit 继续下行到 sw1（leaf 级）。<br><br>• 分配 <b>slot #0</b><br>• <b>压栈</b>：<code>agg_loc[1]=0, agg_depth=2</code><br>• 组播给 r2、r3<br><br>各 Requester 收到的位置栈：<br>• r1: <code>agg_loc=[0], depth=1</code><br>• r2/r3: <code>agg_loc=[0,0], depth=2</code>`, action: s => { linkOn('L-sw0-sw1','credit'); linkOn('L-r2-sw1','credit'); linkOn('L-r3-sw1','credit'); showSlotBox(); setSlots([{id:0,occ:true,txt:'k'},{id:1},{id:2},{id:3}], [{id:0,occ:true,txt:'k'},{id:1},{id:2},{id:3}]); showState('S-sw1','slot[0]: owner=(fk,k)<br>count: 0/2<br>agg_loc[1]=0 ✓'); showState('S-r1','agg_loc=[0]<br>depth=1<br>fanin=[3]'); showState('S-r2','agg_loc=[0,0]<br>depth=2<br>fanin=[3,2]'); showState('S-r3','agg_loc=[0,0]<br>depth=2<br>fanin=[3,2]'); spawn('N-sw1','N-r2','C','pkt-c',400); spawn('N-sw1','N-r3','C','pkt-c',400); } },
+      { title: "Step 4: Requester 交付 + 构造 Request", text: `Requester 收到 Credit 后：<br><br>1. <b>交付 payload p</b>（上一页结果写回 buffer）<br>2. <b>消费 credit k</b> → 构造 <code>DATA_REQUEST(k)</code><br>3. <b>回显位置栈</b> + 填入本分支 <code>fanin</code> 向量<br>4. 设置 <code>ECT(0)</code>（支持 ECN）<br><br><b>约束</b>：Requester 永不自主发包，只消费 credit 才发送。`, action: s => { showSlotBox(); setSlots([{id:0,occ:true,txt:'k'},{id:1},{id:2},{id:3}], [{id:0,occ:true,txt:'k'},{id:1},{id:2},{id:3}]); pulse('N-r1'); pulse('N-r2'); pulse('N-r3'); showState('S-r1','payload p ✓ delivered<br>request(k) ready'); showState('S-r2','payload p ✓ delivered<br>request(k) ready'); showState('S-r3','payload p ✓ delivered<br>request(k) ready'); } },
+      { title: "Step 5: sw1 Leaf 聚合 r2+r3", text: `r2、r3 的 request 到达 sw1。<br><br>• 读取栈顶 <code>agg_loc[1]=0</code> → slot[0]<br>• <b>Owner 校验</b>：owner==(fk,k)? <span class="grn">✓</span><br>• r2 到达：count=1/2，等待<br>• r3 到达：count=<b>2/2 凑满！</b><br>• <b>弹栈</b> depth 2→1，构造 <b>Master</b><br>• <code>offset_b=2</code>（代表 2 个原始贡献）`, action: s => { linkOn('L-r2-sw1','req'); linkOn('L-r3-sw1','req'); showSlotBox(); setSlots([{id:0,occ:true,txt:'k'},{id:1},{id:2},{id:3}], [{id:0,occ:true,txt:'k<br>2/2'},{id:1},{id:2},{id:3}]); showState('S-sw1','slot[0]: owner=(fk,k)<br>count: <b>2/2 ✓</b><br>→ pop, send Master'); spawn('N-r2','N-sw1','R','pkt-r',400); spawn('N-r3','N-sw1','R','pkt-r',400); after(500,()=>{ spawn('N-sw1','N-sw0','M','pkt-m',500); linkOn('L-sw0-sw1','master'); }); } },
+      { title: "Step 6: sw0 根级聚合 r1 + Master", text: `r1 的 request 和 sw1 的 Master 到达 sw0。<br><br>• 读取栈顶 <code>agg_loc[0]=0</code> → slot[0]<br>• Owner 校验 <span class="grn">✓</span><br>• r1（单输入）：count +=1 → 1/3<br>• sw1 Master（<code>aggregated=1, offset_b=2</code>）：count +=2 → <b>3/3 凑满！</b><br>• <b>弹栈</b> depth 1→0<br>• 根后 Master：<code>offset_b=3</code>（总贡献=3）`, action: s => { linkOn('L-r1-sw0','req'); linkOn('L-sw0-sw1','master'); showSlotBox(); setSlots([{id:0,occ:true,txt:'k<br>3/3'},{id:1},{id:2},{id:3}], [{id:0,occ:true,txt:'k<br>2/2'},{id:1},{id:2},{id:3}]); showState('S-sw0','slot[0]: owner=(fk,k)<br>r1: +1 → 1/3<br>sw1_M: +2 → <b>3/3 ✓</b><br>→ pop, send root Master'); spawn('N-r1','N-sw0','R','pkt-r',400); after(400,()=>{ spawn('N-sw0','N-r0','M','pkt-m',600); linkOn('L-r0-sw0','master'); }); } },
+      { title: "Step 7: Responder Commit", text: `r0 收到根后 Master。<br><br>• 验证 <code>aggregated=1</code> <span class="grn">✓</span><br>• 验证 <code>offset_b == 3</code>（requester 总数，以本地组规模为准）<span class="grn">✓</span><br>• <b>Commit k</b>：首次且仅一次<br>• 产生 <b>CC 样本</b>：delay = now − first_sent（最慢分支闭环时延）<br>• 记账 <code>done(k)</code>，释放窗口<br><br>结果：10+20+30+40 = <b>100</b> ✓`, action: s => { linkOn('L-r0-sw0','master'); showSlotBox(); setSlots([{id:0,occ:true,txt:'k<br>3/3'},{id:1},{id:2},{id:3}], [{id:0,occ:true,txt:'k<br>2/2'},{id:1},{id:2},{id:3}]); showState('S-r0','credit_issued:1<br><b>done(k): ✓ COMMIT</b><br>delay: 12μs<br>value=100'); pulse('N-r0'); spawn('N-sw0','N-r0','M','pkt-m',600); } },
+      { title: "Step 8: END 握手兜底", text: `全部 offset done 后：<br><br>• Responder 组播 <span class="tag tag-s">END</span> 给全组（每 subchannel 一份）<br>• Requester 本地 complete 后回 <span class="tag tag-g">END_ACK</span><br>• 收齐后 <code>message_id</code> 才可复用<br><br><b>为什么需要 END？</b> 尾部 payload 没有后续 credit 可 piggyback 隐式确认，END/END_ACK 专门覆盖这个"末尾盲区"。`, action: s => { linkOn('L-r0-sw0','end'); linkOn('L-r1-sw0','end'); linkOn('L-sw0-sw1','end'); linkOn('L-r2-sw1','end'); linkOn('L-r3-sw1','end'); showState('S-r0','END sent → wait ACK'); showState('S-r1','END_ACK ✓'); showState('S-r2','END_ACK ✓'); showState('S-r3','END_ACK ✓'); spawn('N-r0','N-sw0','E','pkt-e',300); after(150,()=>{ spawn('N-sw0','N-r1','E','pkt-e',300); spawn('N-sw0','N-sw1','E','pkt-e',300); }); after(350,()=>{ spawn('N-sw1','N-r2','E','pkt-e',300); spawn('N-sw1','N-r3','E','pkt-e',300); }); } },
+    ]
+  },
+
+  push: {
+    name: "Push 广播 (Broadcast)",
+    tone: "",
+    steps: [
+      { title: "场景：push 类原语", text: `Broadcast / AllGather 属于 <b>push 类</b>（<code>op=NOP</code>）：responder 主动下发数据，requester <b>无输入</b>，只回空 ACK。<br><br>与 pull 类相比，只改变 payload 方向——credit、可靠性、速率逻辑完全相同。`, action: s => { showSlotBox(); setSlots([{id:0},{id:1}], [{id:0},{id:1}]); showState('S-r0','root data:<br>"hello, group"'); showState('S-r1','no input<br>(ACK only)'); showState('S-r2','no input<br>(ACK only)'); showState('S-r3','no input<br>(ACK only)'); } },
+      { title: "Step 1: data-push response + self-credit", text: `r0 构造 <span class="tag tag-v">data-push response</span>：<br><br>• master = 模板头 + 本地数据 payload<br>• <b>self-credit</b>：<code>credit_offset = 自身 offset</code><br>• <b>立即 commit</b>（不等 requester）<br>• 经 pending-ready 队列首发<br><br>push 的"credit"是 responder 给自己的授权，用来驱动全组 ACK 记账。`, action: s => { linkOn('L-r0-sw0','credit'); showSlotBox(); setSlots([{id:0},{id:1}], [{id:0},{id:1}]); showState('S-r0','self-credit k<br>commit: immediate<br>payload: root data'); spawn('N-r0','N-sw0','C','pkt-c',600); pulse('N-r0'); } },
+      { title: "Step 2: 下行照常分配 slot、压栈", text: `normal credit 下行路径与 pull 类<b>完全相同</b>：<br><br>• sw0 分配 slot、压栈 <code>agg_loc[0]</code><br>• sw1 分配 slot、压栈 <code>agg_loc[1]</code><br>• 组播复制给全组<br><br>requester 收到后<b>交付 payload</b>（广播数据写回 buffer）。`, action: s => { linkOn('L-r0-sw0','credit'); linkOn('L-sw0-sw1','credit'); linkOn('L-r1-sw0','credit'); linkOn('L-r2-sw1','credit'); linkOn('L-r3-sw1','credit'); showSlotBox(); setSlots([{id:0,occ:true,txt:'k'},{id:1}], [{id:0,occ:true,txt:'k'},{id:1}]); showState('S-sw0','slot[0]: owner=(fk,k)'); showState('S-sw1','slot[0]: owner=(fk,k)'); spawn('N-sw0','N-r1','C','pkt-c',450); spawn('N-sw0','N-sw1','C','pkt-c',450); after(450,()=>{ spawn('N-sw1','N-r2','C','pkt-c',400); spawn('N-sw1','N-r3','C','pkt-c',400); }); after(800,()=>{ showState('S-r1','payload ✓ delivered'); showState('S-r2','payload ✓ delivered'); showState('S-r3','payload ✓ delivered'); }); } },
+      { title: "Step 3: 空 ACK 上行 — 控制聚合", text: `requester 回<b>空 ACK request</b>（无 payload）。<br><br>• 空 request <b>同样按 slot 计数合并</b>：读取栈顶、owner 校验、凑满 fan-in<br>• 凑满只转发<b>一个控制帧</b>，逐级弹栈上行<br>• 与 dtype 无关，照常开启<br><br><b>收益</b>：responder 的 ACK incast 从 F 降为 1。`, action: s => { linkOn('L-r2-sw1','req'); linkOn('L-r3-sw1','req'); showSlotBox(); setSlots([{id:0,occ:true,txt:'k<br>0/3'},{id:1}], [{id:0,occ:true,txt:'k<br>2/2'},{id:1}]); showState('S-sw1','ACK count: <b>2/2 ✓</b><br>→ one ctrl frame'); showState('S-r0','self-credit k<br>committed'); spawn('N-r2','N-sw1','R','pkt-r',400); spawn('N-r3','N-sw1','R','pkt-r',400); after(400,()=>{ spawn('N-sw1','N-sw0','M','pkt-m',500); linkOn('L-sw0-sw1','master'); }); after(700,()=>{ linkOn('L-r1-sw0','req'); spawn('N-r1','N-sw0','R','pkt-r',400); }); } },
+      { title: "Step 4: 根级凑满 → done", text: `sw0 聚合 r1 的 ACK 与 sw1 的控制帧：<code>offset_b</code> 累计 1+2 = <b>3/3 凑满</b>，根后 master 直达 r0。<br><br>• 消费记账 <code>done(k)</code>（全组已收到广播）<br>• 首次完成照常产生 <b>CC 样本</b><br>• incast：<b>3 份 ACK → 1 个控制帧</b><br><br>之后进入 END 握手，与 pull 类一致。`, action: s => { linkOn('L-r1-sw0','req'); linkOn('L-sw0-sw1','master'); linkOn('L-r0-sw0','master'); showSlotBox(); setSlots([{id:0,occ:true,txt:'k<br>3/3'},{id:1}], [{id:0,occ:true,txt:'k<br>2/2'},{id:1}]); showState('S-sw0','1 + 2 = <b>3/3 ✓</b><br>→ root master'); showState('S-r0','done(k) ✓<br>incast: F→1'); spawn('N-sw0','N-r0','M','pkt-m',600); pulse('N-r0'); } },
+    ]
+  },
+
+  drop: {
+    name: "丢包 → Repair",
+    tone: "warn",
+    steps: [
+      { title: "场景：r2 的 request 丢失", text: `正常流程到 Step 5，但 r2 的 request 在 sw1→sw0 链路上<b>丢失</b>。<br><br>sw1 只收到 r3 的 request：<br>• count = 1/2，<b>永远凑不满</b><br>• slot[0] 卡在 partial 状态<br>• r0 对 offset k <b>超时</b>（50ms）`, action: s => { showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k<br>1/2'},{id:1}]); showState('S-sw1','slot[0]: count=1/2<br><span class="red">r2 request LOST!</span><br>stuck partial...'); linkOn('L-r3-sw1','req'); spawn('N-r3','N-sw1','R','pkt-r',400); } },
+      { title: "Step 1: Responder 超时 → Repair Mode", text: `r0 的 offset k 超时：<br><br>• <code>credit_issued && !done && now−last_sent > 50ms</code><br>• <b>原子切入 repair_mode</b>（此后迟到 normal master 不再提交）<br>• 深拷贝原 payload 的 master 头<br>• 置 <code>repair=1, payload_kind=REPLAY</code><br>• 位置栈清空 <code>agg_depth=0</code>（加速器不分配、不压栈）`, action: s => { showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k<br>1/2'},{id:1}]); showState('S-sw1','slot[0]: count=1/2<br>stuck partial...'); showState('S-r0','<span class="red">TIMEOUT!</span><br>repair_mode=1<br>clone master header'); pulse('N-r0'); } },
+      { title: "Step 2: 组播 Repair Credit", text: `r0 组播 <span class="tag tag-o">repair credit</span> 给全组。<br><br>• 独立 repair 预算（5 Gbps token bucket）<br>• 不参与正常速率闭环<br>• <b>repair credit 不分配 slot、不压栈</b><br>• 全组 requester 收到后 <b>无条件</b>重发 repair request`, action: s => { linkOn('L-r0-sw0','repair'); linkOn('L-sw0-sw1','repair'); linkOn('L-r1-sw0','repair'); linkOn('L-r2-sw1','repair'); linkOn('L-r3-sw1','repair'); showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k<br>1/2'},{id:1}]); showState('S-r0','repair credit multicast<br>budget: 5 Gbps'); showState('S-sw1','slot[0]: count=1/2<br>stuck partial...'); spawn('N-r0','N-sw0','R','pkt-re',500); after(200,()=>{ spawn('N-sw0','N-r1','R','pkt-re',500); spawn('N-sw0','N-sw1','R','pkt-re',500); }); after(500,()=>{ spawn('N-sw1','N-r2','R','pkt-re',500); spawn('N-sw1','N-r3','R','pkt-re',500); }); after(900,()=>{ showState('S-r1','repair credit ✓'); showState('S-r2','repair credit ✓'); showState('S-r3','repair credit ✓'); }); } },
+      { title: "Step 3: Repair Request 旁路聚合", text: `全组 requester 发送 <span class="tag tag-o">repair request</span>。<br><br>• <b>加速器无条件旁路</b>（不进入 slot，不聚合）<br>• 直接到达 responder<br>• 带 payload（恢复路径需要真实数据）<br><br>为什么旁路？因为原 slot 可能已被 allocator 覆盖，不能信任旧聚合状态。`, action: s => { linkOn('L-r1-sw0','repair'); linkOn('L-r2-sw1','repair'); linkOn('L-r3-sw1','repair'); linkOn('L-sw0-sw1','repair'); showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k<br>1/2'},{id:1}]); showState('S-sw0','repair req → <b>bypass</b>'); showState('S-sw1','repair req → <b>bypass</b>'); spawn('N-r1','N-sw0','R','pkt-re',500); spawn('N-r2','N-sw1','R','pkt-re',500); spawn('N-r3','N-sw1','R','pkt-re',500); after(500,()=>{ spawn('N-sw1','N-sw0','R','pkt-re',500); spawn('N-sw1','N-sw0','R','pkt-re',500); }); } },
+      { title: "Step 4: Responder 位图去重 + 提交", text: `r0 收到 repair request：<br><br>• 用 <b>requester 位图</b>去重（重复丢弃）<br>• 首包成 master，后续 CPU 端侧聚合<br>• 位图满（3/3）→ <b>commit</b><br><br><b>关键</b>：repair 路径的提交是"端侧聚合"，不是在网聚合。这是恢复路径与正常路径的本质区别。`, action: s => { linkOn('L-r1-sw0','repair'); linkOn('L-sw0-sw1','repair'); showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k<br>1/2'},{id:1}]); showState('S-sw1','slot[0]: count=1/2<br>stuck partial...'); showState('S-r0','repair bitmap:<br>r1 ✓ r2 ✓ r3 ✓<br><b>3/3 → COMMIT</b>'); pulse('N-r0'); } },
+      { title: "Step 5: 迟到的 normal master 被丢弃", text: `假设丢失的 r2 request 只是延迟，现在以 normal master 到达 sw0。<br><br>• 但 slot[1] 的 <code>repair_mode=1</code><br>• <b>迟到 normal master 被丢弃</b>，不参与结果<br>• 该 offset 的结果仅由 repair 路径决定<br><br>这保证了<b>单次提交</b>：不会同时存在正常提交和修复提交两个结果。`, action: s => { showSlotBox(); setSlots([{id:0},{id:1,occ:true,txt:'k<br>rep'}], [{id:0,occ:true,txt:'k<br>1/2'},{id:1}]); showState('S-sw0','slot[1]: repair_mode=1<br>late normal master<br>→ <span class="red">DISCARDED</span>'); showState('S-r0','repair bitmap 3/3<br>committed ✓'); linkOn('L-sw0-sw1','master'); spawn('N-sw1','N-sw0','M','pkt-m',500); } },
+    ]
+  },
+
+  aggmiss: {
+    name: "AGG_MISS 失配",
+    tone: "err",
+    steps: [
+      { title: "场景：slot 被 allocator 覆盖", text: `正常流程中，sw1 的 slot[0] 已凑满发出 Master。<br>但 allocator 继续轮转，<b>slot[0] 被新 offset k+10 覆盖</b>。<br><br>此时，一个属于旧 offset k 的迟到 request 到达 sw1...`, action: s => { showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k+10<br>0/2'},{id:1}]); showState('S-sw1','slot[0]: owner=(fk, <b>k+10</b>)<br><span class="red">旧 offset k 的 req 迟到!</span>'); } },
+      { title: "Step 1: Owner 失配检测", text: `迟到 request 到达 sw1，读取栈顶 <code>agg_loc[1]=0</code>。<br><br>• 定位 slot[0]<br>• Owner 校验：<code>slot.owner == (fk, k)</code>?<br>• 实际 owner = <code>(fk, k+10)</code><br>• <span class="red">失配！</span><br><br>其它失配同理：slot 未绑定、已 forwarded、形态/计数不一致、贡献溢出。`, action: s => { linkOn('L-r2-sw1','req'); showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k+10<br>0/2'},{id:1}]); showState('S-sw1','slot[0] owner=(fk,k+10)<br>req wants (fk,k)<br>→ <span class="red">MISMATCH!</span>'); spawn('N-r2','N-sw1','R','pkt-r',400); } },
+      { title: "Step 2: 统一改写 AGG_MISS", text: `失配的唯一处理路径：<br><br>• <b>丢弃 payload</b>（不保留）<br>• <b>吞掉后续 beat</b>，帧截短到 header-only<br>• 改写 <code>packet_type=AGG_MISS</code><br>• <code>offset_a=request_offset</code><br>• 保留 L2/L3 地址与 UDP 端口<br>• 沿原上行路径直达 responder<br><br><b>协议没有第二种失配处理</b>。`, action: s => { linkOn('L-r2-sw1','aggmiss'); showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k+10<br>0/2'},{id:1}]); showState('S-sw1','<span class="red">AGG_MISS generated</span><br>header-only<br>payload dropped'); spawn('N-r2','N-sw1','A','pkt-a',400); after(400,()=>{ spawn('N-sw1','N-sw0','A','pkt-a',500); linkOn('L-sw0-sw1','aggmiss'); }); } },
+      { title: "Step 3: Responder 收到 AGG_MISS", text: `r0 收到 AGG_MISS(offset_a=k)：<br><br>• 检查 slot[k] 状态<br>• 已提交 / 已 done → <b>忽略</b>（迟到通知）<br>• 已在 repair_mode → <b>忽略</b>（幂等）<br>• 否则：<b>原子切入 repair_mode</b>（cutover）<br>• 触发整组 repair（组播 repair credit）<br><br>AGG_MISS 本身可丢——credit 超时兜底；AGG_MISS 不产生 CC 样本。`, action: s => { linkOn('L-sw0-sw1','aggmiss'); linkOn('L-r0-sw0','aggmiss'); showSlotBox(); setSlots([{id:0},{id:1}], [{id:0,occ:true,txt:'k+10<br>0/2'},{id:1}]); showState('S-sw1','<span class="red">AGG_MISS sent</span>'); showState('S-r0','AGG_MISS(k) received<br>→ <span class="red">repair_mode=1</span><br>trigger repair'); spawn('N-sw0','N-r0','A','pkt-a',500); pulse('N-r0'); } },
+      { title: "Step 4: 整组 Repair 触发", text: `与"丢包→Repair"场景汇合：<br><br>• 组播 repair credit（不分配 slot）<br>• 全组 repair request 旁路<br>• Responder 位图去重 + 端侧提交<br><br><b>关键设计</b>：失配不尝试修复单个包，而是<b>整组重传</b>。这避免了部分修复导致的状态不一致。`, action: s => { linkOn('L-r0-sw0','repair'); linkOn('L-sw0-sw1','repair'); linkOn('L-r1-sw0','repair'); linkOn('L-r2-sw1','repair'); linkOn('L-r3-sw1','repair'); showState('S-r0','repair credit multicast'); spawn('N-r0','N-sw0','R','pkt-re',500); after(200,()=>{ spawn('N-sw0','N-r1','R','pkt-re',500); spawn('N-sw0','N-sw1','R','pkt-re',500); }); after(500,()=>{ spawn('N-sw1','N-r2','R','pkt-re',500); spawn('N-sw1','N-r3','R','pkt-re',500); }); } },
+    ]
+  },
+
+  fanin1: {
+    name: "2-rank 退化 (fan-in=1)",
+    tone: "",
+    steps: [
+      { title: "场景：2-rank 点对点", text: `假设只有 r0(Responder) 和 r1(Requester) 两个 rank。<br><br>全路径 fan-in = 1：<br>• sw0 根级：只覆盖 r1，fanin[0]=1<br>• 无 leaf 级（不需要 sw1）<br><br>这是集合通信的<b>退化情形</b>，自然退化为点对点。<br><br>注意：f==1 全程<b>不访问 slot</b>，因此本场景不显示 slot 面板。`, action: s => { showState('S-r0','2-rank channel<br>fanin=[1]'); showState('S-r1','agg_loc=[0]<br>depth=1'); } },
+      { title: "Step 1: Credit 下行 — f==1 不分配 slot", text: `Credit 到达 sw0。<br><br>• <code>fanin[0]=1</code><br>• <b>首个输入即凑满</b>（单输入聚合恒等于输入本身）<br>• 实现直接 <code>agg_depth--</code> 转发<br>• <b>不访问 slot、不查 owner、不置 aggregated</b><br><br>已分配的 slot 弃用，由 allocator 正常覆盖。`, action: s => { linkOn('L-r0-sw0','credit'); showState('S-sw0','f=1 → <b>pop-forward</b><br>no slot access<br>no owner check'); spawn('N-r0','N-sw0','C','pkt-c',500); after(500,()=>{ spawn('N-sw0','N-r1','C','pkt-c',500); linkOn('L-r1-sw0','credit'); }); } },
+      { title: "Step 2: Request 上行 — 全路径弹栈", text: `r1 发送 request 上行。<br><br>• sw0 读取 <code>fanin[0]=1</code><br>• 直接弹栈转发<br>• 不读写 slot、不聚合<br>• request <b>直达 responder</b><br><br>responder 收到原始 normal request，按单输入直接提交（位图仅一位）。`, action: s => { linkOn('L-r1-sw0','req'); showState('S-sw0','f=1 → pop-forward'); spawn('N-r1','N-sw0','R','pkt-r',500); after(500,()=>{ spawn('N-sw0','N-r0','R','pkt-r',500); linkOn('L-r0-sw0','req'); }); } },
+      { title: "Step 3: Responder 单输入提交", text: `r0 收到原始 request。<br><br>• 验证 <code>aggregated=0</code>（不是聚合产物）<br>• 单输入直接提交<br>• 位图仅一位，无需等待<br>• 自然退化为点对点通信<br><br><b>设计优雅之处</b>：不需要特殊 case，统一规则在 f=1 处的恒等式。`, action: s => { linkOn('L-r0-sw0','req'); showState('S-sw0','f=1 → pop-forward'); showState('S-r0','single input<br><b>direct commit</b>'); pulse('N-r0'); spawn('N-sw0','N-r0','R','pkt-r',500); } },
+    ]
+  },
+
+  tail: {
+    name: "尾部丢失 → END 兜底",
+    tone: "warn",
+    steps: [
+      { title: "场景：最后一个 offset 的 response 丢失", text: `message 的最后一个 offset = 99。<br>r0 发出 <code>RESPONSE(p99)</code>，但<b>没有 credit 可 piggyback</b>（已是最后一个）。<br><br>这份 response 在 sw0→r1 链路上<b>丢失</b>。`, action: s => { showState('S-r0','offset 99: last<br>no next credit'); linkOn('L-r0-sw0','credit'); spawn('N-r0','N-sw0','C','pkt-c',500); after(600,()=>{ showState('S-r1','<span class="red">response LOST!</span><br>payload p99 missing'); }); } },
+      { title: "Step 1: Piggyback 的盲区", text: `正常流程中，piggyback 机制让中间 offset 的确认"免费"：<br><br><code>credit k+1 到达 = "offset k 已收齐"</code><br><br>但 offset 99 是<b>最后一个</b>，不存在 offset 100 的 credit 来隐式确认它。<br><br>如果这份尾部 response 丢失，requester 永远 incomplete。`, action: s => { showState('S-r0','piggyback works for<br>offset 0..98'); showState('S-r1','offset 99: <span class="red">no implicit ACK!</span>'); } },
+      { title: "Step 2: Responder 发送 END", text: `全部 offset done 后，r0 组播 <span class="tag tag-s">END</span>。<br><br>• END 携带 <code>start_sequence</code> 作为 epoch<br>• 加速器旁路直通<br>• 每 subchannel 一份<br><br>Requester 收到 END 后检查本地是否 complete。`, action: s => { linkOn('L-r0-sw0','end'); linkOn('L-r1-sw0','end'); showState('S-r0','END multicast'); showState('S-r1','END received<br>but <span class="red">NOT complete</span>'); spawn('N-r0','N-sw0','E','pkt-e',400); after(300,()=>{ spawn('N-sw0','N-r1','E','pkt-e',400); }); } },
+      { title: "Step 3: Requester 不回 END_ACK", text: `r1 收到 END，但本地 payload p99 未交付。<br><br>• <b>不回 END_ACK</b><br>• 等待重放补齐<br><br>Responder 超时（50ms）未收齐 END_ACK → 触发重传。`, action: s => { linkOn('L-r0-sw0','end'); linkOn('L-r1-sw0','end'); showState('S-r1','END received<br>→ <span class="red">no ACK sent</span><br>waiting replay...'); showState('S-r0','waiting END_ACK...<br>timeout: 50ms'); } },
+      { title: "Step 4: Responder 重放尾部", text: `r0 超时后重放尾部 response：<br><br>• 重放"未被任何 credit 反向绑定"的 payload<br>• 普通 <code>REPLAY</code>，无 credit<br>• 受 repair 预算限制<br>• 重发 END<br><br>Requester 补齐 p99 后，回 END_ACK，message 正式结束，<code>message_id</code> 才可复用。`, action: s => { linkOn('L-r0-sw0','repair'); linkOn('L-r1-sw0','repair'); showState('S-r0','replay tail payload<br>+ re-END'); showState('S-r1','p99 delivered ✓<br>END_ACK sent ✓'); spawn('N-r0','N-sw0','R','pkt-re',500); after(400,()=>{ spawn('N-sw0','N-r1','R','pkt-re',500); }); } },
+    ]
+  },
+
+  ce: {
+    name: "拥塞 CE 回显",
+    tone: "warn",
+    steps: [
+      { title: "场景：下行路径拥塞", text: `Credit 下行经过 sw1 时，sw1 的 egress queue 超过 ECN 阈值。<br><br>• sw1 将包的 ECN 字段从 <code>ECT(0)</code> 改为 <code>CE</code><br>• 表示"这条路径拥塞了"<br>• <b>交换机不保存任何 CC 状态</b>，只标记 CE`, action: s => { linkOn('L-sw0-sw1','credit'); showState('S-sw1','queue > threshold<br>→ <span class="red">CE mark</span>'); spawn('N-sw0','N-sw1','C','pkt-c',500); } },
+      { title: "Step 1: Requester 收到 CE 标记的 Credit", text: `r2 收到 credit，发现 IP.ECN == CE。<br><br>• 交付 payload（正常）<br>• 消费 credit（正常）<br>• <b>记录 echo_ce = true</b>（随该 credit 排队，不共享 per-subchannel bit）<br><br>Requester <b>不解析 CE 含义</b>，只负责"快递"——把 CE 信息搬运回上行。`, action: s => { linkOn('L-sw0-sw1','credit'); linkOn('L-r2-sw1','credit'); showState('S-sw1','queue > threshold<br>→ <span class="red">CE mark</span>'); showState('S-r2','credit received<br><span class="red">CE detected</span><br>echo_ce = true'); spawn('N-sw1','N-r2','C','pkt-c',400); } },
+      { title: "Step 2: CE 随 Request 回显上行", text: `r2 发送 request(k)，携带 <code>echo_ce</code>。<br><br>• 上行 request 的 ECN 字段反映下行路径的 CE 状态<br>• 沿途聚合级对 contribution 的 CE 取 <b>OR</b><br>• 最终 master 携带 <b>group CE</b> 交给 responder<br><br>为什么 OR？只要一个分支拥塞，全组就降速。`, action: s => { linkOn('L-r2-sw1','req'); showState('S-r2','request(k)<br>ECN = CE'); showState('S-sw1','CE OR logic<br>r2: CE, r3: not CE<br>→ <b>OR = CE</b>'); spawn('N-r2','N-sw1','R','pkt-r',400); } },
+      { title: "Step 3: Responder 收到 Group CE", text: `r0 收到根后 Master，发现携带 CE。<br><br>• 该 credit 首次 done 时产生 CC 样本<br>• 样本包含：<code>{delay, inflight_at_issue, ce_seen=true}</code><br>• DCQCN-style 控制器：<br>  <code>alpha = (1−gain)·alpha + gain·CE</code><br>  <code>rate *= 1 − decrease_factor·alpha</code><br><br><b>关键</b>：CC 完全在 responder，交换机不保存任何速率状态。`, action: s => { linkOn('L-r2-sw1','req'); linkOn('L-sw0-sw1','master'); linkOn('L-r0-sw0','master'); showState('S-sw1','CE OR = CE<br>master carries CE'); showState('S-r0','master received<br>ce_seen = <span class="red">true</span><br>→ <b>rate decrease</b>'); spawn('N-r2','N-sw1','R','pkt-r',400); after(400,()=>{ spawn('N-sw1','N-sw0','M','pkt-m',500); }); after(800,()=>{ spawn('N-sw0','N-r0','M','pkt-m',500); pulse('N-r0'); }); } },
+      { title: "Step 4: 多 credit 每 RTT 的缩放", text: `一个 RTT 内可能完成多份 credit。<br><br>• EWMA gain 和 additive increase 按 <code>sample_interval/rtt_base</code> 缩放<br>• 乘性减速每 RTT <b>至多一次</b><br>• group OR 的标记概率 ≈ <code>1−(1−p)^F</code><br><br>fan-in 提高了拥塞可见性，但也会放大标记灵敏度。实验必须同时报告 CE、队列与 goodput。`, action: s => { showState('S-r0','rate adjusted<br>next credit paced<br>window may shrink'); } },
+    ]
+  }
+};
+
+// ========== STATE ==========
+let currentScene = 'normal';
+let currentStep = 0;
+let stepGen = 0;   // 代际计数：切步/切场景时作废旧 step 的延迟回调
+
+// ========== DOM HELPERS ==========
+function $(id){ return document.getElementById(id); }
+$('themeToggle')?.addEventListener('click', cycleTheme);
+applyTheme(localStorage.getItem('theme') || 'system');
+function after(d, fn){ const g = stepGen; setTimeout(()=>{ if(g === stepGen) fn(); }, d); }
+function clearAll(){
+  document.querySelectorAll('.arb-link').forEach(l=>l.className='arb-link');
+  document.querySelectorAll('.arb-pkt').forEach(p=>p.remove());
+  document.querySelectorAll('.arb-state').forEach(b=>b.classList.add('hide'));
+  document.querySelectorAll('.arb-node').forEach(n=>n.classList.remove('pulse'));
+  $('slotBox').classList.add('hide');
+  $('slotRow0').innerHTML=''; $('slotRow1').innerHTML='';
+}
+function linkOn(id, cls){ const el=$(id); if(el) el.className='arb-link on '+cls; }
+function showState(id, html){ const el=$(id); if(el){ el.innerHTML=html; el.classList.remove('hide'); } }
+function pulse(id){ const el=$(id); if(el){ el.classList.add('pulse'); after(1600,()=>el.classList.remove('pulse')); } }
+function spawn(fromId, toId, label, cls, dur){
+  const from=$(fromId), to=$(toId), topo=$('arbTopo');
+  if(!from||!to) return;
+  const fR=from.getBoundingClientRect(), tR=to.getBoundingClientRect(), pR=topo.getBoundingClientRect();
+  const pkt=document.createElement('div');
+  pkt.className='arb-pkt '+cls;
+  pkt.textContent=label;
+  const half = (cls==='pkt-reg') ? 14 : (cls==='pkt-m' ? 13.5 : 12);
+  pkt.style.left=(fR.left-pR.left+fR.width/2-half)+'px';
+  pkt.style.top=(fR.top-pR.top+fR.height/2-half)+'px';
+  topo.appendChild(pkt);
+  pkt.offsetHeight;
+  pkt.style.transitionDuration = dur+'ms';
+  pkt.style.left=(tR.left-pR.left+tR.width/2-half)+'px';
+  pkt.style.top=(tR.top-pR.top+tR.height/2-half)+'px';
+  // packet 到达后驻留在目标节点，直到下一次 clearAll
+}
+function showSlotBox(){ $('slotBox').classList.remove('hide'); }
+function setSlots(sw0slots, sw1slots){
+  if(sw0slots){
+    const row=$('slotRow0'); row.innerHTML='';
+    sw0slots.forEach(s=>{
+      const chip=document.createElement('div');
+      chip.className='slot-chip'+(s.occ?' occ':'')+(s.pin?' pin':'')+(s.miss?' miss':'');
+      chip.innerHTML=(s.txt!=null?s.txt:s.id);
+      row.appendChild(chip);
+    });
+  }
+  if(sw1slots){
+    const row=$('slotRow1'); row.innerHTML='';
+    sw1slots.forEach(s=>{
+      const chip=document.createElement('div');
+      chip.className='slot-chip'+(s.occ?' occ':'')+(s.pin?' pin':'')+(s.miss?' miss':'');
+      chip.innerHTML=(s.txt!=null?s.txt:s.id);
+      row.appendChild(chip);
+    });
+  }
+}
+
+// ========== LINK LAYOUT（按节点实际位置动态计算方向） ==========
+const LINKS = {
+  'L-r0-sw0': ['N-r0','N-sw0'],
+  'L-r1-sw0': ['N-r1','N-sw0'],
+  'L-r2-sw1': ['N-r2','N-sw1'],
+  'L-r3-sw1': ['N-r3','N-sw1'],
+  'L-sw0-sw1':['N-sw0','N-sw1'],
+};
+function edgePoint(rect, pR, ux, uy){
+  const cx = rect.left-pR.left+rect.width/2, cy = rect.top-pR.top+rect.height/2;
+  const tx = ux===0 ? Infinity : (rect.width/2)/Math.abs(ux);
+  const ty = uy===0 ? Infinity : (rect.height/2)/Math.abs(uy);
+  const t = Math.min(tx,ty) + 1;
+  return [cx+ux*t, cy+uy*t];
+}
+function layoutLinks(){
+  const topo=$('arbTopo'); if(!topo) return;
+  const pR=topo.getBoundingClientRect();
+  for(const id in LINKS){
+    const el=$(id), from=$(LINKS[id][0]), to=$(LINKS[id][1]);
+    if(!el||!from||!to) continue;
+    const fR=from.getBoundingClientRect(), tR=to.getBoundingClientRect();
+    const fx=fR.left-pR.left+fR.width/2, fy=fR.top-pR.top+fR.height/2;
+    const tx=tR.left-pR.left+tR.width/2,  ty=tR.top-pR.top+tR.height/2;
+    const dx=tx-fx, dy=ty-fy, len=Math.hypot(dx,dy)||1;
+    const ux=dx/len, uy=dy/len;
+    const p1=edgePoint(fR,pR,ux,uy), p2=edgePoint(tR,pR,-ux,-uy);
+    const ddx=p2[0]-p1[0], ddy=p2[1]-p1[1];
+    el.style.left=p1[0]+'px';
+    el.style.top=p1[1]+'px';
+    el.style.width=Math.hypot(ddx,ddy)+'px';
+    el.style.transform='rotate('+Math.atan2(ddy,ddx)+'rad)';
+  }
+}
+window.addEventListener('resize', layoutLinks);
+window.addEventListener('load', layoutLinks);
+
+// ========== SCENE CONTROL ==========
+function loadScene(name){
+  currentScene = name;
+  currentStep = 0;
+  const scene = scenes[name];
+  $('stepTotal').textContent = scene.steps.length - 1;
+  updateUI();
+}
+function updateUI(){
+  stepGen++;                 // 作废上一个 step 的延迟回调
+  clearAll();                // 全量清场：每个 step 都是自包含快照，上一步自然"撤销"
+  const scene = scenes[currentScene];
+  $('stepNum').textContent = currentStep;
+  $('btnPrev').disabled = currentStep <= 0;
+  $('btnNext').disabled = currentStep >= scene.steps.length - 1;
+  const s = scene.steps[currentStep];
+  $('infoPanel').className = 'arb-info' + (scene.tone ? ' '+scene.tone : '');
+  $('infoPanel').innerHTML = '<h4>'+s.title+'</h4><div>'+s.text+'</div>';
+  s.action(scene);
+}
+function nextStep(){ if(currentStep < scenes[currentScene].steps.length-1){ currentStep++; updateUI(); } }
+function prevStep(){ if(currentStep > 0){ currentStep--; updateUI(); } }
+function resetScene(){ currentStep=0; updateUI(); }
+
+// keyboard navigation
+document.addEventListener('keydown', e=>{
+  if(e.key==='ArrowRight') nextStep();
+  else if(e.key==='ArrowLeft') prevStep();
+});
+
+// ========== TABS ==========
+document.querySelectorAll('.scene-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.scene-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    loadScene(tab.dataset.scene);
+  });
+});
+
+// ========== INIT ==========
+layoutLinks();
+loadScene('normal');
+
+</script>
+
+</body>
+</html>

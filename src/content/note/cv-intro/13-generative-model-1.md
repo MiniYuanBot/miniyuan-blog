@@ -12,9 +12,9 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-## Generative vs Discriminative Models
+## Overview of Generative Models
 
-### 判别式模型、生成式模型与条件生成式模型
+### Comparison Between Three Models
 
 设图像或数据为 $X$，标签或条件为 $Y$。
 
@@ -36,7 +36,7 @@ $$
 
 理论上可以由判别式模型 $p(Y\mid X)$、无条件生成模型 $p(X)$ 和标签先验 $p(Y)$ 构造条件生成模型，但实际中通常直接训练条件生成模型。
 
-### 概率竞争方式的差异
+### Probability-Based Competition
 
 判别式模型在给定 $X$ 后，让所有可能标签竞争概率质量：
 $$
@@ -47,9 +47,7 @@ $$
 
 生成模型则在所有可能数据之间分配概率质量。合理图像应获得较高密度，不合理输入可以获得极低概率，因此生成模型可用于 **Outlier Detection**（异常检测）和无监督特征学习。
 
-**注**：连续变量中 $p(X)$ 是概率密度而不是单点概率。密度函数对不同 $X$ 赋予非负数值，并整体满足归一化约束。
-
-### 为什么需要生成模型
+### Why We Need Generative Model
 
 生成模型适合处理一对多和多解问题。给定同一条件 $Y$，可能存在许多合理输出 $X$，因此更自然的目标是建模完整条件分布 $p(X\mid Y)$，而不是只预测一个确定答案。
 
@@ -60,9 +58,7 @@ $$
 3. **Image-to-Video**：根据图像或短视频预测未来帧。
 4. **World Model**：建模 $p(s_{t+1}\mid s_t,\text{text/action})$，预测动作或指令作用后的世界状态。
 
-## Taxonomy of Generative Models
-
-### 显式密度与隐式密度
+### Taxonomy of Generative Models
 
 生成模型可按是否显式计算数据密度 $p(X)$ 分类。
 
@@ -73,9 +69,11 @@ $$
 | **Implicit Density, Direct Sampling** | **GAN** | 不显式计算 $p(X)$，直接从噪声映射到样本 |
 | **Implicit / Approximate Sampling** | **Diffusion Model** | 通过迭代去噪过程近似从数据分布采样 |
 
-显式密度模型的优势是可以进行概率推断，例如评估样本是否合理；但高维图像分布的密度建模很难。隐式模型不一定能计算 $p(X)$，但可以更直接地生成高质量样本。
+显式密度模型的优势是可以进行概率推断，例如评估样本是否合理；但高维图像分布的密度建模很难。
 
-### 生成模型的训练目标
+隐式模型不一定能计算 $p(X)$，但可以更直接地生成高质量样本。
+
+### Training Object
 
 若模型显式给出密度 $p_\theta(X)$，最常见目标是 **Maximum Likelihood Estimation**（MLE，最大似然估计）：
 $$
@@ -86,7 +84,7 @@ $$
 
 ## Autoregressive Model
 
-### 语言模型作为自回归生成
+### Language Modeling
 
 对序列 $x_1,\dots,x_T$，**Autoregressive Model** 使用链式法则分解联合概率：
 $$
@@ -97,7 +95,7 @@ $$
 
 Transformer 中的 **Causal Mask** 保证位置 $t$ 只能看到 $1,\dots,t-1$ 的历史信息，从而满足自回归因果结构。
 
-### 图像自回归生成
+### Image Modeling
 
 图像也可以被展开为序列并逐像素生成，但高分辨率图像的像素序列极长，计算代价很高。现代方法常把图像切分为 patch 或离散视觉 token，再像语言模型一样逐 token 生成。
 
@@ -105,7 +103,7 @@ Transformer 中的 **Causal Mask** 保证位置 $t$ 只能看到 $1,\dots,t-1$ �
 
 ## Variational Autoencoder
 
-### 从 Autoencoder 到概率生成模型
+### From Autoencoder to Variational Autoencoder
 
 **Autoencoder**（AE）由 Encoder 和 Decoder 组成：
 
@@ -118,14 +116,21 @@ AE 可以学习低维表示，但不是完整生成模型。原因是普通 AE �
 **VAE** 将 AE 概率化：假设隐变量服从先验分布 $p(Z)$，通常为标准正态分布 $\mathcal{N}(0,I)$；
 Decoder 建模条件分布 $p_\theta(X\mid Z)$。生成时先采样 $Z\sim p(Z)$，再由 Decoder 生成 $X$。
 
-### 边际似然与不可解积分
+### Marginal Likelihood
 
 VAE 希望最大化数据边际似然：
 $$
 p_\theta(X)=\int p(Z)p_\theta(X\mid Z)\,dZ
 $$
 
-该积分需要对所有可能隐变量 $Z$ 积分。即使假设 $p(Z)$ 与 $p_\theta(X\mid Z)$ 都是高斯，由于 Decoder 的均值和方差由神经网络输出，积分通常没有解析解。
+该积分需要对所有可能隐变量 $Z$ 积分，一般无解析解。
+
+举例来说，不妨假设 $p(Z)$ 与 $p_\theta(X\mid Z)$ 都是高斯，也即：
+
+- 先验 $p(Z) = \mathcal{N}(0, I)$
+- 似然 $p_\theta(X\mid Z) = \mathcal{N}\big(X;\ \mu_\theta(Z),\ \sigma_\theta^2(Z)\big)$
+
+由于均值和方差都是神经网络拟合出 $Z$ 的非线性函数，所以此时积分通常没有解析解。
 
 朴素 Monte Carlo 近似为：
 $$
@@ -134,31 +139,42 @@ $$
 
 但在高维隐空间中，大多数从先验采样的 $Z$ 与当前 $X$ 无关，使 $p_\theta(X\mid Z)$ 接近 0，估计方差极大，训练效率很低。
 
-### 变分后验与 ELBO
+### Variational Posterior and ELBO
 
-真实后验为：
+**推理**是指通过被观测变量 $X$ 推理隐变量 $Z$ 后验概率分布 $p_{\theta}(Z|X)$ 的问题。
+
+**变分**是指通过简单的先验假设概率分布 $q_\phi(Z\mid X)$ 近似后验概率分布 $p_\theta(Z\mid X)$。
+
+真实后验推理为：
 $$
 p_\theta(Z\mid X)=\frac{p(Z)p_\theta(X\mid Z)}{p_\theta(X)}
 $$
 
-由于分母 $p_\theta(X)$ 不可解，后验也不可解。VAE 引入可学习的变分后验 $q_\phi(Z\mid X)$ 来近似真实后验 $p_\theta(Z\mid X)$。通常 $q_\phi$ 由 Encoder 参数化，并输出高斯分布的均值与方差。
+由于分母 $p_\theta(X)$ 不可解，后验也不可解，VAE 引入可学习的变分后验 $q_\phi(Z\mid X)$ 来近似真实后验 $p_\theta(Z\mid X)$。
+通常 $q_\phi$ 由 Encoder 参数化，并输出高斯分布的均值与方差。
 
-对 $\log p_\theta(X)$ 可分解为：
+直接考虑分布 $q_\phi$ 与 $p_{\theta}$ 的相似度：
 $$
-\log p_\theta(X)
-=
-\mathbb{E}_{Z\sim q_\phi(Z\mid X)}[\log p_\theta(X\mid Z)]
--D_{\mathrm{KL}}(q_\phi(Z\mid X)\|p(Z))
-+D_{\mathrm{KL}}(q_\phi(Z\mid X)\|p_\theta(Z\mid X))
+\begin{aligned}
+D_{\mathrm{KL}}(q_\phi(Z\mid X)\|p_\theta(Z\mid X))
+&=\mathbb{E}_{Z\sim q_\phi(Z\mid X)}[\log q_\phi(Z\mid X) - \log p_\theta(Z\mid X)] \\
+&=\mathbb{E}_{Z\sim q_\phi(Z\mid X)}[\log q_\phi(Z\mid X) - \log p_\theta(X\mid Z) - \log p_\theta(Z) + \log p_\theta(X)] \\
+&=-\mathbb{E}_{Z\sim q_\phi(Z\mid X)}[\log p_\theta(X\mid Z)] + D_{\mathrm{KL}}(q_\phi(Z\mid X)\|p_\theta(Z)) + \log p_\theta(X)
+\end{aligned}
 $$
 
-第三项是 $q_\phi$ 与真实后验之间的 KL 散度，非负且不可直接计算。因此前两项构成对数似然下界：
+我们希望最小化该 KL 散度，由于 $\log p_\theta(X)$ 为定值，因此等价于最大化：
 $$
-\log p_\theta(X)\ge
 \mathbb{E}_{q_\phi}[\log p_\theta(X\mid Z)]
 -D_{\mathrm{KL}}(q_\phi(Z\mid X)\|p(Z))
 \triangleq \mathrm{ELBO}
 $$
+
+当然我们也可以从最大似然来理解。因为我们可以算得：
+$$
+\log p_\theta(X) \ge ELBO
+$$
+从而 ELBO 为对数似然的下界。最大化 ELBO 可以间接最大化真实似然。
 
 **ELBO**（Evidence Lower Bound，证据下界）由两部分组成：
 
@@ -169,7 +185,7 @@ $$
 
 最大化 ELBO 等价于同时提升重构质量，并让训练时的隐变量分布接近采样时使用的先验分布。
 
-### 高斯 KL 与重构损失
+### Gaussian KL and Reconstruction Loss
 
 若 $q_\phi(Z\mid X)=\mathcal{N}(\mu,\operatorname{diag}(\sigma^2))$，且 $p(Z)=\mathcal{N}(0,I)$，则 KL 项有解析形式：
 $$
@@ -197,7 +213,7 @@ $$
 
 这样随机性由与参数无关的 $\varepsilon$ 提供，而 $Z$ 对 $\mu_{Z\mid X}$ 和 $\sigma_{Z\mid X}$ 可微，梯度可以穿过采样过程。
 
-### VAE 训练与生成流程
+### VAE Pipeline
 
 **Training Pipeline**：
 
@@ -205,7 +221,7 @@ $$
 2. Encoder 输出 $q_\phi(Z\mid X)$ 的均值 $\mu_{Z\mid X}$ 和方差 $\sigma_{Z\mid X}$。
 3. 使用重参数化技巧采样 $Z$。
 4. Decoder 输出 $p_\theta(X\mid Z)$ 的参数，通常是重构均值 $\mu_{X\mid Z}$。
-5. 最大化 ELBO，等价于最小化“重构损失 + KL 正则”。
+5. 最大化 ELBO，等价于最小化重构损失 + KL 正则。
 
 **Sampling Pipeline**：
 
@@ -215,7 +231,7 @@ $$
 
 实际生成图像时通常不再额外从 Decoder 的输出高斯中加噪声，而直接使用均值，以避免图像进一步变模糊。
 
-### VAE 的内在矛盾与模糊问题
+### The Problem of VAE
 
 VAE 的两项损失存在天然张力：
 
@@ -226,9 +242,10 @@ VAE 生成图像常出现 **Blurry Problem**（模糊问题）。在高斯似然
 
 **注**：VAE 的优势是优化目标与整体数据分布相关，模式覆盖较好，隐空间也较有结构；缺点是先验表达能力有限，生成视觉质量通常不如 GAN 或 Diffusion。
 
-### Variational 的含义
+### The Meaning of Variational
 
-“变分”来自 **Variational Inference**（变分推断）。在概率隐变量模型中，真实后验 $p_\theta(Z\mid X)$ 往往不可解，于是引入一族可计算分布 $q_\phi(Z\mid X)$，在分布函数空间中寻找最接近真实后验的近似。
+Variational 来自 **Variational Inference**（变分推断）。
+在概率隐变量模型中，真实后验 $p_\theta(Z\mid X)$ 往往不可解，于是引入一族可计算分布 $q_\phi(Z\mid X)$，在分布函数空间中寻找最接近真实后验的近似。
 
 固定 $\theta$ 时，最大化 ELBO 等价于最小化：
 $$
@@ -237,7 +254,7 @@ $$
 
 因此 VAE 本质上是用神经网络实现的变分推断框架。
 
-### 多隐变量 VAE
+### Multi-Latent VAE
 
 VAE 可以扩展到多个隐变量。例如有 $Z_1,Z_2$ 时，可考虑联合分布：
 $$
@@ -248,7 +265,7 @@ $$
 
 ## Generative Adversarial Network
 
-### 对抗学习思想
+### Motivation
 
 **GAN** 不显式建模 $p(X)$，而是学习一个从噪声到图像的生成器：
 $$
@@ -257,7 +274,7 @@ $$
 
 同时训练一个 **Discriminator**（判别器）$D$，用于判断输入图像来自真实数据还是生成器。生成器 $G$ 的目标是生成足以欺骗 $D$ 的样本；判别器 $D$ 的目标是区分真实样本与生成样本。
 
-### Minimax 目标
+### Minimax Object
 
 原始 GAN 是一个双人极小极大博弈：
 $$
@@ -283,7 +300,7 @@ $$
 4. 固定 $D$，更新 $G$，提高欺骗判别器的能力。
 5. 交替重复上述步骤。
 
-### Saturating Loss 与 Non-Saturating Loss
+### Saturating Loss and Non-Saturating Loss
 
 原始生成器目标来自极小化：
 $$
@@ -299,7 +316,7 @@ $$
 
 该目标在 $D(G(z))$ 很小时仍能提供较强梯度，因此更适合训练生成器。
 
-### 卷积 GAN、Progressive GAN 与 StyleGAN
+### DCGAN, Progressive GAN, StyleGAN
 
 早期 GAN 使用卷积架构后显著提升图像质量。后续发展包括：
 
@@ -312,7 +329,7 @@ $$
 
 **注**：人脸生成相对更容易，因为结构模式较固定；开放类别、复杂室内场景或多物体关系生成仍更困难。
 
-### Mode Collapse 与分布覆盖
+### The Problem of GAN
 
 GAN 的主要问题是 **Mode Collapse**（模式坍塌）。由于生成器只需骗过当前判别器，它可能只生成真实分布中的少数模式，而不是覆盖完整数据分布。
 
@@ -325,9 +342,7 @@ GAN 的主要问题是 **Mode Collapse**（模式坍塌）。由于生成器只�
 
 **注**：VAE 倾向覆盖分布但视觉质量偏模糊；GAN 倾向生成清晰样本但可能遗漏模式。这也是后来 Diffusion Model 受到重视的重要原因之一。
 
-## Evaluation of GANs
-
-### 定性评估
+### Evaluation of GANs
 
 GAN 的生成器没有直接优化一个可解释的似然目标，因此评估通常需要结合定性与定量方法。
 
@@ -336,8 +351,6 @@ GAN 的生成器没有直接优化一个可解释的似然目标，因此评估�
 1. **Nearest Neighbor**：将生成样本与训练集中最近邻样本对比，检查是否记忆训练集。
 2. **User Study**：让用户判断图像真假或比较不同模型的生成质量。
 3. **Mode Drop / Mode Collapse 检查**：在已知类别或已知模式的数据集上，检查生成样本是否覆盖所有模式。
-
-### Fréchet Inception Distance
 
 **FID**（Fréchet Inception Distance）是常用定量指标。其流程为：
 
@@ -363,8 +376,6 @@ $$
 
 ## Summary
 
-### 方法对比
-
 | 模型 | 密度建模 | 采样方式 | 优点 | 局限 |
 | :--- | :--- | :--- | :--- | :--- |
 | **Autoregressive** | 显式且可精确计算 | 逐 token 采样 | 似然可算，理论清晰 | 高维视觉生成效率低 |
@@ -372,4 +383,5 @@ $$
 | **GAN** | 隐式密度 | 噪声直接映射到样本 | 图像清晰，采样快 | 训练不稳定，容易 Mode Collapse |
 | **Diffusion** | 与 ELBO 有联系，采样为迭代过程 | 逐步去噪 | 质量与覆盖较均衡 | 采样成本较高 |
 
-生成模型的核心问题可以概括为：如何学习复杂高维数据分布，并在质量、覆盖、多样性、似然可解释性与采样效率之间取得平衡。VAE 与 GAN 分别代表了“近似似然优化”和“对抗式隐式采样”两条路线，后续 Diffusion Model 将进一步结合分布覆盖与高质量生成的优势。
+生成模型的核心问题可以概括为：如何学习复杂高维数据分布，并在质量、覆盖、多样性、似然可解释性与采样效率之间取得平衡。
+VAE 与 GAN 分别代表了**近似似然优化**和**对抗式隐式采样**两条路线，后续 Diffusion Model 将进一步结合分布覆盖与高质量生成的优势。

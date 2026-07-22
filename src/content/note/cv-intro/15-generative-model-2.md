@@ -12,17 +12,11 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-## Generative Model II
-
-### 课程定位
-
-本讲进入 **Generative Model II**，重点讨论当前高质量生成模型的主流路线：**Diffusion Model**（扩散模型）、**Flow Matching**、**Latent Diffusion Model**（LDM）与 **Diffusion Transformer**（DiT）。
-
-Diffusion Model 可以从上一讲的 **Variational Autoencoder**（VAE）自然延伸而来：VAE 使用一个 latent code 解释图像，而 Diffusion 将 latent 变量展开成很长的马尔可夫链，用多步小扰动逐渐把数据变成噪声，再学习反向去噪过程。其训练目标最终可以简化为一句话：**给干净图像加已知噪声，然后训练网络预测这部分噪声**。
+Diffusion 训练目标最终可以简化为一句话：**给干净图像加已知噪声，然后训练网络预测这部分噪声**。
 
 ## Diffusion Models
 
-### 从 VAE 到层级隐变量模型
+### From VAE to Hierarchical Latent Variable Models
 
 单层 VAE 的生成过程为 $z\to x$。一个 latent code 需要同时编码 object category、shape、pose、texture 与 fine details，这对高维图像生成非常困难。若 decoder 使用简单高斯条件分布，多个合理输出还会被均值化，导致图像模糊。
 
@@ -33,7 +27,7 @@ $$
 
 这类模型称为 **Hierarchical VAE**。Diffusion Model 可以看作一种特殊的层级 VAE：隐变量不再只有一两个，而是形成 $x_0,x_1,\dots,x_T$ 的长链。
 
-### 马尔可夫链视角
+### Markov Chain Perspective
 
 Diffusion Model 定义一组变量：
 
@@ -47,7 +41,7 @@ Diffusion Model 定义一组变量：
 
 ## Forward Diffusion Process
 
-### 单步加噪
+### Single-Step Noising
 
 前向过程定义为逐步向图像加入高斯噪声：
 $$
@@ -104,7 +98,7 @@ $$
 
 ## Reverse Denoising Process
 
-### 反向分布建模
+### Reverse Distribution Modeling
 
 生成图像需要从噪声 $x_T$ 逐步恢复到数据 $x_0$。真实反向分布 $q(x_{t-1}\mid x_t)$ 不可直接得到，因此引入可学习模型：
 $$
@@ -115,7 +109,7 @@ $$
 
 其中 $\mu_\theta(x_t,t)$ 由神经网络预测，$\sigma_t$ 可固定或部分学习。实际网络通常输入噪声图 $x_t$ 和时间步 $t$，输出与图像同维度的预测量。
 
-### ELBO 目标
+### ELBO Objective
 
 Diffusion Model 的联合分布为：
 $$
@@ -156,7 +150,7 @@ $$
 
 由于前向过程是高斯链，真实后验 $q(x_{t-1}\mid x_t,x_0)$ 也是高斯分布，因此可将优化目标化为高斯均值之间的匹配。
 
-### 噪声预测参数化
+### Noise Prediction Parameterization
 
 DDPM 的关键简化是：不直接预测 $\mu_\theta$，而是让网络预测加到 $x_0$ 上的噪声 $\epsilon$。均值可由预测噪声重参数化为：
 $$
@@ -189,7 +183,7 @@ $$
 
 **注**：Diffusion 训练不是让网络直接从噪声图预测干净图，而是预测“当前图像中被加入的噪声成分”。干净图可由 $x_t$ 和预测噪声间接恢复。
 
-### DDPM 训练流程
+### DDPM Training Pipeline
 
 **Training Pipeline**：
 
@@ -197,14 +191,13 @@ $$
 2. 随机采样时间步 $t\in\{1,\dots,T\}$。
 3. 采样高斯噪声 $\epsilon\sim\mathcal{N}(0,I)$。
 4. 用 Diffusion Kernel 构造噪声图：
-$$
-x_t=\sqrt{\bar{\alpha}_t}x_0+\sqrt{1-\bar{\alpha}_t}\epsilon
-$$
-
+    $$
+    x_t=\sqrt{\bar{\alpha}_t}x_0+\sqrt{1-\bar{\alpha}_t}\epsilon
+    $$
 5. 将 $(x_t,t)$ 输入去噪网络，得到 $\epsilon_\theta(x_t,t)$。
 6. 最小化 $\|\epsilon-\epsilon_\theta(x_t,t)\|_2^2$。
 
-### DDPM 采样流程
+### DDPM Sampling Pipeline
 
 **Sampling Pipeline**：
 
@@ -217,7 +210,7 @@ $$
 
 这一过程通常需要很多去噪步，因此原始 DDPM 的采样速度慢于 GAN，但图像质量与模式覆盖通常更好。
 
-### 网络结构与时间条件
+### Network Architecture and Time Conditioning
 
 早期 DDPM 常使用 **U-Net** 作为去噪网络。输入为噪声图 $x_t$，输出为同维度噪声预测 $\epsilon_\theta$。U-Net 的 encoder-decoder 结构和 skip connections 有利于同时处理全局语义与局部细节。
 
@@ -229,7 +222,7 @@ $$
 
 **注**：标准像素空间 DDPM 中，$x_t$ 与图像 $x_0$ 同维度；这不同于普通 VAE 中低维 latent code 的设置。
 
-### 其他视角：Score 与 SDE
+### Alternative Perspectives: Score and SDE
 
 Diffusion 也可从 **Score Function** 角度理解。对任意分布 $p(x)$，score function 定义为：
 $$
@@ -247,7 +240,7 @@ $$
 
 ## Flow Matching
 
-### 基本思想
+### Basic Idea
 
 **Flow Matching** 提供了另一种生成视角：从噪声分布 $p_{\mathrm{noise}}$ 到数据分布 $p_{\mathrm{data}}$ 学习一个连续速度场。设：
 $$
@@ -281,7 +274,7 @@ v_\theta(x_t,t)-(z-x)
 \right]
 $$
 
-### 训练与采样
+### Training and Sampling
 
 **Training Pipeline**：
 
@@ -296,15 +289,16 @@ $$
 1. 采样初始点 $x_1\sim p_{\mathrm{noise}}$。
 2. 选择步数 $T$，例如 $T=50$。
 3. 从 $t=1$ 向 $t=0$ 数值积分：
+
 $$
 x_{t-\Delta t}=x_t-v_\theta(x_t,t)\Delta t
 $$
 
-4. 得到 $x_0$ 作为生成样本。
+1. 得到 $x_0$ 作为生成样本。
 
 Flow Matching 的采样本质上是在解一个 **ODE**（常微分方程），而 DDPM 的反向采样通常带有随机噪声，更接近 **SDE**。
 
-### 与 Diffusion 的统一形式
+### Unified Form with Diffusion
 
 更一般地，可写成：
 $$
@@ -325,7 +319,7 @@ $$
 
 该统一视角说明：Diffusion 与 Flow Matching 都是在不同噪声水平下学习“如何从噪声状态回到数据状态”的向量场，只是路径、目标参数化和采样方程不同。
 
-### 条件 Flow Matching
+### Conditional Flow Matching
 
 若希望进行条件生成，只需将条件 $y$ 加入网络：
 $$
@@ -336,13 +330,13 @@ $$
 
 ## Latent Diffusion Models
 
-### 动机
+### Motivation
 
 直接在像素空间做 Diffusion 代价很高。例如 $1024\times1024\times3$ 图像包含数百万像素，若每次去噪都运行大型网络，训练与采样成本都非常大。
 
 **Latent Diffusion Model**（LDM）的核心思想是：先将图像压缩到低维 latent space，再在 latent 上做 Diffusion。这样既保留主要语义和结构，又显著减少计算量。
 
-### Autoencoder 压缩
+### Autoencoder Compression
 
 先训练一个 encoder-decoder：
 $$
@@ -358,7 +352,7 @@ $$
 
 Encoder 和 Decoder 通常是 CNN，并可加入 attention。训练完成后冻结 encoder/decoder，只在 latent space 训练 diffusion model。
 
-### Encoder-Decoder 的训练
+### Encoder-Decoder Training
 
 LDM 中的 autoencoder 通常是 VAE 变体：
 
@@ -371,7 +365,7 @@ $$
 \text{VAE}+\text{GAN}+\text{Diffusion}
 $$
 
-### LDM 训练与生成流程
+### LDM Training and Generation Pipeline
 
 **Training Pipeline**：
 
@@ -390,7 +384,7 @@ $$
 
 ## Conditional Diffusion and Diffusion Transformer
 
-### 条件 Diffusion
+### Conditional Diffusion
 
 无条件 Diffusion 学习 $p(x)$，条件 Diffusion 学习 $p(x\mid y)$。条件 $y$ 可以是类别、文本、边缘图、深度图、人体姿态、分割图或参考图像。
 
@@ -467,7 +461,7 @@ $$
 
 ## Applications and Frontiers
 
-### 多模态生成应用
+### Multimodal Generation Applications
 
 Diffusion 与 Flow Matching 已扩展到多种生成任务：
 
@@ -482,7 +476,7 @@ Diffusion 与 Flow Matching 已扩展到多种生成任务：
 
 其中 conditional generation 尤其重要，因为实际应用往往不是“随机生成一张图”，而是生成满足文本、结构、风格、主体或时序约束的内容。
 
-### 生成模型发展脉络
+### Evolution of Generative Models
 
 | 模型 | 密度/采样方式 | 优点 | 局限 |
 | :--- | :--- | :--- | :--- |
@@ -492,8 +486,9 @@ Diffusion 与 Flow Matching 已扩展到多种生成任务：
 | **Latent Diffusion** | 在压缩 latent 上迭代去噪 | 大幅降低成本，当前主流 | 依赖 autoencoder 质量 |
 | **Flow Matching** | 学习 ODE 速度场 | 训练简洁，采样路径直观 | 仍需数值积分与条件建模 |
 
-### 核心结论
+### Key Takeaways
 
 Diffusion Model 的重要性在于，它把高维图像生成转化为一系列局部、可监督的去噪问题。虽然完整 ELBO 推导较复杂，但最终训练目标极其简单：随机选时间步、加已知噪声、预测噪声。
 
-Latent Diffusion 解决了像素空间计算量过大的问题，Conditional Diffusion 与 ControlNet 使生成过程可控，DiT 则将扩散模型接入 Transformer scaling law。当前图像和视频生成的主流系统，通常就是 text encoder、latent autoencoder、DiT/U-Net 去噪器与条件控制模块的组合。
+Latent Diffusion 解决了像素空间计算量过大的问题，Conditional Diffusion 与 ControlNet 使生成过程可控，DiT 则将扩散模型接入 Transformer scaling law。
+当前图像和视频生成的主流系统，通常就是 text encoder、latent autoencoder、DiT/U-Net 去噪器与条件控制模块的组合。

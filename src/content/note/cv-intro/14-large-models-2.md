@@ -14,7 +14,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 ## Video Transformers
 
-### 视频表示与 token 爆炸
+### Video Token Explosion
 
 设单帧图像大小为 $224\times224$，ViT 使用 $16\times16$ patch，则每帧有：
 $$
@@ -35,13 +35,13 @@ $$
 
 **注**：视频理解的关键不是简单把所有帧堆进 ViT，而是在保留时空信息的同时控制 attention 复杂度和 token 数量。
 
-### 两类效率改进策略
+### Improving Strategy
 
 Video Transformer 的效率改进大致分为两类：
 
 | 策略 | 核心思想 | 代表方法 |
 | :--- | :--- | :--- |
-| 修改 **Attention** 算子 | 不让所有 token 直接做全局 attention | Divided Space-Time Attention、Video Swin Transformer |
+| 修改 Attention 算子 | 不让所有 token 直接做全局 attention | Divided Space-Time Attention、Video Swin Transformer |
 | 减少输入 token 数 | 降低送入 Transformer 的 token 长度 | MViT、Tubelet Embedding、Adaptive Token Selection |
 
 二者不是互斥关系。实际视频模型通常同时使用局部 attention、多尺度 token 压缩和时间轴采样，以适配更长视频。
@@ -87,7 +87,8 @@ $$
 
 ### Video Swin Transformer
 
-**Video Swin Transformer** 将 Swin Transformer 的局部窗口思想扩展到视频。它在三维时空体中定义局部窗口，例如 $2\times7\times7$ 或更小的时间-高度-宽度窗口，并只在窗口内部计算 attention。
+**Video Swin Transformer** 将 Swin Transformer 的局部窗口思想扩展到视频。
+它在三维时空体中定义局部窗口，例如 $2\times7\times7$ 或更小的时间-高度-宽度窗口，并只在窗口内部计算 attention。
 
 其核心机制包括：
 
@@ -97,11 +98,12 @@ $$
 
 局部窗口降低了 attention 复杂度，移动窗口则避免信息长期局限在固定窗口内。
 
-### MViT 与多尺度 token 压缩
+### MViT
 
 **Multiscale Vision Transformer**（MViT）的思路是：随着网络加深，逐步减少 token 数量、增加特征通道数。这与 CNN / ResNet 中空间分辨率逐层降低、语义抽象逐层增强的设计类似。
 
-在 attention 中，计算成本主要来自 query 与 key 的两两匹配。MViT 可以通过 pooling 或 strided convolution 对 token 做下采样，尤其是减少 **Key** 和 **Value** 的长度：
+在 attention 中，计算成本主要来自 query 与 key 的两两匹配。
+MViT 可以通过 pooling 或 strided convolution 对 token 做下采样，尤其是减少 **Key** 和 **Value** 的长度：
 $$
 \operatorname{Attention}(Q,K,V)
 =
@@ -140,7 +142,7 @@ Tubelet 的优点是减少 token 数并让低层 token 自带短时运动信息�
 
 **注**：长视频理解的难点不只是模型容量，还包括“看哪里”的选择问题。测试时动态抽帧本质上把部分计算预算从密集感知转移到决策式信息检索。
 
-### 从短视频分类到 VideoLLM
+### From Short Video Classification to VideoLLM
 
 早期视频理解常聚焦于固定类别的短视频分类，例如 action recognition。模型输入短 clip，输出一个类别标签。
 
@@ -156,9 +158,10 @@ Tubelet 的优点是减少 token 数并让低层 token 自带短时运动信息�
 
 ## Foundation Models
 
-### 基础模型范式
+### Defination
 
-**Foundation Model** 指在大规模、多样化数据上预训练得到的通用模型。它不针对单一任务训练，而是通过自监督、弱监督或多模态对齐学习通用表示，再通过 prompt、zero-shot、few-shot 或 fine-tuning 适配下游任务。
+**Foundation Model** 指在大规模、多样化数据上预训练得到的通用模型。
+它不针对单一任务训练，而是通过自监督、弱监督或多模态对齐学习通用表示，再通过 prompt、zero-shot、few-shot 或 fine-tuning 适配下游任务。
 
 基础模型的典型类别包括：
 
@@ -169,9 +172,7 @@ Tubelet 的优点是减少 token 数并让低层 token 自带短时运动信息�
 | **LM + Vision** | LLaVA、Flamingo、GPT、Gemini、Qwen、Molmo | 视觉问答、多模态对话、图文推理 |
 | **And More** | SAM、Whisper、DALL-E、Stable Diffusion、Imagen | 分割、语音、图像生成等 |
 
-本讲重点讨论视觉基础模型与语言模型结合的路线：先通过 CLIP-style 模型学习图文对齐，再把视觉 token 接入 LLM，形成端到端的视觉语言模型。
-
-### 从 SimCLR 到 CLIP
+### From SimCLR to CLIP
 
 **SimCLR** 是自监督视觉表示学习方法。它对同一张图像做两种数据增强，得到两个 view，并训练 encoder 使同一图像的不同 view 在特征空间中接近，不同图像的 view 远离。
 
@@ -203,21 +204,21 @@ $$
 
 该目标使 batch 对角线上的正确图文配对得分最高，非对角线的错误配对得分较低。
 
-### CLIP 的零样本分类
+### Zero-shot Classification
 
 CLIP 可以直接用于 **Zero-shot Classification**（零样本分类）。流程如下：
 
-1. 将候选类别名称写成自然语言 prompt，例如 `"a photo of a dog"`。
+1. 将候选类别名称写成自然语言 prompt，例如 `a photo of a dog`。
 2. 用 Text Encoder 得到每个类别的文本向量。
 3. 用 Image Encoder 得到待分类图像的图像向量。
 4. 计算图像向量与所有类别文本向量的相似度。
 5. 选择相似度最高的类别作为预测结果。
 
-使用 prompt template 和多模板 ensemble 通常可以提升分类性能。例如相比直接输入 `"dog"`，`"a photo of a dog"` 更接近 CLIP 训练时见过的自然语言描述。
+使用 prompt template 和多模板 ensemble 通常可以提升分类性能。例如相比直接输入 `dog`，`a photo of a dog` 更接近 CLIP 训练时见过的自然语言描述。
 
 CLIP 的关键价值是把分类权重从固定的 learned classifier 变成可由文本动态生成的类别向量。只要类别可以用语言描述，模型就可以在不重新训练分类头的情况下做开放类别识别。
 
-### CLIP-style 模型的优势
+### CLIP-style Advantages
 
 CLIP-style 模型的优势包括：
 
@@ -238,7 +239,7 @@ SigLIP 则使用 sigmoid loss，把图文配对看作独立的二分类问题：
 
 **注**：SigLIP 仍属于图文对齐模型，目标仍是学习共享语义空间；变化主要在 contrastive loss 的形式。
 
-### CLIP 的局限：组合性与事件结构
+### CLIP Disadvantages
 
 CLIP 学习的是图像和整句文本的全局相似度。这使它在开放分类和检索上很强，但对细粒度组合语义理解不足。
 
@@ -257,7 +258,7 @@ CLIP 学习的是图像和整句文本的全局相似度。这使它在开放分
 
 **注**：CLIP 的“看懂关键词”不等价于“理解结构”。事件角色、空间关系、计数、动作因果等细粒度语义通常需要更强监督或生成式目标。
 
-### CoCa：对比学习与 caption 生成结合
+### CoCa
 
 **CoCa**（Contrastive Captioners）尝试补足 CLIP 的细粒度理解不足。它同时优化两个目标：
 
@@ -278,7 +279,7 @@ CoCa 的核心思想是：全局对齐适合检索与 zero-shot 分类，生成 
 
 ## Vision + Language Model Family
 
-### 从图文对齐到 LLM 接入视觉
+### From Vision-Language Alignment to Visual LLMs
 
 CLIP 和 CoCa 学到的是图像-文本共享表示，但它们本身不是完整的对话式语言模型。下一步是把视觉信息接入预训练 **Large Language Model**（LLM），利用 LLM 的自回归生成能力完成开放问答和多轮对话。
 
@@ -286,7 +287,8 @@ CLIP 和 CoCa 学到的是图像-文本共享表示，但它们本身不是完�
 
 ### LLaVA
 
-**LLaVA** 是轻量视觉语言对齐的代表方法。它使用预训练 CLIP Vision Encoder 提取图像 patch token，再通过可学习的 linear projection 映射到 LLM 的输入空间，并与文本 token 拼接后输入 decoder-only LLM。
+**LLaVA** 是轻量视觉语言对齐的代表方法。
+它使用预训练 CLIP Vision Encoder 提取图像 patch token，再通过可学习的 linear projection 映射到 LLM 的输入空间，并与文本 token 拼接后输入 decoder-only LLM。
 
 **Architecture Pipeline**：
 
@@ -298,7 +300,7 @@ CLIP 和 CoCa 学到的是图像-文本共享表示，但它们本身不是完�
 
 选择倒数第二层的原因是：CLIP 最后一层通常更服务于全局图文对齐，class token 受到最强监督，而 patch token 的局部信息可能被压缩。倒数第二层通常保留更丰富的局部视觉细节。
 
-### LLaVA 的训练策略
+### Training of LLaVA
 
 LLaVA 通常采用两阶段训练：
 
@@ -324,7 +326,7 @@ LLaVA 通常采用两阶段训练：
 
 **Gated Cross-Attention** 中的 gate 通常初始化为接近 0，使模型训练初期几乎保持原始语言模型行为，随后逐渐学习引入视觉信息。这样可以降低破坏 LLM 预训练能力的风险。
 
-### Flamingo 的图文交错与 in-context learning
+### In-Context Learning
 
 Flamingo 的重要特点是支持图文交错输入，例如：
 
@@ -359,7 +361,7 @@ Flamingo 的核心贡献是将强语言模型、视觉编码器和图文交错�
 
 **注**：原生分辨率是 VLM 的重要趋势。固定 $224\times224$ 输入适合分类预训练，但会损失文字、小物体和精细空间关系，对文档理解、界面理解和高分辨率图像问答尤其不利。
 
-### Molmo 与 PixMo
+### Molmo and PixMo
 
 **Molmo** 强调完全开源与高质量数据：不仅开放模型权重，也开放训练数据、代码和完整 pipeline，并避免依赖闭源模型蒸馏。
 
@@ -377,7 +379,7 @@ Flamingo 的核心贡献是将强语言模型、视觉编码器和图文交错�
 
 ## Omni Models
 
-### 超越视觉与语言
+### Beyond Vision and Language
 
 最后的趋势是 **Omni Models** 或原生多模态模型，即不仅处理图像和文本，还将音频、视频、语音等模态纳入同一个端到端系统。
 
@@ -391,7 +393,7 @@ Flamingo 的核心贡献是将强语言模型、视觉编码器和图文交错�
 
 原生多模态模型则直接输入音频 token、视觉 token 和文本 token，并直接输出文本或音频 token。其目标是实现低延迟、流式、端到端的自然交互。
 
-### 多模态统一的关键问题
+### Challenges in Multimodal Unification
 
 多模态基础模型的核心挑战包括：
 
@@ -408,7 +410,7 @@ Flamingo 的核心贡献是将强语言模型、视觉编码器和图文交错�
 
 ## Summary
 
-### 方法脉络
+### Method Comparison
 
 | 方向 | 代表方法 | 核心贡献 | 主要局限 |
 | :--- | :--- | :--- | :--- |
@@ -419,10 +421,12 @@ Flamingo 的核心贡献是将强语言模型、视觉编码器和图文交错�
 | 图文交错 LLM | Flamingo | Gated cross-attention 与 in-context learning | 架构和数据 pipeline 更复杂 |
 | 现代开源 VLM | Qwen2-VL、Molmo | 原生分辨率、多尺度、数据质量与开放 pipeline | 高质量数据和长上下文成本仍是瓶颈 |
 
-### 核心结论
+### Conclusion
 
 视频理解与多模态基础模型都围绕同一个问题展开：如何把高维、长序列、多模态信息转成可计算、可对齐、可生成的 token 表示。
 
-Video Transformer 解决的是视觉 token 在时间维度上的效率问题；CLIP-style 模型解决的是视觉和文本的语义对齐问题；LLaVA、Flamingo 等 VLM 进一步把视觉 token 接入语言模型，使模型可以通过自然语言表达视觉理解；Qwen2-VL、Molmo 和 Omni Models 则代表当前趋势：更高分辨率、更细粒度、更高质量数据，以及更原生的端到端多模态交互。
+Video Transformer 解决的是视觉 token 在时间维度上的效率问题；
+CLIP-style 模型解决的是视觉和文本的语义对齐问题；
+LLaVA、Flamingo 等 VLM 进一步把视觉 token 接入语言模型，使模型可以通过自然语言表达视觉理解；Qwen2-VL、Molmo 和 Omni Models 则代表当前趋势：更高分辨率、更细粒度、更高质量数据，以及更原生的端到端多模态交互。
 
 **注**：多模态模型的进步不是单靠更大的 LLM 完成的。视觉 tokenizer、attention 效率、训练数据质量、细粒度 grounding 和系统延迟共同决定模型的实际能力。
