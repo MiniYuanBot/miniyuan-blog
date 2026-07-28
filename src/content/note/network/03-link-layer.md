@@ -62,13 +62,13 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 │  application                        │
 │  transport                          │
 │  network                            │
-│  link ←─────────────────────────┐   │
+│  link <-─────────────────────────┐   │
 │  physical                       │   │
 │      │                          │   │
 │  host bus (e.g., PCI)           │   │
 │      │                          │   │
 │  ┌─────────────────┐            │   │
-│  │  network        │←───────────┘   │
+│  │  network        │<-───────────┘   │
 │  │  adapter card   │ controller     │
 │  │  (NIC)          │ physical       │
 │  └─────────────────┘ transmission   │
@@ -1366,8 +1366,8 @@ AP 用于实现以下功能。
 
 | 扫描方式 | 过程 |
 | :--- | :--- |
-| **被动扫描** | AP 周期性发送信标帧 → STA 选择 AP → STA 发送关联请求帧 → AP 返回关联响应帧 |
-| **主动扫描** | STA 广播探测帧 → AP 回复探测响应帧 → STA 选择 AP → STA 发送关联请求帧 → AP 返回关联响应帧 |
+| **被动扫描** | AP 周期性发送信标帧 -> STA 选择 AP -> STA 发送关联请求帧 -> AP 返回关联响应帧 |
+| **主动扫描** | STA 广播探测帧 -> AP 回复探测响应帧 -> STA 选择 AP -> STA 发送关联请求帧 -> AP 返回关联响应帧 |
 
 #### WLAN 通用帧结构
 

@@ -246,13 +246,13 @@ int main() {
 # 不加优化选项：SIMD 不起作用！
 g++ -fopenmp 17_SIMD_openmp.cpp
 # 普通循环 耗时：266 ms
-# OpenMP SIMD 耗时：267 ms   ← 和标量一样！
+# OpenMP SIMD 耗时：267 ms   <- 和标量一样！
 # 多核+SIMD 混合 耗时：77 ms
 
 # 开启 O3 优化：SIMD 起作用了！
 g++ -O3 -fopenmp 17_SIMD_openmp.cpp
 # 普通循环 耗时：260 ms
-# OpenMP SIMD 耗时：34 ms    ← 260/34 ≈ 7.64 倍加速！
+# OpenMP SIMD 耗时：34 ms    <- 260/34 ≈ 7.64 倍加速！
 # 多核+SIMD 混合 耗时：38 ms
 ```
 

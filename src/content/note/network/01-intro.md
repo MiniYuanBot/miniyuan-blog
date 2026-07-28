@@ -84,13 +84,13 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 **客户端流程**：
 
 ```plaintext
-socket() → getaddrinfo() → connect() [阻塞] → send() → recv() [阻塞] → close()
+socket() -> getaddrinfo() -> connect() [阻塞] -> send() -> recv() [阻塞] -> close()
 ```
 
 **服务器端流程**：
 
 ```plaintext
-socket() → getaddrinfo() → bind() → listen() → accept() [阻塞] → recv() → send() → close()
+socket() -> getaddrinfo() -> bind() -> listen() -> accept() [阻塞] -> recv() -> send() -> close()
 ```
 
 ### 接入网
@@ -125,14 +125,14 @@ socket() → getaddrinfo() → bind() → listen() → accept() [阻塞] → rec
 
 **分组交换的关键机制**：
 
-- 发送端：报文 → 划分数据段 → 添加首部 → 分组 → 发送
-- 接收端：接收分组 → 去除首部 → 还原数据段 → 重组报文
+- 发送端：报文 -> 划分数据段 -> 添加首部 -> 分组 -> 发送
+- 接收端：接收分组 -> 去除首部 -> 还原数据段 -> 重组报文
 
 **路由器工作原理**：
 
-1. **接收分组** → 放入缓存
-2. **查找转发表**（Forwarding Table）→ 确定输出端口
-3. **转发分组** → 发送到下一跳
+1. **接收分组** -> 放入缓存
+2. **查找转发表**（Forwarding Table）-> 确定输出端口
+3. **转发分组** -> 发送到下一跳
 
 ---
 
@@ -181,15 +181,15 @@ socket() → getaddrinfo() → bind() → listen() → accept() [阻塞] → rec
 
 ```plaintext
 +---------------------+
-|  5  Application     |  ← HTTP, FTP, SMTP, DNS
+|  5  Application     |  <- HTTP, FTP, SMTP, DNS
 +---------------------+
-|  4  Transport       |  ← TCP, UDP
+|  4  Transport       |  <- TCP, UDP
 +---------------------+
-|  3  Network         |  ← IP, ICMP, OSPF, BGP
+|  3  Network         |  <- IP, ICMP, OSPF, BGP
 +---------------------+
-|  2  Data Link       |  ← Ethernet, PPP
+|  2  Data Link       |  <- Ethernet, PPP
 +---------------------+
-|  1  Physical        |  ← raw bit stream
+|  1  Physical        |  <- raw bit stream
 +---------------------+
 ```
 

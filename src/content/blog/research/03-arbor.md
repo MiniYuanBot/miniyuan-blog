@@ -11,8 +11,7 @@ heroImageLight: '@/assets/images/light/light-01.png'
 heroImageDark: '@/assets/images/dark/dark-01.png'
 ---
 
-<iframe src="/others/blog/03-arbor-01-interactive-learning.html" width="100%" height="1080"
-        style="border:none;border-radius:8px;background:hsl(var(--background))"
+<iframe src="/others/blog/research/03-arbor-01-interactive-learning.html" width="100%" height="1080"
         title="Arbor V3 交互式协议演示"></iframe>
 
 <!-- ![图 1：hhh]() -->
@@ -50,7 +49,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 | ---- | ------ | ------ |
 | **SwitchML** | 交换机里做加法（聚合） | 路径选哪条？各走各的 |
 | **ATP** | 共享交换机内存做聚合 | 拥塞了谁降速？各管各的 |
-| **传统传输（TCP/RDMA）** | 保证 A→B 的包不丢 | 丢了一个包，只重传 A→B，不知道整组数据都乱了 |
+| **传统传输（TCP/RDMA）** | 保证 A->B 的包不丢 | 丢了一个包，只重传 A->B，不知道整组数据都乱了 |
 
 **核心矛盾**：路径选择、聚合位置、拥塞控制、故障恢复，四件事由四个独立机制管，互不配合。
 
@@ -151,9 +150,9 @@ Arbor 是一种专门为在网集合通信设计的传输层。
 ### 组播 Credit 机制
 
 ```plaintext
-Responder 发放 credit → 沿树下行 → 每级分配 slot、压栈 → 到达 Requester
+Responder 发放 credit -> 沿树下行 -> 每级分配 slot、压栈 -> 到达 Requester
                                               ↑
-Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 → 到达 Responder
+Requester 消费 credit 发 request -> 沿树上行 -> 每级弹栈、聚合 -> 到达 Responder
 ```
 
 **Credit 的作用**：
@@ -228,7 +227,7 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
 **Repair 路径（身份去重）**：
 
 - responder 是唯一恢复发起者
-- 超时或收到 AGG_MISS → 原子切入 repair mode
+- 超时或收到 AGG_MISS -> 原子切入 repair mode
 - 组播 repair credit（repair trigger）
 - 全组 requester 发送 repair request（旁路聚合）
 - responder 用位图去重、端侧聚合提交
@@ -297,7 +296,7 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
 | offset_b | 0 | 0 | 0 | credit_offset | credit_offset | 0 | 0 |
 | payload | 无 | 有/无 | 同 | DATA/COMP | REPLAY | 无 | 无 |
 | credit_valid | 0 | 0 | 0 | 1 | 1 | 0 | 0 |
-| agg_depth | 0 | 回显 | 0 | 0→压栈 | 0 | 0 | 0 |
+| agg_depth | 0 | 回显 | 0 | 0->压栈 | 0 | 0 | 0 |
 
 ---
 
@@ -321,12 +320,12 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
 
 ## 状态机流程
 
-### 正常 AllReduce 流程（以 offset p→k 为例）
+### 正常 AllReduce 流程（以 offset p->k 为例）
 
 ```plaintext
 0. 注册阶段
-   requester: 提交 message → 发送 REGISTER(m, start_seq)
-   responder: 位图收齐 → REGISTER_ACK 或首份 credit 确认
+   requester: 提交 message -> 发送 REGISTER(m, start_seq)
+   responder: 位图收齐 -> REGISTER_ACK 或首份 credit 确认
 
 1. Responder 发放 credit k
    - 选择 subchannel s(k)
@@ -334,7 +333,7 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
    - 发送 RESPONSE(p, k)：携带 payload p 和 credit k
    - 记录 first_sent_time
 
-2. Credit 沿树下行（根→叶）
+2. Credit 沿树下行（根->叶）
    每级聚合级：
    - 分配 slot（allocator.next()）
    - 压栈：agg_loc[depth] = slot_id
@@ -342,16 +341,16 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
 
 3. Requester 收到 credit
    - 交付 payload p（写回用户 buffer）
-   - 消费 credit k → 构造 REQUEST(k)
+   - 消费 credit k -> 构造 REQUEST(k)
    - 回显完整位置栈
    - 填入本分支 fan-in 向量
 
-4. Request 沿树上行的（叶→根）
+4. Request 沿树上行的（叶->根）
    每级聚合级：
    - 读取栈顶 agg_loc
    - owner 校验
    - 计数 + 聚合 payload
-   - 凑满 fan-in → 弹一层 → 发出聚合产物
+   - 凑满 fan-in -> 弹一层 -> 发出聚合产物
 
 5. Responder 收到根后 master
    - 验证 contribution count == requester 数
@@ -369,9 +368,9 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
 1. Responder 对 offset k 超时（50ms）
 2. 原子切入 repair mode
 3. 组播 repair credit(k) —— 独立预算
-4. 全组 requester 收到 repair credit → 发送 repair request（旁路）
+4. 全组 requester 收到 repair credit -> 发送 repair request（旁路）
 5. Responder 用位图去重
-6. 位图收齐 → 端侧聚合提交（恢复路径）
+6. 位图收齐 -> 端侧聚合提交（恢复路径）
 7. 迟到的 normal master 被 repair_mode 丢弃
 ```
 
@@ -398,16 +397,16 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
 
 ### 实验建设顺序（建议）
 
-1. **正确性冒烟**：单 job、无背景、充足 slot、fixed rate → 验证协议不变量
-2. **基础性能**：改变 message size、group size → CCT/goodput
-3. **Credit 同步**：增加 rank skew → 观察 partial slot-time
-4. **状态边界**：改变 slot 数 → 观察 live slot 与 λR 关系
-5. **多级聚合**：改变 rank 放置 → 观察 per-tier 流量削减
-6. **多路径**：动态 vs 静态 subchannel 选择 → 故障恢复能力
-7. **拥塞控制**：不同控制器 → goodput/queue/公平性
-8. **多租户**：多个 job 竞争 → 资源借用、JCT、公平性
-9. **可靠性**：注入丢包/延迟/故障 → 恢复代价、单次提交
-10. **AI workload**：真实训练 trace → 通信暴露、迭代时间
+1. **正确性冒烟**：单 job、无背景、充足 slot、fixed rate -> 验证协议不变量
+2. **基础性能**：改变 message size、group size -> CCT/goodput
+3. **Credit 同步**：增加 rank skew -> 观察 partial slot-time
+4. **状态边界**：改变 slot 数 -> 观察 live slot 与 λR 关系
+5. **多级聚合**：改变 rank 放置 -> 观察 per-tier 流量削减
+6. **多路径**：动态 vs 静态 subchannel 选择 -> 故障恢复能力
+7. **拥塞控制**：不同控制器 -> goodput/queue/公平性
+8. **多租户**：多个 job 竞争 -> 资源借用、JCT、公平性
+9. **可靠性**：注入丢包/延迟/故障 -> 恢复代价、单次提交
+10. **AI workload**：真实训练 trace -> 通信暴露、迭代时间
 
 ---
 
@@ -430,7 +429,7 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
 
 - 不维护通信组、rank、IP 表
 - 不执行拥塞控制算法
-- 只做：解析固定偏移字段 → 直接索引 slot → 计数 + 聚合
+- 只做：解析固定偏移字段 -> 直接索引 slot -> 计数 + 聚合
 - 即插即用，不随 job 变化重配置
 
 ### Q4: 共享 slot 池安全吗？
@@ -439,7 +438,7 @@ Requester 消费 credit 发 request → 沿树上行 → 每级弹栈、聚合 �
 
 - Owner 校验隔离不同 Credit Context
 - 轮转深度覆盖最长 RTT 内的分配
-- 失配统一走 AGG_MISS → repair
+- 失配统一走 AGG_MISS -> repair
 - 不会混淆不同 job 的数据
 
 ### Q5: 为什么 responder 是唯一恢复发起者？

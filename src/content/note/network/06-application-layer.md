@@ -109,8 +109,8 @@ TCP 面向连接，分三阶段：
 **3. 连接释放阶段**：`close()`
 
 ```plaintext
-服务器端: socket → bind → listen → accept → recv/send → close
-客户端:   socket → connect → recv/send → close
+服务器端: socket -> bind -> listen -> accept -> recv/send -> close
+客户端:   socket -> connect -> recv/send -> close
 ```
 
 ### UDP Socket 交互
@@ -118,8 +118,8 @@ TCP 面向连接，分三阶段：
 UDP 无连接，发送前不握手。发送方显式附加目标 IP 与端口，接收方提取发送方地址。
 
 ```plaintext
-服务器端: socket → bind → recvfrom/sendto → close
-客户端:   socket → sendto/recvfrom → close
+服务器端: socket -> bind -> recvfrom/sendto -> close
+客户端:   socket -> sendto/recvfrom -> close
 ```
 
 ---
@@ -235,8 +235,8 @@ $$
 
 ```plaintext
 ┌─────────────────────────────────────────┐
-│  方法    空格    URL    空格    版本      │  ← 请求行
-│  首部字段名 : 值                          │  ← 首部行
+│  方法    空格    URL    空格    版本      │  <- 请求行
+│  首部字段名 : 值                          │  <- 首部行
 │  ...                                    │
 │  [实体主体]                              │
 └─────────────────────────────────────────┘
@@ -246,7 +246,7 @@ $$
 
 ```plaintext
 ┌─────────────────────────────────────────┐
-│  版本    空格   状态码   空格   短语       │  ← 状态行
+│  版本    空格   状态码   空格   短语       │  <- 状态行
 │  首部字段名 : 值                          │
 │  ...                                    │
 │  [实体主体]                              │
@@ -378,7 +378,7 @@ MIME 不取代 SMTP，而是扩展邮件主体结构，定义非 ASCII 码传送
 | `7bit` | 7 位 ASCII，每行 ≤1000 字符 | 缺省 |
 | `8bit` | 8 位非 ASCII，每行 ≤1000 字节 | 短非 ASCII 文本 |
 | `Binary` | 任意长度字节串 | 原始二进制 |
-| `Base64` | 3 字节 → 4 字节 ASCII，开销 25% | 任意二进制/非文本 |
+| `Base64` | 3 字节 -> 4 字节 ASCII，开销 25% | 任意二进制/非文本 |
 | `Quoted-printable` | 非 ASCII 字节转为 `=XX` 形式，开销 200% | 少量非 ASCII 数据 |
 
 **MIME Content-Type**（类型/子类型）：

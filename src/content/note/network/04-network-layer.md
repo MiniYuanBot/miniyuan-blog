@@ -466,9 +466,9 @@ IP address / prefix
 
 ```plaintext
 客户端 ──DHCP DISCOVER(广播)──$\rightarrow$ 服务器
-客户端 ←──DHCP OFFER(广播)──── 服务器
+客户端 <-──DHCP OFFER(广播)──── 服务器
 客户端 ──DHCP REQUEST(广播)──$\rightarrow$ 服务器
-客户端 ←──DHCP ACK──────────── 服务器
+客户端 <-──DHCP ACK──────────── 服务器
 ```
 
 ### NAT
@@ -621,7 +621,7 @@ IP address / prefix
 
 ```plaintext
 ┌─────────────┐                    ┌─────────────┐
-│   归属网络   │ ←────隧道────$\rightarrow$    │   访问网络   │
+│   归属网络   │ <-────隧道────$\rightarrow$    │   访问网络   │
 │   (HA)      │    封装转发        │   (FA/MN)   │
 └─────────────┘                    └─────────────┘
        ↑                                ↑
