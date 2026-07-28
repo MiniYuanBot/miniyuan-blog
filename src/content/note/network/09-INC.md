@@ -47,7 +47,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 | 方案 | 拓扑 | 通信模式 | 流量特征 | 瓶颈 |
 | ---- | ---- | -------- | -------- | ---- |
-| Parameter Server (PS) | 星型 | Worker → PS → Worker | PS 侧流量为 Worker 总和 | PS 单点瓶颈与流量汇聚 |
+| Parameter Server (PS) | 星型 | Worker -> PS -> Worker | PS 侧流量为 Worker 总和 | PS 单点瓶颈与流量汇聚 |
 | Ring AllReduce | 环型 | 两轮环传递 | 每节点收发各 2 份数据量 | 环延迟累积，总流量翻倍 |
 
 > Ring AllReduce 第一轮沿环累加中间结果（Scatter-Reduce），第二轮沿环分发最终值（AllGather）；两轮向量传递使总流量为 `2 × 数据量`。
@@ -66,9 +66,9 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 **理想流程**：
 
 ```plaintext
-Worker 1: [0][1][2][3][4][5] ──→
-                                      交换机: [0][1] 逐包累加 ──→ 回传聚合结果
-Worker 2: [0][1][2][3][4][5] ──→
+Worker 1: [0][1][2][3][4][5] ──->
+                                      交换机: [0][1] 逐包累加 ──-> 回传聚合结果
+Worker 2: [0][1][2][3][4][5] ──->
                 聚合器数组大小 = 2，窗口大小 = 2
 ```
 
@@ -134,7 +134,7 @@ Packet: [header | payload] [header | payload] [header | payload] ...
 
 ```plaintext
 Worker 1: [d1][c1][b1][a1] ─┐
-Worker 2: [d2][c2][b2][a2] ─┼→ Switch: 按列聚合 ─→ Server: [Σd][Σc][Σb][Σa]
+Worker 2: [d2][c2][b2][a2] ─┼-> Switch: 按列聚合 ─-> Server: [Σd][Σc][Σb][Σa]
 Worker n: [dn][cn][bn][an] ─┘
 ```
 

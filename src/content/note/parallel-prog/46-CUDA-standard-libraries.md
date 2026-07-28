@@ -364,7 +364,7 @@ FFT[4] = -4 + 0i
 ## 本节总结
 
 1. **Thrust** 提供了最高层的抽象，适合快速开发与验证，但精细控制需回归底层 CUDA。
-2. **cuBLAS/cuFFT** 遵循"创建句柄/计划 → 执行 → 销毁"的模式，需手动管理 `cudaMalloc` 与 `cudaMemcpy`。
+2. **cuBLAS/cuFFT** 遵循"创建句柄/计划 -> 执行 -> 销毁"的模式，需手动管理 `cudaMalloc` 与 `cudaMemcpy`。
 3. 使用 cuBLAS 时必须注意其 **列优先存储** 与 C 语言的差异。
 4. cuFFT 的 R2C 变换利用共轭对称性，输出规模为 `N/2+1`。
 5. AI 硬件正从通用 GPU 向 **专用化（TPU）** 与 **超大规模互联（Blackwell, TPU v4 Pod）** 演进。

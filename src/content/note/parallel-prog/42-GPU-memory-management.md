@@ -20,10 +20,10 @@ CPU 和 GPU 基于不同的硬件设计架构，在编程模型上具有显著�
 
 一个典型的 GPU 计算流程包含四个阶段：
 
-1. **Host → Device**：通过 `cudaMemcpy` 将待处理数据从主机内存（Host Memory）拷贝到设备显存（Device Memory / Global Memory）。
+1. **Host -> Device**：通过 `cudaMemcpy` 将待处理数据从主机内存（Host Memory）拷贝到设备显存（Device Memory / Global Memory）。
 2. **Kernel Launch**：CPU 初始化并启动 GPU 计算任务（调用 `__global__` 核函数）。
 3. **Parallel Execution**：GPU 上的大量线程（Thread）在流多处理器（SM）中并行执行计算。
-4. **Device → Host**：通过 `cudaMemcpy` 将计算结果从显存拷贝回主机内存。
+4. **Device -> Host**：通过 `cudaMemcpy` 将计算结果从显存拷贝回主机内存。
 
 ### GPU 内存层次结构
 
@@ -573,7 +573,7 @@ int main() {
 
 ## 本节总结
 
-1. **GPU 内存层次**：寄存器（最快，线程私有）→ 共享内存 / L1（快，Block 共享）→ L2（较快，全 GPU）→ 全局内存 / 常量内存 / 纹理内存（慢，DRAM）。
+1. **GPU 内存层次**：寄存器（最快，线程私有）-> 共享内存 / L1（快，Block 共享）-> L2（较快，全 GPU）-> 全局内存 / 常量内存 / 纹理内存（慢，DRAM）。
 2. **共享内存优化**：通过 `__shared__` 将全局内存数据缓存到片上 SRAM，配合 `__syncthreads()` 同步，可显著降低访存延迟。
 3. **原子操作**：`atomicAdd` 等函数保证不可分割的 "读-改-写"，是消除全局/共享内存数据竞争的直接手段。
 4. **常量内存优势**：当 Warp 内线程读取同一常量时，通过常量缓存广播，延迟远低于全局内存。

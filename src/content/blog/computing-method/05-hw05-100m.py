@@ -30,7 +30,7 @@ print(f"方案：t(u) 三次样条外推 —— 固定 m = {m_fixed}")
 print("=" * 60)
 
 fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-fig.suptitle(f'Cubic Spline Extrapolation t(u) → t(0) with m = {m_fixed}',
+fig.suptitle(f'Cubic Spline Extrapolation t(u) -> t(0) with m = {m_fixed}',
              fontsize=14, fontweight='bold')
 
 summary_results = []

@@ -227,8 +227,8 @@ cudaError_t cudaMalloc(void** devPtr, size_t size);
 ### cudaMemcpy 传输方向
 
 ```cpp
-cudaMemcpy(dev_a, host_a, nbytes, cudaMemcpyHostToDevice);   // Host → Device
-cudaMemcpy(host_c, dev_c, nbytes, cudaMemcpyDeviceToHost);   // Device → Host
+cudaMemcpy(dev_a, host_a, nbytes, cudaMemcpyHostToDevice);   // Host -> Device
+cudaMemcpy(host_c, dev_c, nbytes, cudaMemcpyDeviceToHost);   // Device -> Host
 ```
 
 | 方向常量 | 含义 |
@@ -265,7 +265,7 @@ cudaMalloc((double**)&dev_a, nbytes);
 cudaMalloc((double**)&dev_b, nbytes);
 cudaMalloc((double**)&dev_c, nbytes);
 
-// 4) Host → Device 拷贝数据
+// 4) Host -> Device 拷贝数据
 cudaMemcpy(dev_a, host_a, nbytes, cudaMemcpyHostToDevice);
 cudaMemcpy(dev_b, host_b, nbytes, cudaMemcpyHostToDevice);
 
@@ -277,7 +277,7 @@ add_matrices<<<grid_dim, block_dim>>>(dev_a, dev_b, dev_c, nelem);
 // 6) 同步等待 GPU 完成
 cudaDeviceSynchronize();
 
-// 7) Device → Host 拷贝结果
+// 7) Device -> Host 拷贝结果
 cudaMemcpy(host_c, dev_c, nbytes, cudaMemcpyDeviceToHost);
 
 // 8) 释放设备内存
@@ -377,7 +377,7 @@ int main()
     cudaMalloc((double**)&dev_b, nbytes);
     cudaMalloc((double**)&dev_c, nbytes);
 
-    // Host → Device
+    // Host -> Device
     cudaMemcpy(dev_a, host_a, nbytes, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_b, host_b, nbytes, cudaMemcpyHostToDevice);
 
@@ -389,7 +389,7 @@ int main()
     add_matrices<<<grid_dim, block_dim>>>(dev_a, dev_b, dev_c, nelem);
     cudaDeviceSynchronize();
 
-    // Device → Host
+    // Device -> Host
     cudaMemcpy(host_c, dev_c, nbytes, cudaMemcpyDeviceToHost);
 
     // 输出结果到文件
@@ -459,7 +459,7 @@ int main()
 - `__global__` 修饰的核函数由 Host 调用、Device 执行，通过 `<<< >>>` 执行配置指定 Grid 和 Block 维度
 - **线程全局 ID** = `blockIdx.x * blockDim.x + threadIdx.x`
 - `dim3` 支持三维线程组织，适用于向量、图像、三维结构等不同任务
-- 标准 CUDA 程序遵循"分配 → 拷贝入 → 执行 → 同步 → 拷贝出 → 释放"的流程
+- 标准 CUDA 程序遵循"分配 -> 拷贝入 -> 执行 -> 同步 -> 拷贝出 -> 释放"的流程
 
 ---
 

@@ -91,7 +91,7 @@ ssh-keygen -t rsa -b 4096 -C "对密钥的描述"
 cat ~/.ssh/id_rsa.pub
 ```
 
-将对应你的密钥描述的公钥添加到 GitHub：Settings → SSH and GPG keys → New SSH key，后续即可直接使用 ssh 连接 GitHub 并推拉代码
+将对应你的密钥描述的公钥添加到 GitHub：Settings -> SSH and GPG keys -> New SSH key，后续即可直接使用 ssh 连接 GitHub 并推拉代码
 
 ```bash
 # ssh 连接 github，-T 表示不要分配伪终端
@@ -119,8 +119,8 @@ ssh your-host-name
 
 **生成 Token 步骤**：
 
-1. 登录 GitHub → 右上角头像 → **Settings**
-2. 左侧菜单 → **Developer settings** → **Personal access tokens** → **Tokens (classic)**
+1. 登录 GitHub -> 右上角头像 -> **Settings**
+2. 左侧菜单 -> **Developer settings** -> **Personal access tokens** -> **Tokens (classic)**
 3. 点击 **Generate new token (classic)**
 4. 填写 Note（用途说明），选择过期时间
 5. 勾选权限（至少选择 `repo` 用于仓库操作）
@@ -155,7 +155,7 @@ Git 本地操作围绕**三个区域**展开：
 
 #### 创建远程仓库
 
-1. 点击右上角 `+` → `New repository`
+1. 点击右上角 `+` -> `New repository`
 2. 填写 `Repository name`（仓库名）
 3. 选择权限：`Public`（开源）/ `Private`（私有）
 4. **初始化选项**：
@@ -495,7 +495,7 @@ git cherry-pick --continue
    git revert <commit-id-C>
    ```
 
-   例如，历史：A → B（错误）→ C（正确），需要保留 C 但撤销 B。
+   例如，历史：A -> B（错误）-> C（正确），需要保留 C 但撤销 B。
 
    **操作流程**：
 
@@ -511,7 +511,7 @@ git cherry-pick --continue
    git push origin <branch-name>
    ```
 
-   操作后历史变为: A → B → C → C' → B' → C''
+   操作后历史变为: A -> B -> C -> C' -> B' -> C''
 
 ---
 
@@ -644,7 +644,7 @@ git push origin --delete <tag-name>
 
 1. **Fork 原仓库**
 
-进入他人仓库首页 → 点击右上角 **Fork** → 复制到自己的账号下
+进入他人仓库首页 -> 点击右上角 **Fork** -> 复制到自己的账号下
 
 1. **克隆到本地**
 
@@ -682,8 +682,8 @@ git push origin feature/xxx
 
 1. **提交 Pull Request**
 
-- 进入自己的 Fork 仓库 → **Pull Request** → **New Pull Request**
-- 选择原仓库的目标分支 → 自己的开发分支
+- 进入自己的 Fork 仓库 -> **Pull Request** -> **New Pull Request**
+- 选择原仓库的目标分支 -> 自己的开发分支
 - 填写 PR 说明（修改内容、修复的 bug / 实现的功能）
 - 点击 **Create Pull Request**
 

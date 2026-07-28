@@ -374,7 +374,7 @@ def gauss_legendre(f, a, b, n):
     # 获取标准区间 [-1, 1] 上的节点和权重
     x, w = roots_legendre(n)
     
-    # 区间变换: t ∈ [-1,1] → x ∈ [a,b]
+    # 区间变换: t ∈ [-1,1] -> x ∈ [a,b]
     # x = (a+b)/2 + (b-a)/2 * t
     # dx = (b-a)/2 dt
     t = x
