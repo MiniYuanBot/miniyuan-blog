@@ -268,8 +268,10 @@ $$
 
 首先确定两个阈值：$maxVal$，$minVal$. 可按通过 NMS 的像素平均幅值设定：
 $$
-maxVal = 0.3 × average \\
-minVal = 0.1 × average
+\begin{aligned}
+\text{maxVal} &= 0.3 \times \text{average} \\
+\text{minVal} &= 0.1 \times \text{average}
+\end{aligned}
 $$
 
 对于像素点 $q$，幅值 $M(q)$：

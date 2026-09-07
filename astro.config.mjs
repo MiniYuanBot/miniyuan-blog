@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import { rehypeHeadingIds } from '@astrojs/markdown-remark'
+import { unified, rehypeHeadingIds } from '@astrojs/markdown-remark'
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import unocss from 'unocss/astro';
@@ -11,6 +11,11 @@ import remarkPlantuml from './src/plugins/remark-plantuml.js';
 
 // https://astro.build/config
 export default defineConfig({
+	// Astro 7 changed the default of compressHTML from `true` to `'jsx'`,
+	// which strips whitespace between inline elements (e.g. "Blog" + "Note"
+	// in nav links would render as "BlogNote"). Keep the previous
+	// HTML-aware compression to preserve the existing layout.
+	compressHTML: true,
 	site: 'https://miniyuan.site',
 
 	// output: 'server',
@@ -46,23 +51,20 @@ export default defineConfig({
 	],
 
 	markdown: {
-		remarkPlugins: [
-			remarkMath,
-			remarkImageCaption,
-			remarkPlantuml,
-		],
-		rehypePlugins: [
-			rehypeKatex,
-			rehypeHeadingIds,
-			// [
-			// 	rehypeAutolinkHeadings,
-			// 	{
-			// 		behavior: 'append',
-			// 		properties: { className: ['anchor'] },
-			// 		content: { type: 'text', value: '#' }
-			// 	}
-			// ]
-		],
+		// Astro 7 renders .md/.mdx with Sätteri by default. This project relies on
+		// remark/rehype plugins (KaTeX math, image captions, PlantUML, heading IDs),
+		// so we keep the unified() remark/rehype pipeline from @astrojs/markdown-remark.
+		processor: unified({
+			remarkPlugins: [
+				remarkMath,
+				remarkImageCaption,
+				remarkPlantuml,
+			],
+			rehypePlugins: [
+				rehypeKatex,
+				rehypeHeadingIds,
+			],
+		}),
 	},
 
 	vite: {

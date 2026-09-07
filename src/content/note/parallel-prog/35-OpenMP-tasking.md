@@ -37,7 +37,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 **Fortran 语法：**
 
-```fortran
+```fortran-free-form
 !$omp single
 ! 结构化块
 !$omp end single [nowait]
@@ -138,7 +138,7 @@ while (p != NULL) {
 
 **Fortran 语法：**
 
-```fortran
+```fortran-free-form
 !$omp task [clause[[,] clause]...]
 ! 结构化块
 !$omp end task [nowait]

@@ -6,6 +6,9 @@ dist/
 # dependencies
 node_modules/
 
+# local pnpm content-addressable store (created when the global store is unavailable)
+.pnpm-store/
+
 # logs
 npm-debug.log*
 yarn-debug.log*

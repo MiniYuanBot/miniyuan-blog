@@ -496,20 +496,21 @@ $$
 取 $ x = \begin{pmatrix} -L_{k-1}^{-T} w \\ 1 \end{pmatrix} $，注意这是一个分块向量，第一块长度 $k-1$，第二块是标量。
 则
 $$
-x^\top A_k x = \begin{pmatrix} -w^\top L_{k-1}^{-1} & 1 \end{pmatrix}
+\begin{aligned}
+x^\top A_k x &= \begin{pmatrix} -w^\top L_{k-1}^{-1} & 1 \end{pmatrix}
 \begin{bmatrix}
 A_{k-1} & v \\
 v^\top & a_{kk}
 \end{bmatrix}
 \begin{pmatrix} -L_{k-1}^{-T} w \\ 1 \end{pmatrix} \\
-=
-\begin{pmatrix} -w^\top L_{k-1}^{-1} & 1 \end{pmatrix}
+&= \begin{pmatrix} -w^\top L_{k-1}^{-1} & 1 \end{pmatrix}
 \begin{bmatrix}
 L_{k-1} L_{k-1}^\top & L_{k-1} w \\
 w^\top L_{k-1}^\top & a_{kk}
 \end{bmatrix}
 \begin{pmatrix} -L_{k-1}^{-T} w \\ 1 \end{pmatrix} \\
-= a_{kk} - w^\top w > 0.
+&= a_{kk} - w^\top w > 0.
+\end{aligned}
 $$
 
 于是存在唯一性得证。
