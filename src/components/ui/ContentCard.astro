@@ -1,0 +1,130 @@
+---
+import { Image } from "astro:assets";
+import Card from "./Card.astro";
+import { FormattedDate } from "@/components/basic";
+import { Button } from "@/components/ui";
+
+export interface Props {
+    kind: "blog" | "note";
+    title: string;
+    pubDate: Date;
+    author?: string;
+    position?: string;
+    tags?: string[];
+    heroImageLight?: ImageMetadata;
+    heroImageDark?: ImageMetadata;
+    excerpt?: string;
+    href: string;
+    class?: string;
+    /** Set on the first card of a listing so the LCP image is not deferred. */
+    priority?: boolean;
+}
+
+const {
+    kind,
+    title,
+    pubDate,
+    author = "miniyuan",
+    position,
+    tags = [],
+    heroImageLight,
+    heroImageDark,
+    excerpt,
+    href,
+    class: className = "",
+    priority = false,
+} = Astro.props;
+
+const hasImage = !!(heroImageLight || heroImageDark);
+// Five chips wrap into three rows on a phone and start covering the artwork, so
+// the extras are hidden until there is room for them.
+const visibleTagCount = 3;
+// `hover:` / `group-hover:` are pointer-only — see unocss.config.ts.
+const imgBaseClass =
+    "absolute inset-0 w-full h-full object-cover transition-transform group-hover:scale-105";
+const tagHref = (tag: string) => `/tags/${kind}/${encodeURIComponent(tag)}`;
+---
+
+<article
+    class:list={[
+        "relative block w-full group hover:-translate-y-2 hover:shadow-lg hover:cursor-pointer transition-base",
+        className,
+    ]}
+    aria-label={`Read ${kind}: ${title}`}
+>
+    <Card as="a" href={href} padding="none" hover={false} class="hover:cursor-pointer">
+        {hasImage && (
+            <>
+                <div class="absolute inset-0 overflow-hidden">
+                    {heroImageLight && (
+                        <Image
+                            src={heroImageLight}
+                            alt=""
+                            width={720}
+                            height={360}
+                            widths={[320, 480, 720, 1080]}
+                            sizes="(min-width: 1280px) 800px, (min-width: 768px) 620px, 100vw"
+                            quality={72}
+                            priority={priority}
+                            class={`${imgBaseClass} dark:hidden`}
+                        />
+                    )}
+                    {heroImageDark && (
+                        <Image
+                            src={heroImageDark}
+                            alt=""
+                            width={720}
+                            height={360}
+                            widths={[320, 480, 720, 1080]}
+                            sizes="(min-width: 1280px) 800px, (min-width: 768px) 620px, 100vw"
+                            quality={72}
+                            priority={priority}
+                            class={`${imgBaseClass} hidden dark:block`}
+                        />
+                    )}
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/70 to-background/20" />
+            </>
+        )}
+
+        <div class="relative z-10 flex flex-col justify-end h-full min-h-[13rem] sm:min-h-[18rem] p-5 sm:p-6 pt-14 gap-3">
+            <div class="flex flex-col gap-2">
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                    <span class="font-semibold text-foreground">{author}</span>
+                    {position && (
+                        <span class="pl-3 border-l border-gray-light">{position}</span>
+                    )}
+                    <time class="font-mono ml-auto">
+                        <FormattedDate date={pubDate} />
+                    </time>
+                </div>
+
+                <h3 class="text-lg sm:text-xl font-bold text-foreground line-clamp-2 leading-tight transition-colors group-hover:text-accent">
+                    {title}
+                </h3>
+
+                {excerpt && (
+                    <p class="text-sm sm:text-base text-foreground/80 line-clamp-2 leading-relaxed">
+                        {excerpt}
+                    </p>
+                )}
+            </div>
+        </div>
+    </Card>
+
+    {
+        tags.length > 0 && (
+            <div class="absolute top-0 left-0 right-0 z-20 flex flex-wrap gap-1.5 p-4 sm:gap-2 sm:p-6">
+                {tags.slice(0, visibleTagCount + (tags.length > visibleTagCount ? 1 : 0)).map((tag, index) => (
+                    <Button
+                        as="a"
+                        href={tagHref(tag)}
+                        variant="pill"
+                        title={tag}
+                        class:list={[index >= visibleTagCount && "hidden sm:inline-flex"]}
+                    />
+                ))}
+            </div>
+        )
+    }
+</article>

@@ -12,16 +12,24 @@ interface Props {
 	title: string;
 	description: string;
 	image?: ImageMetadata;
+	/** Relative path of the previous page in a paginated listing. */
+	prev?: string;
+	/** Relative path of the next page in a paginated listing. */
+	next?: string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = FallbackImage } = Astro.props;
+const { title, description, image = FallbackImage, prev, next } = Astro.props;
 ---
+
+<!-- Pagination hints -->
+{prev && <link rel="prev" href={new URL(prev, Astro.site)} />}
+{next && <link rel="next" href={new URL(next, Astro.site)} />}
 
 <!-- Global Metadata -->
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" href="/favicon.ico" />
 <link rel="sitemap" href="/sitemap-index.xml" />
@@ -32,6 +40,15 @@ const { title, description, image = FallbackImage } = Astro.props;
 	href={new URL('rss.xml', Astro.site)}
 />
 <meta name="generator" content={Astro.generator} />
+
+<!--
+  Mobile chrome tinting. `ThemeProvider`/`utils/theme` keep the single
+  `theme-color` tag in sync with the active theme, and `color-scheme` lets the
+  browser style native UI (scrollbars, form controls, over-scroll area) to match
+  instead of flashing white in dark mode.
+-->
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#FCFCFD" />
 
 <!-- Font preloads -->
 <link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin />

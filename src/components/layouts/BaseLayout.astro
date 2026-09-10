@@ -5,38 +5,48 @@ import { siteConfig } from "@/config";
 interface Props {
 	title: string;
 	description: string;
+	/** Path of the previous/next page, for paginated listings. */
+	prev?: string;
+	next?: string;
 }
 
-const { title, description } = Astro.props;
+const { title, description, prev, next } = Astro.props;
 const hasSidebar = Astro.slots.has("sidebar");
 ---
 
 <!doctype html>
 <html lang={siteConfig.lang}>
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead title={title} description={description} {prev} {next} />
 		<ThemeProvider />
 	</head>
 	<body class="flex flex-col bg-background text-foreground">
 		<Header />
+		<!--
+			Padding is applied once, here. Previously `main` (px-6), the content
+			column (mx-4) and every <Section> (px-4 + p-3) each added their own,
+			which left roughly 250px of usable width on a 360px phone.
+		-->
 		<main
-			class="w-full mx-auto max-w-[70rem] min-h-[100dvh] px-6 py-8 flex-1"
+			class="w-full mx-auto max-w-[70rem] min-h-[100dvh] flex-1 px-4 py-6 sm:px-6 sm:py-8"
 		>
 			<div
-				class={`flex flex-col lg:gap-8 xl:gap-12 relative ${hasSidebar ? "justify-center md:flex-row" : ""}`}
+				class:list={[
+					"relative flex flex-col",
+					hasSidebar &&
+						"gap-6 md:flex-row md:items-start md:justify-center md:gap-8 lg:gap-12",
+				]}
 				data-main-container
 			>
 				{/* main content */}
-				<div
-					class={hasSidebar ? "flex-1 min-w-0 w-full" : "w-full mx-4"}
-				>
+				<div class="w-full min-w-0 flex-1">
 					<slot name="content" />
 				</div>
 
-				{/* side bar */}
+				{/* side bar – sticks to the top on desktop, flows after the content on mobile */}
 				{
 					hasSidebar && (
-						<div class="w-full md:w-56 lg:w-64 mt-10 p-3 flex-shrink-0 animate-fade-in">
+						<div class="w-full shrink-0 animate-fade-in md:sticky md:top-20 md:w-56 md:self-start lg:w-64">
 							<slot name="sidebar" />
 						</div>
 					)

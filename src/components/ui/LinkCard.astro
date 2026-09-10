@@ -18,6 +18,14 @@ const {
     target = "_blank",
     class: className = "",
 } = Astro.props;
+
+// Config URLs are authored by hand, so never let a typo crash the build.
+let hostname = url;
+try {
+    hostname = new URL(url).hostname.replace("www.", "");
+} catch {
+    hostname = url.replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+}
 ---
 
 <Card
@@ -58,7 +66,7 @@ const {
             }
             <div class="flex items-center gap-1 mt-auto pt-2 text-xs text-muted-foreground/70">
                 <Icon name="external" class="size-3" />
-                <span class="truncate">{new URL(url).hostname.replace("www.", "")}</span>
+                <span class="truncate">{hostname}</span>
             </div>
         </div>
     </div>

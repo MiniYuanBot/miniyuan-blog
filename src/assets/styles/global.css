@@ -1,6 +1,6 @@
 /*
   UnoCSS + Bear Blog theme + Code block theme variables
-  Inspired by: https://github.com/satnaing/astro-paper 
+  Inspired by: https://github.com/satnaing/astro-paper
 */
 
 @unocss;
@@ -29,6 +29,13 @@
 	--border: 214 32% 91%;
 	--card: 0 0% 99%;
 	--card-foreground: 220 25% 18%;
+
+	/* Layout metrics shared by the header and anchor scrolling */
+	--header-height: 4rem;
+	--safe-bottom: env(safe-area-inset-bottom, 0px);
+
+	/* Native UI (scrollbars, form controls, over-scroll) follows the theme */
+	color-scheme: light;
 }
 
 /* ========== Dark theme (HSL only) ========== */
@@ -55,6 +62,33 @@
 	--border: 217 33% 17%;
 	--card: 220 20% 12%;
 	--card-foreground: 0 0% 100%;
+
+	color-scheme: dark;
+}
+
+/* ========== Base document ========== */
+html {
+	/* Anchors land below the sticky header instead of under it. This matters
+	   most on phones, where the header covers a bigger share of the viewport. */
+	scroll-padding-top: calc(var(--header-height) + 1rem);
+	scroll-behavior: smooth;
+	/* Stop iOS Safari from inflating text in landscape. */
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	/* Remove the grey flash when tapping links on mobile. */
+	-webkit-tap-highlight-color: transparent;
+	/* Long unbroken strings (URLs, identifiers) must not create a horizontal
+	   scrollbar on a 360px screen. */
+	overflow-wrap: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
 }
 
 /* ========== Font faces ========== */
@@ -94,6 +128,15 @@ span.katex-display {
     padding-inline-start: 0.5rem;
 }
 
+/* Wide display math scrolls horizontally instead of overflowing the page. */
+@media (max-width: 640px) {
+	span.katex-display {
+		padding-inline: 0;
+		/* Momentum scrolling on iOS for the overflowing formula. */
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
 /* ========== PlantUML diagrams ========== */
 .prose .plantuml-diagram {
     max-width: 100%;
@@ -101,6 +144,7 @@ span.katex-display {
     overflow-x: auto;
     overflow-y: hidden;
     text-align: center;
+    -webkit-overflow-scrolling: touch;
 }
 
 .prose .plantuml-diagram svg,
@@ -112,7 +156,49 @@ span.katex-display {
     vertical-align: top;
 }
 
+/* ========== Content figures (remark-image-caption) ========== */
+.content-figure {
+    margin-inline: 0;
+}
+
+/* Captioned images with no explicit width: fill the column on phones, where
+   the old fixed 80% left them needlessly small. */
+.content-figure-default-width {
+    width: 100%;
+}
+
+@media (min-width: 640px) {
+    .content-figure-default-width {
+        width: 80%;
+    }
+}
+
+/* The whole figure is a link to the full-size image; keep it free of the
+   underline that prose links get on hover. */
+.content-figure-link {
+    border-bottom: none !important;
+    text-decoration: none;
+}
+
+/* Tapping an image should not leave a stuck zoom state. The utility classes
+   (`hover:scale-105`) are already pointer-gated in unocss.config.ts; this covers
+   the `.prose img` rules and any hand-written case. */
+@media (hover: none) {
+    .content-figure-link img {
+        transform: none !important;
+    }
+}
+
 /* ========== Animations ========== */
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
 @keyframes fade-in-up {
 	0% {
 		transform: translateY(2rem);
@@ -124,14 +210,36 @@ span.katex-display {
 	}
 }
 
+@keyframes toast-in {
+	from {
+		transform: translate(-50%, 1rem);
+		opacity: 0;
+	}
+	to {
+		transform: translate(-50%, 0);
+		opacity: 1;
+	}
+}
+
+.animate-fade-in {
+	animation: 300ms fade-in both;
+}
+
 .animate-fade-in-up {
-	opacity: 0;
-	animation: 300ms fade-in-up forwards;
+	animation: 300ms fade-in-up both;
+}
+
+.animate-toast-in {
+	animation: 200ms toast-in both;
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.animate-fade-in-up {
-		animation: 100ms fade-in-up forwards;
+	.animate-fade-in,
+	.animate-fade-in-up,
+	.animate-toast-in {
+		animation: none;
+		opacity: 1;
+		transform: none;
 	}
 }
 
@@ -141,5 +249,54 @@ span.katex-display {
 		font-size: 8rem;
 		top: 2rem;
 		right: -1rem;
+	}
+}
+
+/* ========== Mobile touches ========== */
+/*
+  Prose hover styles.
+
+  These live here rather than in `prose.ts` so they can sit inside
+  `@media (hover: hover)`. UnoCSS's typography preset emits plain `:hover`, and
+  touch browsers keep `:hover` applied after a tap, which left a tapped link
+  underlined and a tapped heading anchor visible. The preset's own rules are
+  written with `:where(...)` (zero specificity), so these ordinary rules win.
+*/
+@media (hover: hover) {
+	.prose a:hover {
+		border-bottom-color: hsl(var(--accent));
+	}
+
+	.prose h1 > a:hover,
+	.prose h2 > a:hover,
+	.prose h3 > a:hover,
+	.prose h4 > a:hover,
+	.prose h5 > a:hover,
+	.prose h6 > a:hover {
+		opacity: 1;
+		color: hsl(var(--accent));
+	}
+}
+/* Code blocks and tables scroll inside their own box rather than stretching the
+   document; `-webkit-overflow-scrolling` keeps that scrolling smooth on iOS. */
+.prose pre,
+.prose table {
+	-webkit-overflow-scrolling: touch;
+}
+
+/* Footer/utility spacing that respects the iPhone home indicator. */
+.pb-safe {
+	padding-bottom: calc(1rem + var(--safe-bottom));
+}
+
+.mb-safe {
+	margin-bottom: calc(1rem + var(--safe-bottom));
+}
+
+/* ========== Print ========== */
+@media print {
+	/* Figures keep their captions but drop the zoom affordance. */
+	.content-figure img {
+		box-shadow: none !important;
 	}
 }

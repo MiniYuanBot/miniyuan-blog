@@ -1,0 +1,129 @@
+---
+/**
+ * Shared tag page for the `blog` and `note` collections.
+ * Replaces the two near-identical `tags/<kind>/[tag].astro` pages.
+ */
+import { getCollection } from "astro:content";
+import { siteConfig } from "@/config";
+import BaseLayout from "./BaseLayout.astro";
+import Section from "./Section.astro";
+import { Button, Card, ContentCard, Icon, Pagination } from "@/components/ui";
+import { pageHref, paginate } from "@/utils/pagination";
+
+export interface Props {
+    kind: "blog" | "note";
+    tag: string;
+    page?: number;
+}
+
+const { kind, tag, page = 1 } = Astro.props;
+
+const label = kind === "blog" ? "blog" : "note";
+
+// Branch on the collection name rather than passing a union to `getCollection`,
+// so each call keeps its exact entry type.
+const all =
+    kind === "blog" ? await getCollection("blog") : await getCollection("note");
+
+const tagged = all
+    .filter((entry) => entry.data.tags?.includes(tag))
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const { items, totalItems, totalPages, hasPrev, hasNext, firstItem, lastItem } =
+    paginate(tagged, page, siteConfig.postsPerPage);
+
+const basePath = `/tags/${kind}/${encodeURIComponent(tag)}`;
+
+const tagCount = (name: string) =>
+    tagged.filter((entry) => entry.data.tags?.includes(name)).length;
+
+const relatedTags = [
+    ...new Set(tagged.flatMap((entry) => entry.data.tags ?? []).filter((t) => t !== tag)),
+]
+    .sort((a, b) => tagCount(b) - tagCount(a))
+    .slice(0, 8);
+---
+
+<BaseLayout
+    title={`${label} tag: ${tag}${page > 1 ? ` – 第 ${page} 页` : ""}`}
+    description={`view ${totalItems} ${label} entries with tag ${tag}`}
+    prev={hasPrev ? pageHref(basePath, page - 1) : undefined}
+    next={hasNext ? pageHref(basePath, page + 1) : undefined}
+>
+    <div slot="content">
+        <Section
+            title={tag}
+            subtitle={`${totalItems} ${totalItems === 1 ? label : `${label}s`}${
+                totalPages > 1 ? ` · 第 ${firstItem}–${lastItem} 篇 · 第 ${page}/${totalPages} 页` : ""
+            }`}
+            backhref="/tags"
+            level={1}
+        >
+            {
+                items.length > 0 ? (
+                    <div class="flex flex-col gap-5 sm:gap-6">
+                        {items.map((entry, index) => (
+                            <div class="animate-fade-in">
+                                <ContentCard
+                                    kind={kind}
+                                    title={entry.data.title}
+                                    pubDate={entry.data.pubDate}
+                                    excerpt={entry.data.excerpt}
+                                    author={entry.data.author}
+                                    position={entry.data.position}
+                                    tags={entry.data.tags}
+                                    heroImageLight={entry.data.heroImageLight}
+                                    heroImageDark={entry.data.heroImageDark}
+                                    href={`/${kind}/${entry.id}/`}
+                                    priority={page === 1 && index === 0}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <Card padding="xl" hover={false} class="text-center py-20">
+                        <Icon name="tag" class="size-10 mx-auto mb-4 text-muted-foreground" />
+                        <p class="text-xl text-muted-foreground mb-4">
+                            No {label} entries under this tag
+                        </p>
+                        <Button as="a" href="/tags" variant="ahead" title="View other tags" />
+                    </Card>
+                )
+            }
+        </Section>
+
+        {
+            totalPages > 1 && (
+                <Pagination
+                    basePath={basePath}
+                    page={page}
+                    totalPages={totalPages}
+                    label={`${tag} ${label}`}
+                />
+            )
+        }
+
+        {
+            relatedTags.length > 0 && (
+                <Section title="Related Tags">
+                    <ul class="flex flex-wrap gap-2 list-none p-0 m-0">
+                        {relatedTags.map((relatedTag) => (
+                            <li>
+                                <Button
+                                    as="a"
+                                    href={`/tags/${kind}/${encodeURIComponent(relatedTag)}`}
+                                    variant="pill"
+                                >
+                                    <span>{relatedTag}</span>
+                                    <span class="ml-1 text-xs opacity-60">
+                                        {tagCount(relatedTag)}
+                                    </span>
+                                </Button>
+                            </li>
+                        ))}
+                    </ul>
+                </Section>
+            )
+        }
+    </div>
+</BaseLayout>

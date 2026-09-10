@@ -11,8 +11,23 @@
     "node_modules"
   ],
   "compilerOptions": {
+    // `astro/tsconfigs/*` sets `jsx: "preserve"` but never says where the JSX
+    // namespace lives. Astro's types are only reachable through
+    // `astro/jsx-runtime` (`export import JSX = astroHTML.JSX`), and Astro
+    // declares no *global* `JSX` namespace — so without `jsxImportSource`
+    // TypeScript reports "JSX element implicitly has type 'any' because no
+    // interface 'JSX.IntrinsicElements' exists" (TS7026) for every element of
+    // every `.astro` file.
+    "jsx": "preserve",
+    "jsxImportSource": "astro",
+
+    // `astro/client` is the only ambient type package this project needs;
+    // note that listing `types` disables automatic inclusion of other
+    // `@types/*` packages, which is fine here because every node API is used
+    // from plain `.js` plugin files that are not type-checked.
     "types": ["astro/client"],
     "strictNullChecks": true,
+
     // Path aliases
     "paths": {
       "@/*": [

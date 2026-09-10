@@ -9,13 +9,19 @@ import IconLink from "./IconLink.astro";
 ---
 
 <header-component
-	class="sticky top-0 z-50 block border-b border-border/50 transition-base bg-background/80"
+	class="sticky top-0 z-50 block border-b border-border/50 transition-base bg-background/80 backdrop-blur-md"
 >
-	<nav class="flex-between h-16 mx-auto px-6 md:px-8 max-w-7xl">
+	<nav
+		class="flex-between h-16 mx-auto px-4 sm:px-6 md:px-8 max-w-7xl gap-2"
+		aria-label="Main"
+	>
 		<!-- Left: site title -->
-		<div class="flex-1">
-			<h2 class="m-0 text-xl font-semibold">
-				<a href={headerConfig.left.link} class="text-foreground no-underline transition-colors hover:text-accent">
+		<div class="flex-1 min-w-0">
+			<h2 class="m-0 text-xl font-semibold truncate">
+				<a
+					href={headerConfig.left.link}
+					class="text-foreground no-underline transition-colors hover:text-accent"
+				>
 					{headerConfig.left.title}
 				</a>
 			</h2>
@@ -41,10 +47,18 @@ import IconLink from "./IconLink.astro";
 		</div>
 
 		<!-- Mobile: menu button -->
-		<div class="md:hidden flex justify-end gap-1">
+		<div class="md:hidden flex items-center justify-end gap-1">
 			<ThemeToggle />
-			<button id="toggleMenu" aria-label="Menu" class="icon-button-base">
-				<Icon name="menu" class="icon-base" />
+			<button
+				id="toggleMenu"
+				type="button"
+				aria-label="Open menu"
+				aria-expanded="false"
+				aria-controls="mobileMenuPortal"
+				class="menu-button icon-button-base"
+			>
+				<Icon name="menu" class="menu-icon-open icon-base" />
+				<Icon name="close" class="menu-icon-close icon-base" />
 			</button>
 		</div>
 	</nav>
@@ -52,11 +66,20 @@ import IconLink from "./IconLink.astro";
 
 <!-- Mobile Menu Template -->
 <template id="mobileMenuTemplate">
+	<!-- Scrim: gives the dropdown a visible edge and a large close target -->
+	<div
+		id="mobileMenuScrim"
+		class="md:hidden fixed inset-0 z-30 bg-foreground/20 backdrop-blur-[2px] opacity-0 invisible pointer-events-none"
+		aria-hidden="true"
+	>
+	</div>
+
 	<nav
 		id="mobileMenuPortal"
-		class="md:hidden fixed left-4 right-4 top-[4.5rem] z-40
-            flex flex-col rounded-xl shadow-md transition-base
+		class="md:hidden fixed left-3 right-3 z-40
+            flex flex-col rounded-xl shadow-lg transition-base
             max-h-0 opacity-0 invisible pointer-events-none p-0"
+		aria-label="Mobile navigation"
 	>
 		<div class="p-2 bg-card border border-border/50 rounded-xl">
 			<div class="flex flex-col">
@@ -69,18 +92,12 @@ import IconLink from "./IconLink.astro";
 				}
 			</div>
 
-			<div class="h-px bg-gray-light mx-2 my-1"></div>
+			<div class="h-px bg-gray-light mx-2 my-1" />
 
 			<div class="flex gap-2 px-1 pb-1">
 				{
-					headerConfig.right.map(({ link, title, icon }, index) => (
-						<IconLink
-							href={link}
-							label={title}
-							icon={icon}
-							isMobile
-							delay={(index + headerConfig.center.length) * 50}
-						/>
+					headerConfig.right.map(({ link, title, icon }) => (
+						<IconLink href={link} label={title} icon={icon} isMobile />
 					))
 				}
 			</div>
@@ -91,6 +108,8 @@ import IconLink from "./IconLink.astro";
 <script>
 	class HeaderComponent extends HTMLElement {
 		private portal: HTMLElement | null = null;
+		private scrim: HTMLElement | null = null;
+		private toggle: HTMLButtonElement | null = null;
 		private isOpen = false;
 		private lastScroll = 0;
 		private abortController: AbortController | null = null;
@@ -101,14 +120,17 @@ import IconLink from "./IconLink.astro";
 			this.abortController = new AbortController();
 			const { signal } = this.abortController;
 
+			this.toggle = this.querySelector<HTMLButtonElement>("#toggleMenu");
+
 			const template = document.getElementById(
 				"mobileMenuTemplate",
 			) as HTMLTemplateElement | null;
 			if (template) {
-				const clone = template.content.cloneNode(
-					true,
-				) as DocumentFragment;
-				this.portal = clone.getElementById("mobileMenuPortal");
+				const clone = template.content.cloneNode(true) as DocumentFragment;
+				this.scrim = clone.querySelector("#mobileMenuScrim");
+				this.portal = clone.querySelector("#mobileMenuPortal");
+				// Order matters: the scrim must stay under the panel.
+				if (this.scrim) document.body.appendChild(this.scrim);
 				if (this.portal) document.body.appendChild(this.portal);
 			}
 
@@ -123,23 +145,34 @@ import IconLink from "./IconLink.astro";
 						current < 350 || current < this.lastScroll
 					).toString();
 					this._updateScroll(current);
+
+					// An anchored dropdown floating over scrolled content is
+					// disorienting, so dismiss it on scroll.
+					if (this.isOpen && Math.abs(current - this.lastScroll) > 12) {
+						this._toggleMenu(false);
+					}
+
 					this.lastScroll = current;
 				},
 				{ passive: true, signal },
 			);
 
-			this.querySelector("#toggleMenu")?.addEventListener(
+			this.toggle?.addEventListener(
 				"click",
-				(e) => {
-					e.stopPropagation();
+				(event) => {
+					event.stopPropagation();
 					this._toggleMenu();
 				},
 				{ signal },
 			);
 
+			this.scrim?.addEventListener("click", () => this._toggleMenu(false), {
+				signal,
+			});
+
 			// close if click inside link
 			this.portal?.querySelectorAll("a").forEach((link) => {
-				link.addEventListener("click", () => this._toggleMenu(), {
+				link.addEventListener("click", () => this._toggleMenu(false), {
 					signal,
 				});
 			});
@@ -147,16 +180,44 @@ import IconLink from "./IconLink.astro";
 			// close if click outside
 			document.addEventListener(
 				"click",
-				(e) => {
+				(event) => {
 					if (
 						this.isOpen &&
-						!this.contains(e.target as Node) &&
-						!this.portal?.contains(e.target as Node)
+						!this.contains(event.target as Node) &&
+						!this.portal?.contains(event.target as Node)
 					) {
-						this._toggleMenu();
+						this._toggleMenu(false);
 					}
 				},
 				{ signal },
+			);
+
+			document.addEventListener(
+				"keydown",
+				(event) => {
+					if (!this.isOpen) return;
+
+					if (event.key === "Escape") {
+						this._toggleMenu(false);
+						return;
+					}
+
+					if (event.key === "Tab" && this.portal) {
+						this._trapFocus(event);
+					}
+				},
+				{ signal },
+			);
+
+			// The panel is positioned against the header, so it has to follow
+			// the header when the layout changes.
+			window.addEventListener(
+				"resize",
+				() => {
+					if (window.innerWidth >= 768) this._toggleMenu(false);
+					else if (this.isOpen) this._positionMenu();
+				},
+				{ passive: true, signal },
 			);
 
 			this.observer = new MutationObserver(
@@ -174,9 +235,37 @@ import IconLink from "./IconLink.astro";
 			this.portal?.classList.toggle("is-scrolled", scrolled);
 		}
 
-		private _toggleMenu() {
-			this.isOpen = !this.isOpen;
+		/** Keep focus inside the open panel while it acts as a modal. */
+		private _trapFocus(event: KeyboardEvent) {
+			const focusable = this.portal?.querySelectorAll<HTMLElement>(
+				'a[href], button:not([disabled])',
+			);
+			if (!focusable?.length) return;
+
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+			const active = document.activeElement;
+
+			if (event.shiftKey && active === first) {
+				event.preventDefault();
+				last.focus();
+			} else if (!event.shiftKey && active === last) {
+				event.preventDefault();
+				first.focus();
+			}
+		}
+
+		private _toggleMenu(show?: boolean) {
+			const next = show ?? !this.isOpen;
+			if (next === this.isOpen) return;
+			this.isOpen = next;
 			this.classList.toggle("expanded", this.isOpen);
+			this.toggle?.setAttribute("aria-expanded", String(this.isOpen));
+			this.toggle?.setAttribute(
+				"aria-label",
+				this.isOpen ? "Close menu" : "Open menu",
+			);
+			this.toggle?.classList.toggle("active", this.isOpen);
 
 			if (!this.portal) return;
 
@@ -187,7 +276,15 @@ import IconLink from "./IconLink.astro";
 					maxHeight: `${this.portal.scrollHeight}px`,
 					opacity: "1",
 				});
+				Object.assign(this.scrim?.style ?? {}, {
+					visibility: "visible",
+					pointerEvents: "auto",
+					opacity: "1",
+				});
 				this._positionMenu();
+				// Move focus into the panel so keyboard and screen-reader users
+				// land in the menu they just opened.
+				this.portal.querySelector<HTMLElement>("a")?.focus();
 			} else {
 				Object.assign(this.portal.style, {
 					maxHeight: "0",
@@ -196,12 +293,23 @@ import IconLink from "./IconLink.astro";
 					pointerEvents: "none",
 					padding: "0",
 				});
+				Object.assign(this.scrim?.style ?? {}, {
+					opacity: "0",
+					visibility: "hidden",
+					pointerEvents: "none",
+				});
+				if (this.portal.contains(document.activeElement)) {
+					this.toggle?.focus();
+				}
 			}
 		}
 
 		private _positionMenu() {
 			if (this.portal) {
 				this.portal.style.top = `${this.getBoundingClientRect().bottom + 8}px`;
+			}
+			if (this.scrim) {
+				this.scrim.style.top = `${this.getBoundingClientRect().bottom}px`;
 			}
 		}
 
@@ -210,6 +318,7 @@ import IconLink from "./IconLink.astro";
 			this.abortController?.abort();
 			this.observer?.disconnect();
 			this.portal?.remove();
+			this.scrim?.remove();
 		}
 	}
 
@@ -230,15 +339,29 @@ import IconLink from "./IconLink.astro";
 	}
 
 	#mobileMenuPortal {
-		@apply transition-base duration-500;
+		@apply transition-base duration-300;
 	}
 
 	#mobileMenuPortal.is-scrolled .p-2 {
 		@apply bg-card/92 border-border/92;
 	}
 
+	/* The menu button swaps its glyph instead of stacking two icons */
+	.menu-button .menu-icon-close {
+		display: none;
+	}
+
+	.menu-button.active .menu-icon-open {
+		display: none;
+	}
+
+	.menu-button.active .menu-icon-close {
+		display: block;
+	}
+
 	@media (min-width: 768px) {
-		#mobileMenuPortal {
+		#mobileMenuPortal,
+		#mobileMenuScrim {
 			display: none !important;
 		}
 	}

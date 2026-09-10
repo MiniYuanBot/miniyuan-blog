@@ -5,9 +5,14 @@
   "version": "0.1.2",
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/plantuml-cache.mjs",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "plantuml": "node scripts/plantuml-cache.mjs",
+    "check:assets": "node scripts/check-asset-links.mjs",
+    "check:math": "node scripts/check-math.mjs",
+    "check:hover": "node scripts/check-hover-gating.mjs"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "^6.3.0",

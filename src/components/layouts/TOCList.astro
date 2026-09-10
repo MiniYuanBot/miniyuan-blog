@@ -1,6 +1,7 @@
 ---
 import { type MarkdownHeading } from "@astrojs/markdown-remark";
 import { Icon } from "../ui";
+import TOCItems from "./TOCItems.astro";
 
 export interface Props {
   headings: MarkdownHeading[];
@@ -18,163 +19,33 @@ const {
   class: className = "",
 } = Astro.props;
 
+// `heading.slug` is always set by rehypeHeadingIds; the fallback keeps this
+// component usable if that ever changes.
 const filteredHeadings = headings
   .filter((heading) => heading.depth <= maxDepth && heading.depth >= minDepth)
   .map((heading) => ({
     ...heading,
-    id: heading.slug || heading.text.toLowerCase().replace(/\s+/g, "-"),
+    slug: heading.slug || heading.text.toLowerCase().replace(/\s+/g, "-"),
   }));
-
-interface HeadingNode {
-  depth: number;
-  text: string;
-  slug: string;
-  children: HeadingNode[];
-}
-
-function buildHeadingTree(headings: MarkdownHeading[]): HeadingNode[] {
-  const tree: HeadingNode[] = [];
-  const stack: HeadingNode[] = [];
-
-  headings.forEach((heading) => {
-    const node: HeadingNode = {
-      depth: heading.depth,
-      text: heading.text,
-      slug: heading.slug,
-      children: [],
-    };
-
-    while (stack.length > 0 && stack[stack.length - 1].depth >= node.depth) {
-      stack.pop();
-    }
-
-    if (stack.length === 0) {
-      tree.push(node);
-    } else {
-      stack[stack.length - 1].children.push(node);
-    }
-    stack.push(node);
-  });
-
-  return tree;
-}
-
-const headingTree = buildHeadingTree(filteredHeadings);
-
-const totalHeadings = headingTree.reduce((count, heading) => {
-  const countChildren = (node: HeadingNode): number => {
-    return (
-      1 + node.children.reduce((sum, child) => sum + countChildren(child), 0)
-    );
-  };
-  return count + countChildren(heading);
-}, 0);
 ---
 
 {
-  headingTree.length > 0 && (
-    <div class={`toc-wrapper ${className}`} data-total-headings={totalHeadings}>
-      {/* open TOC button */}
-      <button
-        class="toc-trigger fixed z-50 size-10 rounded-full shadow-md bg-gray/15 hover:shadow-lg hover:bg-gray/30 transition-base flex items-center justify-center group"
-        aria-label="open TOC"
-        aria-expanded="false"
-        aria-controls="toc-panel"
-      >
-        <Icon
-          name="TOC"
-          class="toc-icon-list size-6 text-foreground transition-base"
-        />
-        <Icon
-          name="close"
-          class="toc-icon-close size-6 absolute opacity-0 rotate-90 text-foreground transition-base"
-        />
-      </button>
-
-      {/* TOC panel */}
-      <div
-        id="toc-panel"
-        class="toc-panel fixed mt-15 z-40 md:w-50 lg:w-64 max-h-[70vh] rounded-xl shadow-2xl border border-border/50 opacity-0 transition-base overflow-hidden flex flex-col hidden"
-        style="background-color: var(--toc-bg); backdrop-filter: var(--toc-blur);"
-        role="dialog"
-        aria-modal="true"
-        aria-label="blog TOC"
-      >
-        {/* panel head */}
-        <div class="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-transparent flex-shrink-0">
-          <div class="flex items-center gap-2 text-sm font-semibold text-card-foreground">
-            <Icon name="book" class="size-4" />
-            <span>{title}</span>
-          </div>
-
-          {/* <div class="flex items-center gap-1">
-            <button
-              class="toc-close-btn p-1.5 rounded-md hover:bg-gray-light dark:hover:bg-gray-dark transition-colors text-muted-foreground hover:text-foreground"
-              aria-label="close TOC"
-            >
-              <Icon name="close" class="size-4" />
-            </button>
-          </div> */}
+  filteredHeadings.length > 0 && (
+    <div class={`toc-wrapper ${className}`} data-toc-wrapper>
+      {/* ---------- Desktop: a normal, always-visible card in the sidebar ---------- */}
+      <div class="hidden md:block rounded-xl border border-border/50 bg-card/95 shadow-sm overflow-hidden">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-border/50 text-sm font-semibold text-card-foreground">
+          <Icon name="book" class="size-4" />
+          <span>{title}</span>
         </div>
-
-        {/* panel content */}
-        <div class="toc-content overflow-y-auto p-3 bg-transparent scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-thumb-rounded-full hover:scrollbar-thumb-muted-foreground/40 flex-1">
+        <div class="toc-content max-h-[60vh] overflow-y-auto p-3 scrollbar-thin">
           <nav aria-label="Table of contents">
-            <ul class="space-y-0.5 text-sm">
-              {headingTree.map((heading) => (
-                <li class="toc-item">
-                  <a
-                    href={`#${heading.slug}`}
-                    class="group block py-2 px-3 rounded-lg transition-base text-muted-foreground hover:text-foreground hover:bg-gray-light"
-                    style={`padding-left: ${(heading.depth - 2) * 0.75 + 0.75}rem`}
-                  >
-                    <span class="line-clamp-2 relative">{heading.text}</span>
-                  </a>
-
-                  {heading.children && heading.children.length > 0 && (
-                    <ul class="mt-0.5 space-y-0.5">
-                      {heading.children.map((child) => (
-                        <li class="toc-item">
-                          <a
-                            href={`#${child.slug}`}
-                            class="group block py-2 px-3 rounded-lg transition-base text-muted-foreground hover:text-foreground hover:bg-gray-light"
-                            style={`padding-left: ${(child.depth - 2) * 0.75 + 0.75}rem`}
-                          >
-                            <span class="line-clamp-2 relative">
-                              {child.text}
-                            </span>
-                          </a>
-
-                          {child.children && child.children.length > 0 && (
-                            <ul class="mt-0.5 space-y-0.5">
-                              {child.children.map((grandchild) => (
-                                <li class="toc-item">
-                                  <a
-                                    href={`#${grandchild.slug}`}
-                                    class="group block py-2 px-3 rounded-lg transition-base text-muted-foreground hover:text-foreground hover:bg-gray-light"
-                                    style={`padding-left: ${(grandchild.depth - 2) * 0.75 + 0.75}rem`}
-                                  >
-                                    <span class="line-clamp-2 relative">
-                                      {grandchild.text}
-                                    </span>
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <TOCItems headings={filteredHeadings} />
           </nav>
         </div>
-
-        {/* panel bottom */}
-        <div class="border-t border-border/50 p-1 bg-transparent flex-shrink-0">
+        <div class="border-t border-border/50 p-1">
           <button
+            type="button"
             class="back-to-top w-full text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1.5 py-2 rounded-lg hover:bg-gray-light"
             aria-label="go to top"
           >
@@ -184,97 +55,86 @@ const totalHeadings = headingTree.reduce((count, heading) => {
         </div>
       </div>
 
-      {/* overlay */}
-      {/* <div
-        class="toc-overlay fixed inset-0 z-30 bg-background/20 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300"
+      {/* ---------- Mobile: floating trigger + bottom sheet ---------- */}
+      <button
+        type="button"
+        data-toc-trigger
+        class="toc-trigger md:hidden fixed right-4 z-40 size-11 rounded-full shadow-lg bg-card/95 backdrop-blur border border-border/60 flex items-center justify-center transition-base active:scale-95"
+        style="bottom: calc(1rem + var(--safe-bottom));"
+        aria-label="打开目录"
+        aria-expanded="false"
+        aria-controls="toc-sheet"
+      >
+        <Icon name="TOC" class="size-5 text-foreground" />
+      </button>
+
+      {/* Sheet backdrop */}
+      <div
+        data-toc-backdrop
+        class="toc-backdrop md:hidden fixed inset-0 z-40 bg-foreground/30 backdrop-blur-sm"
         aria-hidden="true"
-      /> */}
+      >
+      </div>
+
+      {/* Bottom sheet */}
+      <div
+        id="toc-sheet"
+        data-toc-sheet
+        class="toc-sheet md:hidden fixed inset-x-0 bottom-0 z-50 flex flex-col
+               max-h-[75vh] rounded-t-2xl border-t border-border/60 bg-card shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-label={title}
+      >
+        <div class="flex items-center justify-between px-4 py-3 border-b border-border/50 shrink-0">
+          <div class="flex items-center gap-2 text-sm font-semibold text-card-foreground">
+            <Icon name="book" class="size-4" />
+            <span>{title}</span>
+          </div>
+          <button
+            type="button"
+            data-toc-close
+            class="size-9 -mr-1 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-gray-light transition-colors"
+            aria-label="关闭目录"
+          >
+            <Icon name="close" class="size-5" />
+          </button>
+        </div>
+
+        <div class="toc-content flex-1 min-h-0 overflow-y-auto p-3 scrollbar-thin">
+          <nav aria-label="Table of contents">
+            <TOCItems headings={filteredHeadings} />
+          </nav>
+        </div>
+
+        <div
+          class="border-t border-border/50 p-1 shrink-0"
+          style="padding-bottom: calc(0.25rem + var(--safe-bottom));"
+        >
+          <button
+            type="button"
+            class="back-to-top w-full text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1.5 py-2.5 rounded-lg hover:bg-gray-light"
+            aria-label="go to top"
+          >
+            <Icon name="top-arrow" class="size-4" />
+            <span>回到顶部</span>
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
 
 <style>
-  .toc-item a.active {
-    @apply bg-accent/10 text-accent border-l-accent font-medium;
-  }
-
-  .toc-item a.active .absolute {
-    opacity: 1 !important;
-    @apply bg-accent;
-  }
-
-  .toc-panel {
-    visibility: hidden;
-  }
-
-  .toc-panel.open {
-    @apply opacity-100;
-    visibility: visible;
-    --toc-bg: hsl(var(--card) / 0.95);
-    --toc-blur: blur(8px);
-  }
-
-  .toc-panel.open.is-scrolled {
-    --toc-bg: hsl(var(--card) / 0.8);
-    --toc-blur: none;
-  }
-
-  /* overlay */
-  /* .toc-overlay.open {
-    @apply opacity-100 pointer-events-auto;
-  } */
-
-  .toc-trigger.active {
-    @apply rotate-90;
-  }
-
-  .toc-trigger.active .toc-icon-list {
-    @apply opacity-0;
-  }
-
-  .toc-trigger.active .toc-icon-close {
-    @apply opacity-100 rotate-0;
-  }
-
-  /* smopth scroll */
-  html {
-    scroll-behavior: smooth;
-  }
-
-  @media print {
-    .toc-wrapper {
-      @apply hidden;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .toc-trigger {
-      @apply right-10 bottom-10;
-    }
-
-    .toc-panel {
-      @apply right-10 bottom-30 min-w-56;
-    }
-  }
-
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px) scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
-  }
-
-  .toc-panel.open {
-    animation: slideIn 0.2s ease-out;
+  /* ---------- desktop card ---------- */
+  .toc-link.is-active {
+    @apply bg-accent/10 text-accent font-medium;
   }
 
   .toc-content {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+    -webkit-overflow-scrolling: touch;
   }
 
   .toc-content::-webkit-scrollbar {
@@ -284,219 +144,195 @@ const totalHeadings = headingTree.reduce((count, heading) => {
   .toc-content::-webkit-scrollbar-track {
     background: transparent;
   }
+
+  /* ---------- mobile sheet ---------- */
+  .toc-backdrop {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.2s ease-out,
+      visibility 0.2s;
+  }
+
+  .toc-sheet {
+    transform: translateY(100%);
+    visibility: hidden;
+    transition:
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      visibility 0.25s;
+  }
+
+  .toc-wrapper.is-open .toc-backdrop {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .toc-wrapper.is-open .toc-sheet {
+    transform: translateY(0);
+    visibility: visible;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toc-backdrop,
+    .toc-sheet {
+      transition: none;
+    }
+  }
+
+  @media print {
+    .toc-wrapper {
+      display: none;
+    }
+  }
 </style>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const tocWrapper = document.querySelector(".toc-wrapper");
-    if (!tocWrapper) return;
+  /**
+   * Table of contents.
+   *
+   * The active heading is tracked with an IntersectionObserver instead of a
+   * scroll listener that read layout on every frame, and anchor navigation is
+   * left to the browser (`scroll-behavior` + `scroll-padding-top` in
+   * global.css), which removes all the manual offset maths.
+   */
+  function initToc() {
+    const wrapper = document.querySelector<HTMLElement>("[data-toc-wrapper]");
+    const article = document.querySelector<HTMLElement>("[data-post-content]");
+    if (!wrapper || !article) return;
 
-    const tocTrigger = tocWrapper.querySelector(".toc-trigger");
-    const tocPanel = tocWrapper.querySelector(".toc-panel");
-    // const tocOverlay = tocWrapper.querySelector(".toc-overlay");
-    const tocCloseBtn = tocWrapper.querySelector(".toc-close-btn");
-    const tocLinks = tocWrapper.querySelectorAll(".toc-item a");
-    const backToTopBtn = tocWrapper.querySelector(".back-to-top");
-    const tocContent = tocWrapper.querySelector(".toc-content");
+    const trigger = wrapper.querySelector<HTMLElement>("[data-toc-trigger]");
+    const sheet = wrapper.querySelector<HTMLElement>("[data-toc-sheet]");
+    const backdrop = wrapper.querySelector<HTMLElement>("[data-toc-backdrop]");
+    const closeBtn = wrapper.querySelector<HTMLElement>("[data-toc-close]");
+    const links = Array.from(
+      wrapper.querySelectorAll<HTMLAnchorElement>("[data-toc-link]"),
+    );
 
-    const scrollThreshold = 200;
-    const headerOffset = 100;
-
+    // ---------------------------------------------------------------- panel
     let isOpen = false;
-    let initialScrollY = window.scrollY;
 
-    function preventScrollPropagation() {
-      if (!tocContent) return;
-
-      // Handle mouse scroll
-      // Prevent the scroll event spread to the out page
-      tocContent.addEventListener(
-        "wheel",
-        (e) => {
-          const target = e.currentTarget as HTMLElement;
-          const { scrollTop, scrollHeight, clientHeight } = target;
-
-          const deltaY = (e as WheelEvent).deltaY;
-
-          const isAtTop = scrollTop === 0;
-          const isAtBottom =
-            Math.abs(scrollHeight - clientHeight - scrollTop) < 1;
-
-          if ((isAtTop && deltaY < 0) || (isAtBottom && deltaY > 0)) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-        },
-        { passive: false },
-      );
-
-      let startY = 0;
-
-      tocContent.addEventListener(
-        "touchstart",
-        (e) => {
-          startY = (e as TouchEvent).touches[0].clientY;
-        },
-        { passive: true },
-      );
-
-      tocContent.addEventListener(
-        "touchmove",
-        (e) => {
-          const touchEvent = e as TouchEvent;
-          const target = e.currentTarget as HTMLElement;
-          const currentY = touchEvent.touches[0].clientY;
-          const deltaY = currentY - startY;
-
-          const { scrollTop, scrollHeight, clientHeight } = target;
-          const isAtTop = scrollTop === 0;
-          const isAtBottom =
-            Math.abs(scrollHeight - clientHeight - scrollTop) < 1;
-
-          // Prevent the scroll event to be spread
-          if ((isAtTop && deltaY > 0) || (isAtBottom && deltaY < 0)) {
-            e.preventDefault();
-            e.stopPropagation();
-          }
-
-          startY = currentY;
-        },
-        { passive: false },
-      );
-    }
-
-    preventScrollPropagation();
-
-    function updateScrollState() {
-      if (Math.abs(window.scrollY - initialScrollY) > scrollThreshold) {
-        tocPanel?.classList.add("is-scrolled");
-      }
-    }
-
-    updateScrollState();
-
-    window.addEventListener("scroll", updateScrollState, { passive: true });
-
-    function toggleToc(show?: boolean) {
-      if (typeof show === "undefined") {
-        isOpen = !isOpen;
-      } else {
-        isOpen = show;
-      }
-
-      if (isOpen) {
-        tocPanel?.classList.add("open");
-        // tocOverlay?.classList.add("open");
-        tocTrigger?.classList.add("active");
-        tocTrigger?.setAttribute("aria-expanded", "true");
-        initialScrollY = window.scrollY;
-
-        updateScrollState();
-      } else {
-        tocPanel?.classList.remove("open");
-        // tocOverlay?.classList.remove("open");
-        tocTrigger?.classList.remove("active");
-        tocTrigger?.setAttribute("aria-expanded", "false");
-        tocPanel?.classList.remove("is-scrolled");
-      }
-    }
-
-    tocTrigger?.addEventListener("click", () => toggleToc());
-    tocCloseBtn?.addEventListener("click", () => toggleToc(false));
-    // tocOverlay?.addEventListener("click", () => toggleToc(false));
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && isOpen) {
-        toggleToc(false);
-      }
-    });
-
-    const headings = document.querySelectorAll("h2, h3, h4");
-    headings.forEach((heading, index) => {
-      if (!heading.id) {
-        heading.id =
-          heading.textContent
-            ?.toLowerCase()
-            .replace(/\s+/g, "-")
-            .replace(/[^\w-]/g, "") || `heading-${index}`;
-      }
-    });
-
-    const updateActiveHeading = () => {
-      const scrollY = window.scrollY + headerOffset + 50;
-      let active = null;
-
-      for (let i = 0; i < headings.length; i++) {
-        const heading = headings[i] as HTMLElement;
-        const headingTop = heading.getBoundingClientRect().top + window.scrollY;
-        if (scrollY >= headingTop) {
-          active = heading;
-        }
-      }
-
-      tocLinks.forEach((l) => l.classList.remove("active"));
-
-      if (active) {
-        const link = document.querySelector(
-          `.toc-item a[href="#${active.id}"]`,
-        );
-        if (link) {
-          link.classList.add("active");
-          if (isOpen)
-            link.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
+    const setOpen = (open: boolean) => {
+      if (open === isOpen) return;
+      isOpen = open;
+      wrapper.classList.toggle("is-open", open);
+      trigger?.setAttribute("aria-expanded", String(open));
+      // Lock the page behind the sheet; the sheet scrolls on its own.
+      document.documentElement.style.overflow = open ? "hidden" : "";
+      if (open) {
+        sheet
+          ?.querySelector<HTMLElement>("[data-toc-link], [data-toc-close]")
+          ?.focus({ preventScroll: true });
+      } else if (sheet?.contains(document.activeElement)) {
+        trigger?.focus({ preventScroll: true });
       }
     };
 
-    window.addEventListener("scroll", updateActiveHeading, { passive: true });
-    updateActiveHeading();
+    trigger?.addEventListener("click", () => setOpen(true));
+    backdrop?.addEventListener("click", () => setOpen(false));
+    closeBtn?.addEventListener("click", () => setOpen(false));
 
-    tocLinks.forEach((link) => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        const targetId = link.getAttribute("href")?.substring(1);
-        const targetElement = document.getElementById(targetId || "");
-
-        if (targetElement) {
-          const elementPosition = targetElement.getBoundingClientRect().top;
-          const offsetPosition =
-            elementPosition + window.pageYOffset - headerOffset;
-
-          window.scrollTo({
-            top: offsetPosition,
-            behavior: "smooth",
-          });
-
-          history.pushState(null, "", `#${targetId}`);
-
-          if (window.innerWidth < 640) {
-            toggleToc(false);
-          }
-        }
-      });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && isOpen) setOpen(false);
     });
 
-    backToTopBtn?.addEventListener("click", () => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    });
+    // ------------------------------------------------------- active heading
+    const headings = Array.from(
+      article.querySelectorAll<HTMLElement>("h2, h3, h4"),
+    ).filter((heading) => heading.id);
 
-    const checkInitialHash = () => {
-      const hash = window.location.hash;
-      if (hash) {
-        const targetLink = document.querySelector(
-          `.toc-item a[href="${hash}"]`,
-        );
-        if (targetLink) {
-          setTimeout(() => {
-            targetLink.classList.add("active");
-          }, 100);
-        }
+    const linksBySlug = new Map<string, HTMLAnchorElement>();
+    for (const link of links) {
+      const slug = link.dataset.slug;
+      if (slug) linksBySlug.set(decodeURIComponent(slug), link);
+    }
+
+    let activeSlug: string | null = null;
+
+    const setActive = (slug: string | null) => {
+      if (slug === activeSlug) return;
+      activeSlug = slug;
+      for (const [key, link] of linksBySlug) {
+        link.classList.toggle("is-active", key === slug);
+      }
+      // Keep the highlighted entry in view inside the scrolling list, without
+      // fighting the page scroll.
+      if (slug) {
+        linksBySlug.get(slug)?.scrollIntoView({ block: "nearest" });
       }
     };
 
-    checkInitialHash();
-  });
+    const headerOffset = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        "--header-height",
+      ),
+    );
+    const topOffset = Number.isFinite(headerOffset) ? headerOffset * 16 : 64;
+
+    if (headings.length && "IntersectionObserver" in window) {
+      const visible = new Set<HTMLElement>();
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            const heading = entry.target as HTMLElement;
+            if (entry.isIntersecting) visible.add(heading);
+            else visible.delete(heading);
+          }
+
+          if (visible.size) {
+            // Topmost heading currently inside the band under the header.
+            const first = Array.from(visible).sort(
+              (a, b) =>
+                a.getBoundingClientRect().top - b.getBoundingClientRect().top,
+            )[0];
+            setActive(first.id);
+            return;
+          }
+
+          // Between headings: highlight the last one already scrolled past.
+          let last: HTMLElement | null = null;
+          for (const heading of headings) {
+            if (heading.getBoundingClientRect().top - topOffset <= 1) last = heading;
+          }
+          if (last) setActive(last.id);
+        },
+        {
+          rootMargin: `-${topOffset + 8}px 0px -65% 0px`,
+          threshold: 0,
+        },
+      );
+
+      for (const heading of headings) observer.observe(heading);
+    }
+
+    // Clicking a link inside the sheet closes it; the browser handles the jump.
+    for (const link of links) {
+      link.addEventListener("click", () => setOpen(false));
+    }
+
+    // A resize into desktop layout must not leave the sheet state behind.
+    window.matchMedia("(min-width: 768px)").addEventListener("change", (e) => {
+      if (e.matches) setOpen(false);
+    });
+
+    for (const btn of wrapper.querySelectorAll(".back-to-top")) {
+      btn.addEventListener("click", () => {
+        setOpen(false);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    }
+
+    // Highlight the heading named in the URL, if any.
+    if (window.location.hash) {
+      setActive(decodeURIComponent(window.location.hash.slice(1)));
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initToc, { once: true });
+  } else {
+    initToc();
+  }
 </script>

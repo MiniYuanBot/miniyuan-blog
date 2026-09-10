@@ -36,7 +36,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 ### 系统架构
 
-```plaintext
+```text
 ┌──────────┐     Specification      ┌──────────┐
 │          │ ─────────────────────> │          │
 │ Developer│                        │ Compiler │
@@ -154,7 +154,7 @@ topology {
 }
 ```
 
-![图 1：示例拓扑](/images/blog/research/02-verinc-01-topology.png)
+![图 1：示例拓扑](01-topology.png)
 
 ### Protocol
 

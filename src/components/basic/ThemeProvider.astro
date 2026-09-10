@@ -1,21 +1,29 @@
 ---
-
+// The global stylesheet is imported by BaseHead.astro; do not duplicate it here.
 ---
 
 {/* Use inline mode to quick load color, which can avoid splash */}
 <script is:inline>
     function simpleSetTheme() {
-        let theme = localStorage.getItem("theme");
+        let theme = null;
+        try {
+            theme = localStorage.getItem("theme");
+        } catch {
+            theme = null;
+        }
         // If undefined or 'system', get from system
         if (!theme || theme === "system") {
             theme = window.matchMedia("(prefers-color-scheme: dark)").matches
                 ? "dark"
                 : "light";
         }
-        document.documentElement.classList.toggle("dark", theme === "dark");
+        const isDark = theme === "dark";
+        document.documentElement.classList.toggle("dark", isDark);
+        // Keep native UI (scrollbars, form controls) in step with the theme.
+        document.documentElement.style.colorScheme = isDark ? "dark" : "light";
         document
             .querySelector('meta[name="theme-color"]')
-            ?.setAttribute("content", theme === "dark" ? "#0B0B10" : "#FCFCFD");
+            ?.setAttribute("content", isDark ? "#0B0B10" : "#FCFCFD");
     }
     simpleSetTheme();
     document.addEventListener("astro:page-load", () => simpleSetTheme());
@@ -24,19 +32,51 @@
 <script>
     import { ICONS } from "../icons";
     import { listenThemeChange } from "@/utils";
+    import type { ToastDetail } from "@/utils";
 
     // Listen for theme change event
     listenThemeChange();
-    // Listen for toast event
-    document.addEventListener("toast", (e) => {
-        const { message, time } = (e as CustomEvent).detail;
+
+    /**
+     * One toast at a time: repeated clicks used to stack identical boxes on top
+     * of each other. Built with DOM APIs rather than innerHTML so a message can
+     * never be interpreted as markup.
+     */
+    let activeToast: { el: HTMLElement; timer: number } | null = null;
+
+    document.addEventListener("toast", (event) => {
+        const { message, time } = (event as CustomEvent<ToastDetail>).detail ?? {};
+        if (!message) return;
+
+        if (activeToast) {
+            window.clearTimeout(activeToast.timer);
+            activeToast.el.remove();
+            activeToast = null;
+        }
+
         const toast = document.createElement("div");
         toast.className =
-            "animate fixed bottom-8 left-1/2 -translate-x-1/2 z-20 px-4 py-2 bg-muted text-foreground rounded-lg border border-border shadow-md flex items-center gap-2";
-        toast.innerHTML = `<svg class='size-5' viewBox='0 0 24 24' fill='currentColor'>${ICONS.info}</svg> <span>${message}</span>`;
+            "toast animate-toast-in fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-muted text-foreground rounded-lg border border-border shadow-md flex items-center gap-2 max-w-[calc(100vw-2rem)]";
+
+        const icon = document.createElement("span");
+        icon.className = "size-5 shrink-0";
+        icon.setAttribute("aria-hidden", "true");
+        icon.innerHTML = `<svg class="size-5" viewBox="0 0 24 24" fill="currentColor">${ICONS.info}</svg>`;
+
+        const label = document.createElement("span");
+        label.className = "text-sm";
+        label.textContent = message;
+
+        toast.append(icon, label);
+        toast.setAttribute("role", "status");
+        toast.setAttribute("aria-live", "polite");
         document.body.appendChild(toast);
-        setTimeout(() => {
+
+        const timer = window.setTimeout(() => {
             toast.remove();
+            if (activeToast?.el === toast) activeToast = null;
         }, time || 2500);
+
+        activeToast = { el: toast, timer };
     });
 </script>

@@ -30,37 +30,42 @@ const {
 		<Card
 			hover={false}
 			padding="lg"
-			class="shadow-lg overflow-hidden max-w-none prose prose-md dark:prose-invert print-content"
+			data-post-content
+			class="shadow-lg overflow-hidden max-w-none prose dark:prose-invert print-content"
 		>
 			<header class="print-header">
 				<div
-					class="flex flex-row items-center justify-start pt-2 gap-8 text-muted-foreground print-hidden"
+					class="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm text-muted-foreground sm:gap-x-8 sm:text-base print-hidden"
 				>
 					<!-- Won't print -->
 					<time
-						class="inline-flex items-center gap-2 text-base font-mono"
+						class="inline-flex items-center gap-2 font-mono"
 						datetime={pubDate.toISOString()}
 					>
-						<Icon name="calendar" class="size-5" />
+						<Icon name="calendar" class="size-5 shrink-0" />
 						<FormattedDate date={pubDate} />
 					</time>
 
 					{
 						updatedDate && (
 							<time
-								class="inline-flex items-center gap-2 text-base font-mono"
-								datetime={pubDate.toISOString()}
+								class="inline-flex items-center gap-2 font-mono"
+								datetime={updatedDate.toISOString()}
 							>
-								<Icon name="pencil" class="size-5" />
+								<Icon name="pencil" class="size-5 shrink-0" />
 								<FormattedDate date={updatedDate} />
 							</time>
 						)
 					}
 
-					<div class="inline-flex items-center gap-2 text-base">
-						<Icon name="user" class="size-5" />
-						<span>{author}</span>
-					</div>
+					{
+						author && (
+							<div class="inline-flex items-center gap-2">
+								<Icon name="user" class="size-5 shrink-0" />
+								<span>{author}</span>
+							</div>
+						)
+					}
 				</div>
 
 				<h1 class="mt-4 mb-0">

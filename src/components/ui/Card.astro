@@ -37,6 +37,9 @@ type PaddingKey = keyof typeof paddingMap;
     class:list={[
         "group block relative w-full bg-card rounded-lg border border-border/50 shadow-md overflow-hidden transition-base no-underline",
         {
+            // Pointer-only: the `hover:` variant is wrapped in
+            // `@media (hover: hover)` by unocss.config.ts, so this cannot stick
+            // after a tap on a touch screen.
             "hover:-translate-y-2 hover:shadow-lg hover:border-border hover:cursor-pointer":
                 hover,
         },

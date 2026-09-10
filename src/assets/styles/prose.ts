@@ -37,10 +37,11 @@ export const typographyConfig: TypographyOptions = {
             'text-decoration': 'none',
             'border-bottom': 'none',
         },
-        'h1>a:hover, h2>a:hover, h3>a:hover, h4>a:hover, h5>a:hover, h6>a:hover': {
-            opacity: '1',
-            color: 'hsl(var(--accent))',
-        },
+        // NOTE: the `:hover` variants of these two rules deliberately live in
+        // global.css instead, wrapped in `@media (hover: hover)`. A hover rule
+        // emitted here would apply on touch devices too, where it sticks after a
+        // tap (a tapped link kept its underline, a tapped heading kept its
+        // anchor visible). See `pointerVariants` in unocss.config.ts.
         'h1>a:focus, h2>a:focus, h3>a:focus, h4>a:focus, h5>a:focus, h6>a:focus': {
             opacity: '1',
         },
@@ -56,9 +57,6 @@ export const typographyConfig: TypographyOptions = {
             'text-decoration': 'none',
             'border-bottom': '1px solid transparent',
             transition: 'border-color 0.2s ease',
-        },
-        'a:hover': {
-            'border-bottom': '1px solid hsl(var(--accent))',
         },
 
         // ========== Inline Code ==========

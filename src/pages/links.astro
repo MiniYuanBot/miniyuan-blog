@@ -2,17 +2,17 @@
 import { BaseLayout, Section } from "@/components/layouts";
 import { Card, Icon } from "@/components/ui";
 import LinkCard from "@/components/ui/LinkCard.astro";
-import { linkConfig } from "@/config";
+import { linkConfig, siteConfig } from "@/config";
 ---
 
 <BaseLayout title="Links" description="My friends and favorite tools">
     <!-- Link Groups -->
     <div slot="content">
         {
-            linkConfig.map((group) => (
-                <Section title={group.title}>
+            linkConfig.map((group, index) => (
+                <Section title={group.title} level={index === 0 ? 1 : 2}>
                     {group.links.length > 0 ? (
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
                             {group.links.map((link) => (
                                 <LinkCard
                                     title={link.title}
@@ -44,56 +44,47 @@ import { linkConfig } from "@/config";
                 the following information:
             </p>
             <Card padding="lg" hover={false}>
-                <div class="grid grid-rows-2 grid-cols-2 gap-3 h-full">
+                <dl class="flex flex-col gap-3 sm:grid sm:grid-cols-2">
                     <!-- Site Name -->
-                    <div class="flex items-center">
-                        <span class="text-base text-foreground w-32 shrink-0"
-                            >Site Name</span
-                        >
-                        <span class="text-sm text-muted-foreground"
-                            >MINIBLOG</span
-                        >
+                    <div class="flex gap-3 items-baseline">
+                        <dt class="text-base text-foreground w-24 shrink-0">Site Name</dt>
+                        <dd class="m-0 text-sm text-muted-foreground break-all">
+                            {siteConfig.title}
+                        </dd>
                     </div>
 
                     <!-- Favicon -->
-                    <div class="flex items-center">
-                        <span class="text-base text-foreground w-32 shrink-0"
-                            >Favicon</span
-                        >
-                        <span class="text-sm text-muted-foreground break-all"
-                            >http://localhost:4321/favicon.ico</span
-                        >
+                    <div class="flex gap-3 items-baseline">
+                        <dt class="text-base text-foreground w-24 shrink-0">Favicon</dt>
+                        <dd class="m-0 text-sm text-muted-foreground break-all">
+                            {siteConfig.url}{siteConfig.favicon}
+                        </dd>
                     </div>
 
                     <!-- Description -->
-                    <div class="flex items-center">
-                        <span class="text-base text-foreground w-32 shrink-0"
-                            >Description</span
-                        >
-                        <span class="text-sm text-muted-foreground"
-                            >Miniyuan is getting stronger!</span
-                        >
+                    <div class="flex gap-3 items-baseline">
+                        <dt class="text-base text-foreground w-24 shrink-0">Description</dt>
+                        <dd class="m-0 text-sm text-muted-foreground break-all">
+                            {siteConfig.description}
+                        </dd>
                     </div>
 
                     <!-- URL -->
-                    <div class="flex items-center">
-                        <span class="text-base text-foreground w-32 shrink-0"
-                            >URL</span
-                        >
-                        <span
-                            class="text-sm text-muted-foreground hover:cursor-pointer hover:underline break-all"
-                        >
+                    <div class="flex gap-3 items-baseline">
+                        <dt class="text-base text-foreground w-24 shrink-0">URL</dt>
+                        <dd class="m-0 text-sm break-all">
                             <a
-                                href="http://localhost:4321"
+                                href={siteConfig.url}
                                 target="_blank"
-                                class="inline-flex items-center gap-1"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center gap-1 text-accent no-underline hover:underline"
                             >
-                                http://localhost:4321
+                                {siteConfig.url}
                                 <Icon name="external" class="size-3" />
                             </a>
-                        </span>
+                        </dd>
                     </div>
-                </div>
+                </dl>
             </Card>
         </Section>
     </div>

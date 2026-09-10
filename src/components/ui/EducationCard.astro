@@ -20,29 +20,39 @@ const {
     padding = "md",
     hover = true,
 } = Astro.props;
-
-const textBase =
-    "text-card-foreground font-medium text-base lg:text-lg sm:text-sm";
 ---
 
-<Card padding={padding} hover={hover} class="group cursor-pointer">
-    {/* Logo background */}
+<Card padding={padding} hover={hover} class="group">
+    {/*
+      Watermark logo.
+
+      It used to be an absolutely-positioned, 40%-opacity, `mix-blend-multiply`
+      image at every breakpoint. On a 360px-wide phone the card is barely wider
+      than the logo, so it sat *behind the text* and made the school name, the
+      dates and the description hard to read. It is now only rendered from `md`
+      up, where there is room beside the text; on phones the logo appears as a
+      small inline thumbnail next to the school name instead (see below).
+    */}
     {
         logo && (
-            <div class="absolute inset-0 z-[1] pointer-events-none overflow-hidden bg-card">
+            <div
+                class="absolute inset-0 z-[1] pointer-events-none overflow-hidden bg-card hidden md:block"
+                aria-hidden="true"
+            >
                 <img
                     src={logo}
-                    alt={`${school} logo`}
+                    alt=""
                     class:list={[
-                        "absolute top-1/2 right-2.5 -translate-y-1/2 max-w-[240px] max-h-[240px] w-auto h-auto",
-                        "object-contain opacity-50 transition-base mix-blend-multiply group-hover:opacity-70 group-hover:scale-105",
-                        "sm:right-1 sm:max-w-[160px] sm:max-h-[160px]",
-                        "md:right-4 md:max-w-[280px] md:max-h-[280px]",
-                        "lg:right-5 lg:max-w-[320px] lg:max-h-[320px]",
-                        "xl:right-6 xl:max-w-[360px] xl:max-h-[360px]",
+                        "absolute top-1/2 -translate-y-1/2 w-auto h-auto object-contain",
+                        "max-w-[240px] max-h-[240px] right-4",
+                        "opacity-40 transition-base mix-blend-multiply",
+                        "lg:right-5 lg:max-w-[300px] lg:max-h-[300px]",
+                        "xl:right-6 xl:max-w-[340px] xl:max-h-[340px]",
                         "dark:mix-blend-screen dark:brightness-150",
+                        "group-hover:opacity-60 group-hover:scale-105",
                     ]}
                     loading="lazy"
+                    decoding="async"
                 />
             </div>
         )
@@ -50,23 +60,35 @@ const textBase =
 
     {/* Card content */}
     <div class="relative z-[2] flex flex-col">
-        {/* School name */}
-        <div class="pb-2 mb-2 border-b border-border w-full">
-            <h3 class="text-card-foreground text-xl font-bold leading-tight">
+        {/* School name (+ inline logo on small screens) */}
+        <div class="pb-2 mb-2 border-b border-border w-full flex items-center gap-3">
+            {
+                logo && (
+                    <img
+                        src={logo}
+                        alt=""
+                        aria-hidden="true"
+                        width="44"
+                        height="44"
+                        class="size-11 shrink-0 rounded-md object-contain md:hidden"
+                        loading="lazy"
+                        decoding="async"
+                    />
+                )
+            }
+            <h3 class="text-card-foreground text-lg sm:text-xl font-bold leading-tight">
                 {school}
             </h3>
         </div>
 
         {/* Time and location info */}
-        <div class="mb-2 flex gap-4 lg:gap-6 sm:gap-2">
-            <span class={textBase}>{period}</span>
-            <span class={textBase}>{location}</span>
+        <div class="mb-2 flex flex-wrap gap-x-4 gap-y-1 text-sm sm:text-base">
+            <span>{period}</span>
+            <span class="text-muted-foreground">{location}</span>
         </div>
 
         {/* Description */}
-        <p
-            class="text-muted-foreground leading-relaxed mt-1 text-base lg:text-lg sm:text-sm"
-        >
+        <p class="text-muted-foreground leading-relaxed mt-1 text-sm sm:text-base">
             {description}
         </p>
     </div>

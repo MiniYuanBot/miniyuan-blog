@@ -1,0 +1,117 @@
+---
+import { pageHref, pageNumbers } from "@/utils/pagination";
+
+export interface Props {
+    /** e.g. `/blog`, `/note`, `/tags/blog/cv` */
+    basePath: string;
+    page: number;
+    totalPages: number;
+    /** Label used by screen readers, e.g. "blog" / "note" */
+    label?: string;
+    class?: string;
+}
+
+const { basePath, page, totalPages, label = "articles", class: className = "" } = Astro.props;
+
+const numbers = pageNumbers(page, totalPages, 1);
+const hasPrev = page > 1;
+const hasNext = page < totalPages;
+---
+
+{
+    totalPages > 1 && (
+        <nav
+            class:list={["w-full flex items-center justify-center gap-1.5 pt-2", className]}
+            aria-label={`${label} pagination`}
+        >
+            {/* Previous */}
+            {hasPrev ? (
+                <a
+                    href={pageHref(basePath, page - 1)}
+                    rel="prev"
+                    class="pager-btn"
+                    aria-label="上一页"
+                >
+                    <span aria-hidden="true">←</span>
+                    <span class="hidden sm:inline">上一页</span>
+                </a>
+            ) : (
+                <span class="pager-btn pager-disabled" aria-disabled="true">
+                    <span aria-hidden="true">←</span>
+                    <span class="hidden sm:inline">上一页</span>
+                </span>
+            )}
+
+            {/* Numbers – the window collapses on small screens */}
+            <ul class="flex items-center gap-1 list-none p-0 m-0">
+                {numbers.map((entry) =>
+                    entry === "gap" ? (
+                        <li class="px-1 text-muted-foreground select-none" aria-hidden="true">
+                            …
+                        </li>
+                    ) : (
+                        <li
+                            class:list={[
+                                entry !== page && "hidden sm:block",
+                            ]}
+                        >
+                            {entry === page ? (
+                                <span class="pager-btn pager-current" aria-current="page">
+                                    {entry}
+                                </span>
+                            ) : (
+                                <a
+                                    href={pageHref(basePath, entry)}
+                                    class="pager-btn"
+                                    aria-label={`第 ${entry} 页`}
+                                >
+                                    {entry}
+                                </a>
+                            )}
+                        </li>
+                    ),
+                )}
+            </ul>
+
+            {/* Next */}
+            {hasNext ? (
+                <a
+                    href={pageHref(basePath, page + 1)}
+                    rel="next"
+                    class="pager-btn"
+                    aria-label="下一页"
+                >
+                    <span class="hidden sm:inline">下一页</span>
+                    <span aria-hidden="true">→</span>
+                </a>
+            ) : (
+                <span class="pager-btn pager-disabled" aria-disabled="true">
+                    <span class="hidden sm:inline">下一页</span>
+                    <span aria-hidden="true">→</span>
+                </span>
+            )}
+        </nav>
+    )
+}
+
+<style>
+    .pager-btn {
+        @apply inline-flex items-center justify-center gap-1 min-w-9 h-9 px-3 rounded-lg border border-border/60 bg-card text-sm text-muted-foreground no-underline transition-colors;
+    }
+
+    /* Pointer-only: a tapped pager button would otherwise keep the hover
+       colours until something else is tapped. */
+    @media (hover: hover) {
+        a.pager-btn:hover {
+            @apply text-foreground border-accent/60 bg-gray-light;
+        }
+    }
+
+    .pager-current {
+        @apply border-accent bg-accent/10 text-accent font-semibold;
+    }
+
+    .pager-disabled {
+        @apply opacity-40 cursor-not-allowed;
+    }
+</style>

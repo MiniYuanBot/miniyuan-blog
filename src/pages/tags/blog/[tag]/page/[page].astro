@@ -1,0 +1,24 @@
+---
+import { getCollection } from "astro:content";
+import TagPage from "@/components/layouts/TagPage.astro";
+import { siteConfig } from "@/config";
+import { laterPageParams } from "@/utils/pagination";
+
+export async function getStaticPaths() {
+    const posts = await getCollection("blog");
+    const tags = [...new Set(posts.flatMap((post) => post.data.tags || []))];
+
+    // A tag page only gets a `/page/N/` route when it actually overflows.
+    return tags.flatMap((tag) => {
+        const count = posts.filter((post) => post.data.tags?.includes(tag)).length;
+        return laterPageParams(count, siteConfig.postsPerPage).map((entry) => ({
+            params: { tag, page: entry.params.page },
+            props: { tag, page: entry.props.page },
+        }));
+    });
+}
+
+const { tag, page } = Astro.props;
+---
+
+<TagPage kind="blog" {tag} {page} />

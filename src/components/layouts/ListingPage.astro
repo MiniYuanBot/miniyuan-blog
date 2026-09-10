@@ -1,0 +1,143 @@
+---
+/**
+ * Shared listing page for the `blog` and `note` collections.
+ *
+ * The two used to be near-identical 100-line pages that had to be kept in sync
+ * by hand; they only ever differed in the collection, the route prefix and the
+ * copy. Pagination is driven by `siteConfig.postsPerPage`.
+ */
+import { getCollection } from "astro:content";
+import { siteConfig } from "@/config";
+import BaseLayout from "./BaseLayout.astro";
+import Section from "./Section.astro";
+import { Button, Card, ContentCard, Icon, Pagination } from "@/components/ui";
+import { pageHref, paginate } from "@/utils/pagination";
+
+export interface Props {
+    kind: "blog" | "note";
+    page?: number;
+}
+
+const { kind, page = 1 } = Astro.props;
+
+const copy = {
+    blog: {
+        title: "Blogs",
+        description: "The posts of miniyuan's blog",
+        empty: "No blogs yet",
+    },
+    note: {
+        title: "Notes",
+        description: "The notes of miniyuan's blog",
+        empty: "No notes yet",
+    },
+}[kind];
+
+// Branch on the collection name rather than passing a union to `getCollection`,
+// so each call keeps its exact entry type.
+const all =
+    kind === "blog" ? await getCollection("blog") : await getCollection("note");
+
+const entries = all.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const { items, totalItems, totalPages, hasPrev, hasNext, firstItem, lastItem } =
+    paginate(entries, page, siteConfig.postsPerPage);
+
+const basePath = `/${kind}`;
+
+const tagCounts: Record<string, number> = {};
+for (const entry of entries) {
+    for (const tag of entry.data.tags ?? []) {
+        tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+    }
+}
+
+const uniqueTags = Object.keys(tagCounts).sort(
+    (a, b) => tagCounts[b] - tagCounts[a],
+);
+
+// Tags to show on the sidebar before deferring to the full tag index.
+const sidebarTagMax = 10;
+const sidebarTags = uniqueTags.slice(0, sidebarTagMax);
+---
+
+<BaseLayout
+    title={page > 1 ? `${copy.title} – 第 ${page} 页` : copy.title}
+    description={copy.description}
+    prev={hasPrev ? pageHref(basePath, page - 1) : undefined}
+    next={hasNext ? pageHref(basePath, page + 1) : undefined}
+>
+    <Section title={copy.title} slot="content" level={1}>
+        {
+            totalPages > 1 && (
+                <p class="text-sm text-muted-foreground mt-2">
+                    From #{firstItem} to #{lastItem}, {totalItems} in total. Page {page}/{totalPages}.
+                </p>
+            )
+        }
+
+        {
+            items.length > 0 ? (
+                <div class="w-full grid grid-cols-1 gap-5 p-0 sm:gap-6">
+                    {items.map((entry, index) => (
+                        <ContentCard
+                            kind={kind}
+                            title={entry.data.title}
+                            pubDate={entry.data.pubDate}
+                            excerpt={entry.data.excerpt}
+                            author={entry.data.author}
+                            position={entry.data.position}
+                            tags={entry.data.tags}
+                            heroImageLight={entry.data.heroImageLight}
+                            heroImageDark={entry.data.heroImageDark}
+                            href={`/${kind}/${entry.id}/`}
+                            priority={page === 1 && index === 0}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <Card padding="xl" hover={false} class="text-center py-20">
+                    <Icon name="empty" class="size-8 mx-auto mb-4 text-muted-foreground" />
+                    <p class="text-lg text-muted-foreground">{copy.empty}</p>
+                </Card>
+            )
+        }
+
+        <Pagination basePath={basePath} page={page} totalPages={totalPages} label={kind} />
+    </Section>
+
+    {
+        !!uniqueTags.length && (
+            <aside slot="sidebar">
+                <Card padding="md" hover={false} class="shadow-md">
+                    <h2 class="text-lg font-semibold flex items-center gap-2 text-foreground border-b border-border pb-3 mb-4">
+                        <Icon name="tag" class="size-5" />
+                        Tags
+                    </h2>
+
+                    <ul class="flex flex-wrap gap-2 mb-4">
+                        {sidebarTags.map((tag) => (
+                            <li>
+                                <Button
+                                    as="a"
+                                    href={`/tags/${kind}/${encodeURIComponent(tag)}`}
+                                    variant="pill"
+                                    title={`${tag} (${tagCounts[tag]})`}
+                                    aria-label={`View ${kind} entries tagged with ${tag}`}
+                                />
+                            </li>
+                        ))}
+                    </ul>
+
+                    {
+                        uniqueTags.length > sidebarTags.length && (
+                            <div class="text-right border-t border-border pt-4">
+                                <Button as="a" variant="ahead" title="View all tags" href="/tags" />
+                            </div>
+                        )
+                    }
+                </Card>
+            </aside>
+        )
+    }
+</BaseLayout>

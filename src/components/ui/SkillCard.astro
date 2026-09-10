@@ -36,16 +36,16 @@ const {
             )
         }
 
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-4">
             {
                 skills.map((skill) => (
-                    <div class="flex items-start gap-2">
-                        <span class="text-sm font-medium text-muted-foreground min-w-[90px]">
-                            {skill.category}:
+                    <div class="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
+                        <span class="shrink-0 text-sm font-medium text-muted-foreground sm:min-w-[90px] sm:pt-1">
+                            {skill.category}
                         </span>
                         <div class="flex flex-wrap gap-2">
                             {skill.items.map((item) => (
-                                <Button as="span" title={item} class="hover:cursor-pointer" />
+                                <Button as="span" title={item} />
                             ))}
                         </div>
                     </div>

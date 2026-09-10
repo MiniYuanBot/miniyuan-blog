@@ -6,16 +6,21 @@ export interface Props {
     title?: string;
     subtitle?: string;
     backhref?: string;
+    /** Heading level for the section title. Use 1 when it is the page's main heading. */
+    level?: 1 | 2 | 3;
 }
 
-const { class: className, title, subtitle, backhref } = Astro.props;
+const { class: className, title, subtitle, backhref, level = 2 } = Astro.props;
+
+const Heading = `h${level}` as const;
+const headingSize = level === 1 ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl';
 ---
 
-<section class:list={["w-full max-w-5xl mx-auto px-4 py-4 md:py-8 lg:py-6", className]}>
+<section class:list={["w-full max-w-5xl mx-auto py-4 md:py-8 lg:py-6", className]}>
     {backhref && <Button as="a" title="Back" variant="back" href={backhref} class="mb-4" />}
-    {title && <div class="text-2xl font-bold mt-2 mb-2">{title}</div>}
-    {subtitle && <div class="text-md text-muted-foreground mb-4">{subtitle}</div>}
-    <div class="flex flex-col gap-3 p-3">
+    {title && <Heading class:list={[headingSize, "font-bold mt-2 mb-2"]}>{title}</Heading>}
+    {subtitle && <p class="text-base text-muted-foreground mb-4">{subtitle}</p>}
+    <div class="flex flex-col gap-4 sm:gap-3">
         <slot />
     </div>
 </section>

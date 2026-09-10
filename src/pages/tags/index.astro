@@ -6,84 +6,221 @@ import { Card, Icon } from "@/components/ui";
 const posts = await getCollection("blog");
 const notes = await getCollection("note");
 
-const blogCounts: Record<string, number> = {};
-const noteCounts: Record<string, number> = {};
-const totalCounts: Record<string, number> = {};
+/** tag -> number of entries carrying it */
+function countTags(entries: { data: { tags?: string[] } }[]) {
+    const counts = new Map<string, number>();
+    for (const entry of entries) {
+        for (const tag of entry.data.tags ?? []) {
+            counts.set(tag, (counts.get(tag) ?? 0) + 1);
+        }
+    }
+    return counts;
+}
 
-posts.forEach((post) => {
-  post.data.tags?.forEach((tag) => {
-    blogCounts[tag] = (blogCounts[tag] || 0) + 1;
-    totalCounts[tag] = (totalCounts[tag] || 0) + 1;
-  });
-});
+const blogCounts = countTags(posts);
+const noteCounts = countTags(notes);
 
-notes.forEach((note) => {
-  note.data.tags?.forEach((tag) => {
-    noteCounts[tag] = (noteCounts[tag] || 0) + 1;
-    totalCounts[tag] = (totalCounts[tag] || 0) + 1;
-  });
-});
+/**
+ * Sorted by frequency (then alphabetically) so the most useful tags come first,
+ * which matters a lot once a collection has dozens of tags.
+ */
+function rows(counts: Map<string, number>) {
+    const max = Math.max(...counts.values(), 1);
+    return [...counts.entries()]
+        .map(([tag, count]) => ({
+            tag,
+            count,
+            // Relative weight, floored so a count of 1 still shows a sliver.
+            percent: Math.max(Math.round((count / max) * 100), 4),
+        }))
+        .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
 
-const blogTags = Object.keys(blogCounts).sort((a, b) => a.localeCompare(b));
-const noteTags = Object.keys(noteCounts).sort((a, b) => a.localeCompare(b));
+const groups = [
+    {
+        kind: "blog" as const,
+        title: "Blog Tags",
+        heading: "博客标签",
+        counts: blogCounts,
+        total: posts.length,
+        items: rows(blogCounts),
+    },
+    {
+        kind: "note" as const,
+        title: "Note Tags",
+        heading: "笔记标签",
+        counts: noteCounts,
+        total: notes.length,
+        items: rows(noteCounts),
+    },
+];
+
+const totalTags = new Set([...blogCounts.keys(), ...noteCounts.keys()]).size;
 ---
 
-<BaseLayout title="Tags" description="View blogs by tag">
-  <div slot="content">
-    {
-      [blogTags, noteTags].map((tags, index) => {
-        const sectionTitle = ["Blog Tags", "Note Tags"][index];
-        const typeName = ["blog", "note"][index];
+<BaseLayout title="Tags" description="View blogs and notes by tag">
+    <div slot="content">
+        <Section title="Tags" level={1}>
+            <p class="text-sm text-muted-foreground mt-2">
+                {totalTags} tags in total, {posts.length} blogs, {notes.length} notes.
+            </p>
 
-        return (
-          <Section title={sectionTitle}>
-            {tags.length > 0 ? (
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-                {tags.map((tag) => {
-                  const count = index === 0 ? blogCounts[tag] : noteCounts[tag];
-                  const intensity = Math.min(0.3 + (count / 10) * 0.2, 0.9);
-
-                  return (
-                    <Card
-                      as="a"
-                      href={`/tags/${typeName}/${encodeURIComponent(tag)}`}
-                      padding="lg"
-                      hover
-                      aria-label={`view ${count} ${typeName}s with tag ${tag}`}
-                      class="flex flex-col items-center justify-center text-center aspect-square"
-                    >
-                      <Icon name="tag" class="size-8" />
-                      <h2 class="text-xl font-semibold mb-2 break-all">
-                        {tag}
-                      </h2>
-                      <p class="text-sm text-muted-foreground">
-                        {count} {typeName}
-                      </p>
-                      <div class="w-16 h-1 bg-muted rounded-full mt-4 overflow-hidden">
-                        <div
-                          class="h-full bg-accent rounded-full transition-all group-hover:opacity-100"
-                          style={{
-                            width: `${Math.min(count * 10, 100)}%`,
-                            opacity: intensity,
-                          }}
-                        />
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            ) : (
-              <Card padding="xl" class="text-center py-20 max-w-md mx-auto">
+            <!-- A filter is the difference between usable and unusable once a
+                 collection has dozens of tags. -->
+            <div class="relative">
                 <Icon
-                  name="tag"
-                  class="size-10 mx-auto mb-4 text-muted-foreground"
+                    name="search"
+                    class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
                 />
-                <p class="text-xl text-muted-foreground">No tags</p>
-              </Card>
-            )}
-          </Section>
-        );
-      })
-    }
-  </div>
+                <input
+                    id="tag-filter"
+                    type="search"
+                    autocomplete="off"
+                    placeholder="筛选标签…"
+                    aria-label="Filter tags"
+                    class="w-full h-11 pl-10 pr-3 rounded-xl border border-border bg-card text-base text-foreground placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
+                />
+            </div>
+
+            <p id="tag-filter-status" class="hidden text-sm text-muted-foreground" role="status" aria-live="polite">
+            </p>
+
+            {
+                groups.map((group) => (
+                    <div data-tag-section data-kind={group.kind} class="flex flex-col gap-3 pt-2">
+                        {group.items.length > 0 ? (
+                            <>
+                                <h2 class="m-0 text-xl font-bold text-foreground">
+                                    {group.title}
+                                    <span class="ml-2 text-sm font-normal text-muted-foreground">
+                                        {group.items.length} tags / {group.total} items
+                                    </span>
+                                </h2>
+                                <ul class="grid grid-cols-1 gap-2 list-none p-0 m-0 md:grid-cols-2">
+                                    {group.items.map((item) => (
+                                        <li data-tag-item data-tag-name={item.tag.toLowerCase()}>
+                                            <a
+                                                href={`/tags/${group.kind}/${encodeURIComponent(item.tag)}`}
+                                                class="tag-row group"
+                                                aria-label={`view ${item.count} ${group.kind} entries tagged with ${item.tag}`}
+                                            >
+                                                <span
+                                                    class="tag-row-bar"
+                                                    style={`width: ${item.percent}%`}
+                                                    aria-hidden="true"
+                                                />
+                                                <span class="tag-row-content">
+                                                    <Icon
+                                                        name="tag"
+                                                        class="size-4 shrink-0 text-muted-foreground transition-colors group-hover:text-accent"
+                                                    />
+                                                    <span class="tag-row-name">{item.tag}</span>
+                                                    <span class="tag-row-count">{item.count}</span>
+                                                </span>
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        ) : (
+                            <Card padding="lg" hover={false} class="text-center py-12">
+                                <Icon name="tag" class="size-8 mx-auto mb-3 text-muted-foreground" />
+                                <p class="m-0 text-muted-foreground">No tags yet</p>
+                            </Card>
+                        )}
+                    </div>
+                ))
+            }
+
+            <p id="tag-filter-empty" class="hidden text-center text-muted-foreground py-10">
+                没有匹配的标签。
+            </p>
+        </Section>
+    </div>
 </BaseLayout>
+
+<style>
+    .tag-row {
+        @apply relative block overflow-hidden rounded-lg border border-border/60 bg-card px-3 py-2 no-underline transition-colors;
+    }
+
+    /* Pointer-only, so a tapped tag row does not stay highlighted. */
+    @media (hover: hover) {
+        .tag-row:hover {
+            @apply border-accent/60 bg-gray-light;
+        }
+
+        .tag-row:hover .tag-row-bar {
+            @apply bg-accent/20;
+        }
+    }
+
+    /* Frequency bar sits behind the row content. */
+    .tag-row-bar {
+        @apply absolute inset-y-0 left-0 bg-accent/10 transition-colors;
+    }
+
+    .tag-row-content {
+        @apply relative flex items-center gap-2 w-full;
+    }
+
+    .tag-row-name {
+        @apply truncate text-sm text-foreground;
+    }
+
+    .tag-row-count {
+        @apply ml-auto shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs tabular-nums text-muted-foreground;
+    }
+</style>
+
+<script>
+    const filter = document.getElementById("tag-filter") as HTMLInputElement | null;
+    const status = document.getElementById("tag-filter-status");
+    const empty = document.getElementById("tag-filter-empty");
+
+    if (filter) {
+        const items = Array.from(
+            document.querySelectorAll<HTMLElement>("[data-tag-item]"),
+        );
+        const sections = Array.from(
+            document.querySelectorAll<HTMLElement>("[data-tag-section]"),
+        );
+
+        const apply = () => {
+            const query = filter.value.trim().toLowerCase();
+            let visibleTotal = 0;
+
+            for (const item of items) {
+                const name = item.dataset.tagName ?? "";
+                const match = !query || name.includes(query);
+                item.hidden = !match;
+                if (match) visibleTotal += 1;
+            }
+
+            // A section whose rows are all filtered out would otherwise leave a
+            // bare heading behind.
+            for (const section of sections) {
+                const anyVisible = Array.from(
+                    section.querySelectorAll<HTMLElement>("[data-tag-item]"),
+                ).some((item) => !item.hidden);
+                section.hidden = !anyVisible;
+            }
+
+            if (status) {
+                status.hidden = !query;
+                status.textContent = query ? `匹配 ${visibleTotal} 个标签` : "";
+            }
+            if (empty) empty.hidden = !(query && visibleTotal === 0);
+        };
+
+        filter.addEventListener("input", apply);
+
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && document.activeElement === filter) {
+                filter.value = "";
+                apply();
+                filter.blur();
+            }
+        });
+    }
+</script>

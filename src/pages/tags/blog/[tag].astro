@@ -1,7 +1,6 @@
 ---
 import { getCollection } from "astro:content";
-import { BaseLayout, Section } from "@/components/layouts";
-import { Card, Icon, Button, BlogCard } from "@/components/ui";
+import TagPage from "@/components/layouts/TagPage.astro";
 
 export async function getStaticPaths() {
     const posts = await getCollection("blog");
@@ -14,107 +13,6 @@ export async function getStaticPaths() {
 }
 
 const { tag } = Astro.params;
-
-const taggedPosts = (await getCollection("blog"))
-    .filter((post) => post.data.tags?.includes(tag || ""))
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-
-const postCount = taggedPosts.length;
-
-const relatedTags = [
-    ...new Set(
-        taggedPosts
-            .flatMap((post) => post.data.tags || [])
-            .filter((t) => t !== tag), // not this tag
-    ),
-]
-    .sort((a, b) => {
-        const countA = taggedPosts.filter((post) =>
-            post.data.tags?.includes(a),
-        ).length;
-        const countB = taggedPosts.filter((post) =>
-            post.data.tags?.includes(b),
-        ).length;
-        return countB - countA;
-    })
-    .slice(0, 5);
-
-const getTagCount = (tagName: string) => {
-    return taggedPosts.filter((post) => post.data.tags?.includes(tagName))
-        .length;
-};
 ---
 
-<BaseLayout
-    title={`blog tag: ${tag}`}
-    description={`view ${postCount} blogs with tag ${tag}`}
->
-    <div slot="content">
-        <Section title={tag} subtitle={`${postCount} blogs`} backhref="/tags">
-            {
-                taggedPosts.length > 0 ? (
-                    <div class="space-y-6">
-                        {taggedPosts.map((post) => (
-                            <div class="animate-fade-in">
-                                <BlogCard
-                                    title={post.data.title}
-                                    pubDate={post.data.pubDate}
-                                    excerpt={post.data.excerpt}
-                                    author={post.data.author}
-                                    position={post.data.position}
-                                    tags={post.data.tags}
-                                    heroImageLight={post.data.heroImageLight}
-                                    heroImageDark={post.data.heroImageDark}
-                                    href={`/blog/${post.id}/`}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <Card padding="xl" hover={false} class="text-center py-20">
-                        <Icon
-                            name="tag"
-                            class="size-10 mx-auto mb-4 text-muted-foreground"
-                        />
-                        <p class="text-xl text-muted-foreground mb-4">
-                            No blogs under this tag
-                        </p>
-                        <Button
-                            as="a"
-                            href="/tags"
-                            variant="ahead"
-                            title="View other blog tags"
-                        />
-                    </Card>
-                )
-            }
-        </Section>
-
-        {
-            relatedTags.length > 0 && (
-                <Section title="Related Tags">
-                    <div class="mb-8">
-                        <div class="flex flex-wrap gap-2">
-                            {relatedTags.map((relatedTag) => {
-                                const count = getTagCount(relatedTag);
-                                return (
-                                    <Button
-                                        as="a"
-                                        href={`/tags/blog/${encodeURIComponent(relatedTag)}`}
-                                        variant="pill"
-                                        class="group"
-                                    >
-                                        <span>{relatedTag}</span>
-                                        <span class="ml-1 text-xs opacity-60">
-                                            ({count})
-                                        </span>
-                                    </Button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </Section>
-            )
-        }
-    </div>
-</BaseLayout>
+<TagPage kind="blog" tag={tag!} />

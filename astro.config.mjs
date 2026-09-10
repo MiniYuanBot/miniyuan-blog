@@ -6,6 +6,7 @@ import sitemap from '@astrojs/sitemap';
 import unocss from 'unocss/astro';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
+import remarkContentImage from './src/plugins/remark-content-image.js';
 import remarkImageCaption from './src/plugins/remark-image-caption.js';
 import remarkPlantuml from './src/plugins/remark-plantuml.js';
 
@@ -30,10 +31,10 @@ export default defineConfig({
 			// Inject Tailwind-style CSS reset
 			injectReset: '@unocss/reset/tailwind.css',
 
-			// UnoCSS preset with Tailwind compatibility
-			presets: [
-				(await import('@unocss/preset-wind3')).default(),
-			],
+			// NOTE: presets / theme / shortcuts / safelist all live in
+			// `unocss.config.ts`. That file takes precedence over this inline
+			// object (UnoCSS merges it last), so declaring presets here too was
+			// dead configuration.
 
 			// Enable @apply and @screen directives support
 			transformers: [
@@ -46,8 +47,21 @@ export default defineConfig({
 	],
 
 	markdown: {
+		// `fortran` is not one of Shiki's default language ids, so fences tagged
+		// ```fortran used to warn and fall back to plaintext. Shiki does bundle
+		// the grammar under `fortran-free-form`; the alias resolves to it and the
+		// grammar is loaded lazily, so no extra dependency is needed.
+		shikiConfig: {
+			langAlias: {
+				fortran: 'fortran-free-form',
+			},
+		},
+
 		remarkPlugins: [
 			remarkMath,
+			// Resolve short image names + normalise caption metadata, then turn
+			// captioned images into <figure> markup. Order matters.
+			remarkContentImage,
 			remarkImageCaption,
 			remarkPlantuml,
 		],

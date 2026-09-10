@@ -65,6 +65,6 @@ if (delay !== undefined) {
     <Icon name={icon} class:list={["icon-base", isActive && "text-accent"]} />
 
     {!isMobile && <span class="sr-only">{label}</span>}
-    {isMobile && <span class="inherent">{label}</span>}
+    {isMobile && <span>{label}</span>}
     <slot />
 </a>

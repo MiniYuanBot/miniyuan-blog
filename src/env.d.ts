@@ -27,3 +27,16 @@ interface ImportMetaEnv {
 interface ImportMeta {
     readonly env: ImportMetaEnv;
 }
+
+// `astro/client` leaves `CustomImageProps` empty on purpose, for projects to
+// extend. `<Image>` forwards unknown props straight to the rendered <img>, which
+// is how `sizes` reaches the browser next to the `srcset` built from `widths`.
+//
+// This file is a global script (it has no top-level import/export), so the
+// namespace is merged directly — wrapping this in `declare global` would be an
+// error in a non-module file (TS2669).
+declare namespace Astro {
+    interface CustomImageProps {
+        sizes?: string;
+    }
+}

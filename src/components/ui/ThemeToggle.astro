@@ -2,11 +2,17 @@
 import { Icon } from "../ui";
 ---
 
+<!--
+  Note: no `id` here. <Header> renders this component twice (desktop nav and the
+  mobile menu), and duplicate ids in one document are invalid — and would make
+  `document.getElementById` ambiguous.
+-->
 <theme-toggle>
     <button
-        id="themeToggle"
-        class="group/theme icon-button-base"
+        type="button"
+        class="theme-toggle-btn group/theme icon-button-base"
         aria-label="Toggle theme"
+        title="切换主题"
     >
         <Icon class="system" name="computer" />
         <Icon class="light" name="sun" />
@@ -20,17 +26,25 @@ import { Icon } from "../ui";
     class ThemeToggle extends HTMLElement {
         connectedCallback() {
             const btn = this.querySelector(
-                "#themeToggle",
+                ".theme-toggle-btn",
             ) as HTMLElement | null;
             if (!btn) return;
 
             const current = setTheme(getTheme() ?? undefined);
             btn.dataset.theme = current;
+            btn.setAttribute(
+                "aria-label",
+                `Theme: ${current}. Click to switch.`,
+            );
 
             btn.addEventListener("click", () => {
                 const newTheme = setTheme(undefined, true);
                 btn.dataset.theme = newTheme;
-                showToast({ message: `Set theme to ${newTheme}` })
+                btn.setAttribute(
+                    "aria-label",
+                    `Theme: ${newTheme}. Click to switch.`,
+                );
+                showToast({ message: `Set theme to ${newTheme}` });
             });
         }
     }
@@ -39,7 +53,7 @@ import { Icon } from "../ui";
 </script>
 
 <style>
-    #themeToggle {
+    .theme-toggle-btn {
         & .system,
         & .light,
         & .dark {

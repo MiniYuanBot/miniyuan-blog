@@ -135,7 +135,7 @@ Arbor 是一种专门为在网集合通信设计的传输层。
 
 - 所有端口、所有 job 共享同一个 slot 池
 - 不按 job 划分，空闲 slot 可以被任何 job 借用
-- 容量公式：`A ≥ ⌈λ × R⌉`（推进率 × 最长 RTT）
+- 容量公式：`A >= ⌈λ × R⌉`（推进率 × 最长 RTT）
 
 ### 实验适配层
 
@@ -149,7 +149,7 @@ Arbor 是一种专门为在网集合通信设计的传输层。
 
 ### 组播 Credit 机制
 
-```plaintext
+```text
 Responder 发放 credit -> 沿树下行 -> 每级分配 slot、压栈 -> 到达 Requester
                                               ↑
 Requester 消费 credit 发 request -> 沿树上行 -> 每级弹栈、聚合 -> 到达 Responder
@@ -248,7 +248,7 @@ Requester 消费 credit 发 request -> 沿树上行 -> 每级弹栈、聚合 -> 
 
 **安全条件**：
 
-- 同一 slot 两次分配间隔 ≥ 最长 RTT
+- 同一 slot 两次分配间隔 >= 最长 RTT
 - 旧数据要么已完成离开，要么因 owner 失配触发 repair
 - 不会混淆不同 Credit Context 的数据
 
@@ -258,7 +258,7 @@ Requester 消费 credit 发 request -> 沿树上行 -> 每级弹栈、聚合 -> 
 
 ### 帧结构
 
-```plaintext
+```text
 [14B Ethernet][20B IPv4][8B UDP][16B/20B Arbor V3 Header][0..8192B Payload]
 ```
 
@@ -322,7 +322,7 @@ Requester 消费 credit 发 request -> 沿树上行 -> 每级弹栈、聚合 -> 
 
 ### 正常 AllReduce 流程（以 offset p->k 为例）
 
-```plaintext
+```text
 0. 注册阶段
    requester: 提交 message -> 发送 REGISTER(m, start_seq)
    responder: 位图收齐 -> REGISTER_ACK 或首份 credit 确认
@@ -362,7 +362,7 @@ Requester 消费 credit 发 request -> 沿树上行 -> 每级弹栈、聚合 -> 
 
 ### 故障恢复流程
 
-```plaintext
+```text
 场景：某 requester 的 request 丢失
 
 1. Responder 对 offset k 超时（50ms）
@@ -470,7 +470,7 @@ Requester 消费 credit 发 request -> 沿树上行 -> 每级弹栈、聚合 -> 
 
 ## 附录：思维导图
 
-```plaintext
+```text
 Arbor
 ├── 核心思想
 │   └── 用"组播 credit"统一协调路径、聚合、拥塞、恢复
@@ -484,7 +484,7 @@ Arbor
 │   ├── 位置反馈（下行压栈、上行弹栈）
 │   ├── 拥塞控制（responder 两道门）
 │   ├── 可靠性（normal 计数 + repair 位图）
-│   └── 共享 slot 池（A ≥ λR）
+│   └── 共享 slot 池（A >= λR）
 ├── 数据格式
 │   ├── 16B/20B Arbor Header
 │   └── 7 种 packet type

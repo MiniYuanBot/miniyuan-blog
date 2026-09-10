@@ -1,0 +1,36 @@
+---
+import { type MarkdownHeading } from "@astrojs/markdown-remark";
+
+export interface Props {
+  headings: MarkdownHeading[];
+  /** indent step per heading level, in rem */
+  indent?: number;
+}
+
+const { headings, indent = 0.75 } = Astro.props;
+
+const baseDepth = Math.min(...headings.map((h) => h.depth), 2);
+---
+
+<!--
+  Flat list with depth-based indentation. The previous version hand-nested three
+  levels of <ul>, which could only render three levels deep and produced far more
+  markup than the same visual result.
+-->
+<ul class="space-y-0.5 text-sm">
+  {
+    headings.map((heading) => (
+      <li class="toc-item">
+        <a
+          href={`#${heading.slug}`}
+          data-toc-link
+          data-slug={heading.slug}
+          class="toc-link group block py-2 px-3 rounded-lg transition-base text-muted-foreground hover:text-foreground hover:bg-gray-light"
+          style={`padding-left: ${(heading.depth - baseDepth) * indent + 0.75}rem`}
+        >
+          <span class="line-clamp-2">{heading.text}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>

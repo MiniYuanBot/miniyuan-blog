@@ -1,0 +1,345 @@
+---
+import { BaseLayout, Section } from "@/components/layouts";
+import { Button, Card, Icon } from "@/components/ui";
+---
+
+<BaseLayout
+    title="Search"
+    description="Search every blog post and note on miniyuan's blog"
+>
+    <Section title="Search" slot="content" level={1} subtitle="标题、标签、正文全文匹配">
+        <!--
+            Sticky on mobile so the field stays reachable while scrolling long
+            result lists. `top-16` clears the sticky header.
+        -->
+        <div
+            class="sticky top-16 z-20 -mx-1 px-1 py-3 bg-background/85 backdrop-blur-md"
+        >
+            <div class="relative">
+                <Icon
+                    name="search"
+                    class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground"
+                />
+                <input
+                    id="search-input"
+                    type="search"
+                    name="q"
+                    autocomplete="off"
+                    enterkeyhint="search"
+                    placeholder="搜索文章与笔记…"
+                    aria-label="Search posts"
+                    class="w-full h-12 pl-11 pr-11 rounded-xl border border-border bg-card text-base text-foreground placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30"
+                />
+                <button
+                    id="search-clear"
+                    type="button"
+                    class="hidden absolute right-2 top-1/2 -translate-y-1/2 size-8 rounded-lg items-center justify-center text-muted-foreground hover:text-foreground hover:bg-gray-light"
+                    aria-label="Clear search"
+                >
+                    <Icon name="close" class="size-4" />
+                </button>
+            </div>
+
+            <p id="search-status" class="mt-2 text-sm text-muted-foreground" role="status" aria-live="polite">
+                输入关键词开始搜索
+            </p>
+        </div>
+
+        <noscript>
+            <Card padding="lg" hover={false}>
+                <p class="m-0 text-muted-foreground">
+                    搜索需要启用 JavaScript。你也可以直接浏览
+                    <a href="/blog">博客</a> 或 <a href="/note">笔记</a>。
+                </p>
+            </Card>
+        </noscript>
+
+        <ul id="search-results" class="flex flex-col gap-3 list-none p-0 m-0"></ul>
+
+        <div id="search-hint" class="text-sm text-muted-foreground">
+            <p class="m-0">提示：按 <kbd>/</kbd> 聚焦搜索框，<kbd>Esc</kbd> 清空，<kbd>↑</kbd><kbd>↓</kbd> 选择，<kbd>Enter</kbd> 打开。</p>
+        </div>
+
+        {
+            /* Sidebar: tag shortcuts double as a browse affordance */
+        }
+    </Section>
+</BaseLayout>
+
+<script>
+    type SearchEntry = {
+        id: string;
+        kind: "blog" | "note";
+        title: string;
+        excerpt: string;
+        tags: string[];
+        pubDate: string;
+        url: string;
+        body: string;
+    };
+
+    const MAX_RESULTS = 30;
+
+    const input = document.getElementById("search-input") as HTMLInputElement | null;
+    const clearBtn = document.getElementById("search-clear");
+    const status = document.getElementById("search-status");
+    const results = document.getElementById("search-results");
+    const hint = document.getElementById("search-hint");
+
+    if (input && status && results) {
+        const normalize = (value: string) => value.toLowerCase();
+        const escapeHtml = (value: string) =>
+            value
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+
+        /**
+         * Plain substring matching rather than word tokens: it works for Chinese
+         * (which has no spaces) as well as for English, at the cost of not doing
+         * stemming.
+         */
+        const terms = (query: string) =>
+            normalize(query).split(/\s+/).filter(Boolean);
+
+        /** Weighted score; a field only counts when it contains the term. */
+        const scoreEntry = (entry: SearchEntry, needles: string[]) => {
+            const title = normalize(entry.title);
+            const tags = normalize(entry.tags.join(" "));
+            const excerpt = normalize(entry.excerpt);
+            const body = normalize(entry.body);
+
+            let score = 0;
+            for (const needle of needles) {
+                let hit = 0;
+                if (title.includes(needle)) hit += 12;
+                if (tags.includes(needle)) hit += 6;
+                if (excerpt.includes(needle)) hit += 4;
+                if (body.includes(needle)) hit += 2;
+                // Every term must appear somewhere (AND semantics).
+                if (hit === 0) return 0;
+                score += hit;
+            }
+
+            // A title that starts with the query is almost always the intent.
+            if (title.startsWith(needles[0])) score += 8;
+            return score;
+        };
+
+        /** Snippet centred on the first matching term. */
+        const snippetFor = (entry: SearchEntry, needles: string[]) => {
+            const source = entry.body || entry.excerpt;
+            const lower = normalize(source);
+            let at = -1;
+            for (const needle of needles) {
+                const found = lower.indexOf(needle);
+                if (found !== -1 && (at === -1 || found < at)) at = found;
+            }
+            if (at === -1) return source.slice(0, 160);
+
+            const start = Math.max(0, at - 60);
+            const end = Math.min(source.length, at + 140);
+            return `${start > 0 ? "…" : ""}${source.slice(start, end).trim()}${
+                end < source.length ? "…" : ""
+            }`;
+        };
+
+        /** Escape, then wrap each matching term in <mark>. */
+        const highlight = (text: string, needles: string[]) => {
+            let html = escapeHtml(text);
+            for (const needle of needles) {
+                if (!needle) continue;
+                const escapedNeedle = escapeHtml(needle).replace(
+                    /[.*+?^${}()|[\]\\]/g,
+                    "\\$&",
+                );
+                html = html.replace(
+                    new RegExp(escapedNeedle, "gi"),
+                    (match) => `<mark class="bg-accent/25 text-foreground rounded px-0.5">${match}</mark>`,
+                );
+            }
+            return html;
+        };
+
+        let entries: SearchEntry[] | null = null;
+        let loading: Promise<SearchEntry[]> | null = null;
+        let activeIndex = -1;
+
+        const loadIndex = () => {
+            loading ??= fetch("/search-index.json")
+                .then((response) => {
+                    if (!response.ok) throw new Error(String(response.status));
+                    return response.json() as Promise<SearchEntry[]>;
+                })
+                .then((data) => {
+                    entries = data;
+                    return data;
+                });
+            return loading;
+        };
+
+        const itemFor = (entry: SearchEntry, needles: string[], index: number) => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <a href="${escapeHtml(entry.url)}" data-result="${index}"
+                   class="block no-underline">
+                    <article class="rounded-xl border border-border/60 bg-card p-4 shadow-sm transition-base md:hover:border-accent/60 md:hover:shadow-md">
+                        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span class="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 font-medium uppercase tracking-wide">
+                                ${entry.kind === "blog" ? "Blog" : "Note"}
+                            </span>
+                            <time datetime="${entry.pubDate}" class="font-mono">${entry.pubDate}</time>
+                        </div>
+                        <h3 class="mt-1.5 mb-1 text-base font-semibold text-foreground">
+                            ${highlight(entry.title, needles)}
+                        </h3>
+                        <p class="m-0 text-sm text-muted-foreground line-clamp-3 [&_mark]:bg-transparent [&_mark]:text-accent">
+                            ${highlight(snippetFor(entry, needles), needles)}
+                        </p>
+                        ${
+                            entry.tags.length
+                                ? `<div class="mt-2 flex flex-wrap gap-1.5 text-xs text-muted-foreground">${entry.tags
+                                      .slice(0, 4)
+                                      .map(
+                                          (tag) =>
+                                              `<span class="rounded-md border border-border/60 px-1.5 py-0.5">${escapeHtml(tag)}</span>`,
+                                      )
+                                      .join("")}</div>`
+                                : ""
+                        }
+                    </article>
+                </a>`;
+            return li;
+        };
+
+        const renderEmpty = (message: string, detail?: string) => {
+            results.innerHTML = "";
+            const li = document.createElement("li");
+            li.className =
+                "rounded-xl border border-dashed border-border p-10 text-center text-muted-foreground";
+            li.innerHTML = detail
+                ? `<p class="m-0 text-lg">${escapeHtml(message)}</p><p class="m-0 mt-1 text-sm">${escapeHtml(detail)}</p>`
+                : `<p class="m-0 text-lg">${escapeHtml(message)}</p>`;
+            results.appendChild(li);
+        };
+
+        const run = async (query: string) => {
+            const needles = terms(query);
+            activeIndex = -1;
+
+            clearBtn?.classList.toggle("hidden", !query);
+            clearBtn?.classList.toggle("flex", !!query);
+
+            if (!needles.length) {
+                results.innerHTML = "";
+                status.textContent = "输入关键词开始搜索";
+                hint?.classList.remove("hidden");
+                return;
+            }
+
+            hint?.classList.add("hidden");
+            status.textContent = "搜索中…";
+
+            let data: SearchEntry[];
+            try {
+                data = await loadIndex();
+            } catch {
+                status.textContent = "";
+                renderEmpty("搜索索引加载失败", "请刷新页面后重试。");
+                return;
+            }
+
+            const scored = data
+                .map((entry) => ({ entry, score: scoreEntry(entry, needles) }))
+                .filter((item) => item.score > 0)
+                .sort((a, b) => b.score - a.score || (a.entry.pubDate < b.entry.pubDate ? 1 : -1))
+                .slice(0, MAX_RESULTS);
+
+            results.innerHTML = "";
+
+            if (!scored.length) {
+                status.textContent = "";
+                renderEmpty(`没有匹配 “${query}” 的结果`, "试试更短的关键词。");
+                return;
+            }
+
+            status.textContent = `找到 ${scored.length} 条结果${scored.length === MAX_RESULTS ? "（已截断）" : ""}`;
+            scored.forEach(({ entry }, index) => {
+                results.appendChild(itemFor(entry, needles, index));
+            });
+        };
+
+        // ------------------------------------------------------------ wiring
+        let debounce: number | undefined;
+        input.addEventListener("input", () => {
+            window.clearTimeout(debounce);
+            const value = input.value;
+            debounce = window.setTimeout(() => {
+                run(value);
+                const url = new URL(window.location.href);
+                if (value) url.searchParams.set("q", value);
+                else url.searchParams.delete("q");
+                history.replaceState(null, "", url);
+            }, 140);
+        });
+
+        clearBtn?.addEventListener("click", () => {
+            input.value = "";
+            input.focus();
+            run("");
+            history.replaceState(null, "", window.location.pathname);
+        });
+
+        document.addEventListener("keydown", (event) => {
+            const typingElsewhere =
+                document.activeElement instanceof HTMLInputElement ||
+                document.activeElement instanceof HTMLTextAreaElement;
+
+            if (event.key === "/" && !typingElsewhere) {
+                event.preventDefault();
+                input.focus();
+                return;
+            }
+
+            if (event.key === "Escape") {
+                input.value = "";
+                run("");
+                input.blur();
+                return;
+            }
+
+            const items = Array.from(
+                results.querySelectorAll<HTMLAnchorElement>("[data-result]"),
+            );
+            if (!items.length) return;
+
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                activeIndex =
+                    event.key === "ArrowDown"
+                        ? (activeIndex + 1) % items.length
+                        : (activeIndex - 1 + items.length) % items.length;
+                for (const [index, item] of items.entries()) {
+                    item.querySelector("article")?.classList.toggle(
+                        "border-accent",
+                        index === activeIndex,
+                    );
+                }
+                items[activeIndex]?.scrollIntoView({ block: "nearest" });
+            }
+
+            if (event.key === "Enter" && activeIndex >= 0) {
+                event.preventDefault();
+                items[activeIndex]?.click();
+            }
+        });
+
+        // Deep link support: /search?q=…
+        const initial = new URL(window.location.href).searchParams.get("q");
+        if (initial) {
+            input.value = initial;
+            run(initial);
+        }
+    }
+</script>
