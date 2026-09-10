@@ -3,8 +3,6 @@
   Inspired by: https://github.com/satnaing/astro-paper
 */
 
-@unocss;
-
 /* ========== Light theme (HSL only) ========== */
 :root {
 	--black: 220 20% 10%;

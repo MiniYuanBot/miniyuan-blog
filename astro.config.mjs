@@ -1,6 +1,6 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
-import { rehypeHeadingIds } from '@astrojs/markdown-remark'
+import { unified, rehypeHeadingIds } from '@astrojs/markdown-remark'
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import unocss from 'unocss/astro';
@@ -12,6 +12,11 @@ import remarkPlantuml from './src/plugins/remark-plantuml.js';
 
 // https://astro.build/config
 export default defineConfig({
+	// Astro 7 changed the default of compressHTML from `true` to `'jsx'`,
+	// which strips whitespace between inline elements (e.g. "Blog" + "Note"
+	// in nav links would render as "BlogNote"). Keep the previous
+	// HTML-aware compression to preserve the existing layout.
+	compressHTML: true,
 	site: 'https://miniyuan.site',
 
 	// output: 'server',
@@ -47,36 +52,24 @@ export default defineConfig({
 	],
 
 	markdown: {
-		// `fortran` is not one of Shiki's default language ids, so fences tagged
-		// ```fortran used to warn and fall back to plaintext. Shiki does bundle
-		// the grammar under `fortran-free-form`; the alias resolves to it and the
-		// grammar is loaded lazily, so no extra dependency is needed.
-		shikiConfig: {
-			langAlias: {
-				fortran: 'fortran-free-form',
-			},
-		},
-
-		remarkPlugins: [
-			remarkMath,
-			// Resolve short image names + normalise caption metadata, then turn
-			// captioned images into <figure> markup. Order matters.
-			remarkContentImage,
-			remarkImageCaption,
-			remarkPlantuml,
-		],
-		rehypePlugins: [
-			rehypeKatex,
-			rehypeHeadingIds,
-			// [
-			// 	rehypeAutolinkHeadings,
-			// 	{
-			// 		behavior: 'append',
-			// 		properties: { className: ['anchor'] },
-			// 		content: { type: 'text', value: '#' }
-			// 	}
-			// ]
-		],
+		// Astro 7 renders .md/.mdx with Sätteri by default. This project relies on
+		// remark/rehype plugins (KaTeX math, image captions, PlantUML, heading IDs),
+		// so we keep the unified() remark/rehype pipeline from @astrojs/markdown-remark.
+		processor: unified({
+			remarkPlugins: [
+				remarkMath,
+				// Resolve short image names + normalise caption metadata, then turn
+				// captioned images into <figure> markup. Order matters:
+				// `remarkContentImage` must run before `remarkImageCaption`.
+				remarkContentImage,
+				remarkImageCaption,
+				remarkPlantuml,
+			],
+			rehypePlugins: [
+				rehypeKatex,
+				rehypeHeadingIds,
+			],
+		}),
 	},
 
 	vite: {

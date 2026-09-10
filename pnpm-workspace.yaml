@@ -1,6 +1,6 @@
+# pnpm workspace & settings
+# Since pnpm 10, package-manager settings live here instead of the "pnpm" field in package.json.
+# See https://pnpm.io/settings
 allowBuilds:
-  esbuild: false
-  sharp: false
-ignoredBuiltDependencies:
-  - esbuild
-  - sharp
+  esbuild: true
+  sharp: true
