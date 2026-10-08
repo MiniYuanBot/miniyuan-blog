@@ -12,6 +12,7 @@
  *     ![caption|width:50%]
  *     ![caption|credit: someone]
  *     ![caption %% credit: someone]        <- legacy spelling
+ *     ![caption|300]                       <- Obsidian pixel width
  */
 
 /**
@@ -92,6 +93,13 @@ export function parseAlt(alt) {
 			const widthMatch = trimmed.match(/^(?:w|width)\s*[:=]\s*(.+)$/i);
 			if (widthMatch) {
 				width = normalizeWidth(widthMatch[1]) ?? width;
+				continue;
+			}
+
+			// Obsidian's `![caption|300]` / `![caption|300x200]` (pixels).
+			const obsidianWidth = trimmed.match(/^(\d+)(?:x\d+)?$/);
+			if (obsidianWidth && segment !== alt) {
+				width = `${obsidianWidth[1]}px`;
 				continue;
 			}
 

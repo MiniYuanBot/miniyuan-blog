@@ -1,0 +1,17 @@
+---
+import TagPage from "@/components/layouts/TagPage.astro";
+import { getPosts, KINDS, tagsOf } from "@/utils/content";
+
+export async function getStaticPaths() {
+    const paths = await Promise.all(
+        KINDS.map(async (kind) =>
+            tagsOf(await getPosts(kind)).map((tag) => ({ params: { kind, tag }, props: { kind, tag } })),
+        ),
+    );
+    return paths.flat();
+}
+
+const { kind, tag } = Astro.props;
+---
+
+<TagPage {kind} {tag} />

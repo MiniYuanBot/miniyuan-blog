@@ -22,6 +22,9 @@
  * A reference is left untouched when it is remote (`https:`, `//…`), a data
  * URI, or already absolute (`/images/…`). Anything else is resolved in order:
  *
+ *   0. a file relative to the note inside `src/content` — the Obsidian layout,
+ *      `![说明](assets/l02-iron-law.png)` — served by the content-assets
+ *      integration (see `src/plugins/lib/content-index.js`)
  *   1. the mirror of the content path —
  *      `public/images/<collection>/<relative dir>/<post>-<name>` (and the same
  *      without the `<post>-` prefix)
@@ -48,11 +51,12 @@
  * The legacy spellings `| width=50%` and `%% credit: x` keep working, and the
  * numbers already written in existing posts are preserved verbatim.
  */
-import { existsSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { visit } from 'unist-util-visit';
 import { buildAlt, parseAlt } from './lib/image-alt.js';
+import { findAttachment, getContentIndex } from './lib/content-index.js';
 
 const IMAGE_EXT = /\.(?:png|jpe?g|gif|webp|avif|svg|bmp|ico)$/i;
 /** `https:`, `data:`, `//cdn…` – anything with a scheme, plus protocol-relative. */
@@ -208,9 +212,15 @@ export default function remarkContentImage(options = {}) {
 		return null;
 	}
 
-	function resolveUrl(url, source) {
+	function resolveUrl(url, source, from) {
 		if (!url) return url;
 		if (url.startsWith('/') || HAS_SCHEME.test(url)) return url;
+
+		// 0. Co-located attachment (Obsidian layout).
+		if (from) {
+			const local = findAttachment(from, url);
+			if (local) return local.url;
+		}
 
 		const clean = decodeURI(url.trim()).replace(/^\.\//, '');
 
@@ -255,6 +265,11 @@ export default function remarkContentImage(options = {}) {
 			hit = lookup([bareName.toLowerCase()], source?.collection);
 		}
 
+		if (!hit && from && bareName) {
+			const local = findAttachment(from, bareName, { byName: true });
+			if (local) return local.url;
+		}
+
 		if (hit) {
 			if (hit.ambiguous) {
 				console.warn(
@@ -288,7 +303,10 @@ export default function remarkContentImage(options = {}) {
 		let size = null;
 		try {
 			const sharp = (await import('sharp')).default;
-			const meta = await sharp(join(publicRoot, publicPath)).metadata();
+			const local = getContentIndex().attachments.get(
+				decodeURIComponent(publicPath).slice(1).toLowerCase(),
+			);
+			const meta = await sharp(local ?? join(publicRoot, publicPath)).metadata();
 			if (meta.width && meta.height) size = { width: meta.width, height: meta.height };
 		} catch {
 			/* unreadable format (svg without librsvg, corrupt file …) – no attributes */
@@ -299,7 +317,8 @@ export default function remarkContentImage(options = {}) {
 	}
 
 	return async (tree, file) => {
-		const source = describeSource(toFilePath(file), contentRoot);
+		const from = toFilePath(file);
+		const source = describeSource(from, contentRoot);
 		const nodes = [];
 		let figureNumber = 0;
 
@@ -318,7 +337,7 @@ export default function remarkContentImage(options = {}) {
 				figureNumber += 1;
 			}
 
-			node.url = resolveUrl(node.url, source);
+			node.url = resolveUrl(node.url, source, from);
 			node.alt = buildAlt({
 				caption: `图 ${figureNumber}：${captionText}`.trimEnd(),
 				width: parsed.width,

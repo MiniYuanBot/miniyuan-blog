@@ -1,0 +1,19 @@
+{
+	"host": "<server ip or domain>",
+	"user": "root",
+	"port": 22,
+	"identityFile": "~/.ssh/<your key>.pem",
+
+	"remoteDir": "/var/www/mini-blog",
+	"liveLink": "dist",
+	"keepReleases": 5,
+
+	"postDeploy": "",
+
+	"importNotes": [
+		{
+			"from": "<path to note-buddy>/<course>/output",
+			"to": "src/content/note/<term>/<course>"
+		}
+	]
+}

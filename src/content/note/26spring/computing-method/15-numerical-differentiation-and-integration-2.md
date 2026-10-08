@@ -261,7 +261,7 @@ $$
 R(f,T_n) = a_2 h^2 + a_4 h^4 + a_6 h^6 + \cdots
 $$
 
-这由 [单区间误差的奇次幂结构](../14-numerical-differentiation-and-integration-1#单区间误差的奇次幂结构) 容易看出。
+这由 [单区间误差的奇次幂结构](14-numerical-differentiation-and-integration-1.md#单区间误差的奇次幂结构) 容易看出。
 
 ### 递推公式
 

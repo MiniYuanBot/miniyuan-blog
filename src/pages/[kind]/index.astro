@@ -1,0 +1,12 @@
+---
+import ListingPage from "@/components/layouts/ListingPage.astro";
+import { KINDS, type Kind } from "@/utils/content";
+
+export function getStaticPaths() {
+    return KINDS.map((kind) => ({ params: { kind } }));
+}
+
+const kind = Astro.params.kind as Kind;
+---
+
+<ListingPage {kind} />

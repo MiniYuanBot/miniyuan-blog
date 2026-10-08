@@ -231,7 +231,7 @@ $$
 - **InstanceNorm**：按单个样本的单个通道做归一化，常用于具有明显样本风格的图像工作。
 - **GroupNorm**：把通道分组后在组内归一化，适合小 batch 或样本高度相关场景。
 
-![图 1：Normalizations，每个都是对蓝色区域进行归一化|w=100%|credit: [[Wu, Y., & He, K. (2018). Group Normalization.|https://doi.org/10.1007/978-3-030-01261-8_1]]](01-normalizations.png)
+![图 1：Normalizations，每个都是对蓝色区域进行归一化|w=100%|credit: [[Wu, Y., & He, K. (2018). Group Normalization.|https://doi.org/10.1007/978-3-030-01261-8_1]]](assets/06-deep-learning-3-01-normalizations.png)
 
 **注**：
 
@@ -251,7 +251,7 @@ $$
 希望在已训练好的神经网络上继续加深，理论上不会变的更差。
 不妨学习**残差**（output - input），那么当加深无益时，只需让 Residual block 趋于 0 即可，这比 Plain layers 学习一个恒等映射容易的多。
 
-![图 2：Residual Link](02-residual-link.png)
+![图 2：Residual Link](assets/06-deep-learning-3-02-residual-link.png)
 
 **Pros**：
 
@@ -274,7 +274,7 @@ $$
 
 通过数据增强的方式，**增大 data variability**。
 
-![图 3：常见的数据增强手段](03-data-augmentation.png)
+![图 3：常见的数据增强手段](assets/06-deep-learning-3-03-data-augmentation.png)
 
 **注**：
 DA 的 **Magnitude**（强度）很重要。

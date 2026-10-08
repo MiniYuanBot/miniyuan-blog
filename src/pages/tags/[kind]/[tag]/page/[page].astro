@@ -1,0 +1,27 @@
+---
+import TagPage from "@/components/layouts/TagPage.astro";
+import { siteConfig } from "@/config";
+import { getPosts, KINDS, tagsOf } from "@/utils/content";
+import { laterPageParams } from "@/utils/pagination";
+
+export async function getStaticPaths() {
+    const paths = await Promise.all(
+        KINDS.map(async (kind) => {
+            const posts = await getPosts(kind);
+            // A tag page only gets a `/page/N/` route when it actually overflows.
+            return tagsOf(posts).flatMap((tag) => {
+                const count = posts.filter((post) => post.data.tags?.includes(tag)).length;
+                return laterPageParams(count, siteConfig.postsPerPage).map((entry) => ({
+                    params: { kind, tag, page: entry.params.page },
+                    props: { kind, tag, page: entry.props.page },
+                }));
+            });
+        }),
+    );
+    return paths.flat();
+}
+
+const { kind, tag, page } = Astro.props;
+---
+
+<TagPage {kind} {tag} {page} />

@@ -154,7 +154,7 @@ topology {
 }
 ```
 
-![图 1：示例拓扑](01-topology.png)
+![图 1：示例拓扑](assets/02-verinc-01-topology.png)
 
 ### Protocol
 

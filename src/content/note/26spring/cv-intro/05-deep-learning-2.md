@@ -126,12 +126,12 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 - **Sparse Connectivity**：
     Conv 只进行**稀疏连接**，也即每个像素点只与它相邻的点进行连接；而 FC 是全连接的。所以 Conv 之后仍保留了**空间位置信息**。
 
-    ![图 1：稀疏连接](01-sparse-connectivity.png)
+    ![图 1：稀疏连接](assets/05-deep-learning-2-01-sparse-connectivity.png)
 
 - **Parameter Sharing**：
     Conv 进行**参数共享**，也即同一卷积核在整张图像上复用；而 FC 则是各边权互不相同。这种参数共享使得 Conv 天然具有（微小）**平移等变性**。
 
-    ![图 2：参数共享，颜色相同的边参数相等](02-parameter-sharing.drawio.png)
+    ![图 2：参数共享，颜色相同的边参数相等](assets/05-deep-learning-2-02-parameter-sharing.drawio.png)
 
 本质上，MLP 是 CNN 的超集。若用 $\mathcal{F}_{\text{CNN}}$ 和 $\mathcal{F}_{\text{MLP}}$ 分别表示 CNN 与 MLP 能够学习的函数集合，则：
 $$

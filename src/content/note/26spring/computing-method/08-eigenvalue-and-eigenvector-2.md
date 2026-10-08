@@ -178,7 +178,7 @@ $$
 - 右乘 $G_{ij}$：只修改第 $i$ 列和第 $j$ 列
 
 **注**：
-显然之前的 [Jacobi 法求特征值](../07-eigenvalue-and-eigenvector-1#jacobi-法)也是利用了 Givens 旋转。
+显然之前的 [Jacobi 法求特征值](07-eigenvalue-and-eigenvector-1.md#Jacobi%20法)也是利用了 Givens 旋转。
 
 ### Givens QR 分解
 

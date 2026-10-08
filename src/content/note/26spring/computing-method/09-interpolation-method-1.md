@@ -570,7 +570,7 @@ $$
 
 在 $[-1,1]$ 上取等距节点做高次多项式插值，区间端点附近会出现**剧烈振荡**。
 
-![图 1：Runge 现象](01-runge_phenomenon.png)
+![图 1：Runge 现象](assets/09-interpolation-method-1-01-runge-phenomenon.png)
 
 ### 原因分析
 

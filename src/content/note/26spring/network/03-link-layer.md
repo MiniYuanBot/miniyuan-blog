@@ -175,7 +175,7 @@ $$
 - 纠 $t$ 个错 $\iff$ $d_{\min} \ge 2t+1$。
   此时圆周 $\set{\mathbf{x} | d_H(\mathbf{x}, \mathbf{p}) = e}$ （图中橙色圈）离编码 $\mathcal{C}$ 中的 $p$ 点最近。
 
-![图 1：汉明码距](01-hamming-distance.png)
+![图 1：汉明码距](assets/03-link-layer-01-hamming-distance.png)
 
 #### 分组码
 
@@ -986,7 +986,7 @@ $$
   则 $t_0 - RTT \lt t_1 \lt t_0 + RTT$ 时才会发生碰撞（注意实际发送时间是离散的时隙，此处当作连续处理）。
   此时 D 点碰撞检测时长不小于 $t_0 - t_1 + RTT$，B 点碰撞检测时长不小于 $t_1 - t_0 + RTT$，最大值 $2RTT$ 在边界取到。
 
-![图 2：碰撞检测时长](02-CSMA-CD.png)
+![图 2：碰撞检测时长](assets/03-link-layer-02-csma-cd.png)
 
 - **二进制指数类型退避算法**
 
@@ -1024,9 +1024,9 @@ $$
    - 重新进入退避阶段（步骤 2）
    - 若重传 16 次仍失败，则丢弃该帧，CW 重置为 $CW_{\min}$
 
-![图 3：CSMA/CA 工作流程，一切正常](03-CSMA-CA1.png)
+![图 3：CSMA/CA 工作流程，一切正常](assets/03-link-layer-03-csma-ca1.png)
 
-![图 4：CSMA/CA 工作流程，存在错误](04-CSMA-CA2.png)
+![图 4：CSMA/CA 工作流程，存在错误](assets/03-link-layer-04-csma-ca2.png)
 
 **RTS/CTS 机制**：
 
@@ -1052,9 +1052,9 @@ $$
 
 NAV 本质上是冻结时间计时器，利用接收到的帧中的 Duration 字段进行设置。利用 NAV 可以实现虚拟载波侦听。
 
-![图 5：CSMA/CA 工作流程，STA 1 与 STA 2 互不可见](05-CSMA-CA3.png)
+![图 5：CSMA/CA 工作流程，STA 1 与 STA 2 互不可见](assets/03-link-layer-05-csma-ca3.png)
 
-![图 6：CSMA/CA 工作流程，RTS/CTS 机制](06-CSMA-CA4.png)
+![图 6：CSMA/CA 工作流程，RTS/CTS 机制](assets/03-link-layer-06-csma-ca4.png)
 
 ### 动态划分：无冲突协议
 

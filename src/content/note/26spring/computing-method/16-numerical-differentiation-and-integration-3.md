@@ -142,7 +142,7 @@ $$
 
 **证明**：
 
-类似于 [Simpson 公式误差估计](../14-numerical-differentiation-and-integration-1#simpson-公式误差估计)。
+类似于 [Simpson 公式误差估计](14-numerical-differentiation-and-integration-1.md#Simpson%20公式误差估计)。
 
 设 $f\in C^{2n}[a,b]$，Gauss 节点为 $x_1,\dots,x_n$。构造 Hermite 插值多项式 $H(x)\in\mathcal{P}_{2n-1}$，使其满足 $2n$ 个插值条件：
 $$

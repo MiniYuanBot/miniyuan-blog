@@ -14,7 +14,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 
 ## 问题引入
 
-![图 1：弹簧-质点系统|w=50%](01-spring-system.png)
+![图 1：弹簧-质点系统|w=50%](assets/07-eigenvalue-and-eigenvector-1-01-spring-system.png)
 
 考虑弹簧-质点系统，质点 $m_j$ 的竖向位移为 $y_j(t)$，运动方程为：
 $$

@@ -256,7 +256,7 @@ $$
 
 本质上就是按照距离整点的距离比例进行加权。
 
-![图1：双线性插值](02-edge-01-bilinear-interpolation.jpg)
+![图1：双线性插值](assets/02-edge-01-bilinear-interpolation.jpg)
 
 **简化 NMS**：
 

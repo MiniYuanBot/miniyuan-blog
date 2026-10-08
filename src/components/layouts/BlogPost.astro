@@ -1,7 +1,7 @@
 ---
 // Define a consistent html layout for blog posts.
 
-import type { CollectionEntry } from "astro:content";
+import type { PostData } from "@/schemas";
 import { type MarkdownHeading } from "@astrojs/markdown-remark";
 import BaseLayout from "./BaseLayout.astro";
 import { FormattedDate } from "@/components/basic";
@@ -10,17 +10,14 @@ import TOCList from "./TOCList.astro";
 
 import "katex/dist/katex.min.css";
 
-type Props = CollectionEntry<"blog">["data"] & { headings?: MarkdownHeading[] };
+type Props = PostData & { headings?: MarkdownHeading[] };
 
 const {
 	title,
 	excerpt,
 	author,
-	tags,
 	pubDate,
 	updatedDate,
-	heroImageLight,
-	heroImageDark,
 	headings = [],
 } = Astro.props;
 ---
@@ -88,6 +85,39 @@ const {
 		)
 	}
 </BaseLayout>
+
+<script>
+	// Mermaid diagrams (```mermaid in Obsidian notes) are rendered in the
+	// browser. The library is only downloaded on pages that contain one, and
+	// diagrams are re-rendered when the theme toggles.
+	const blocks = [...document.querySelectorAll<HTMLElement>("pre.mermaid")];
+	if (blocks.length) {
+		for (const block of blocks) block.dataset.source = block.textContent ?? "";
+
+		const { default: mermaid } = await import("mermaid");
+		const render = async () => {
+			const dark = document.documentElement.classList.contains("dark");
+			mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default" });
+			for (const block of blocks) {
+				block.removeAttribute("data-processed");
+				block.textContent = block.dataset.source ?? "";
+			}
+			await mermaid.run({ nodes: blocks });
+		};
+
+		let dark = document.documentElement.classList.contains("dark");
+		await render();
+		new MutationObserver(() => {
+			const now = document.documentElement.classList.contains("dark");
+			if (now === dark) return;
+			dark = now;
+			render();
+		}).observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ["class"],
+		});
+	}
+</script>
 
 <style is:global>
 	@media print {

@@ -1,5 +1,6 @@
 ---
 import { pageHref, pageNumbers } from "@/utils/pagination";
+import Button from "./Button.astro";
 
 export interface Props {
     /** e.g. `/blog`, `/note`, `/tags/blog/cv` */
@@ -24,22 +25,12 @@ const hasNext = page < totalPages;
             class:list={["w-full flex items-center justify-center gap-1.5 pt-2", className]}
             aria-label={`${label} pagination`}
         >
-            {/* Previous */}
+            {/* Previous / next reuse the arrow button of "View all tags"; at
+                the ends they stay in place, greyed out, so the row never shifts. */}
             {hasPrev ? (
-                <a
-                    href={pageHref(basePath, page - 1)}
-                    rel="prev"
-                    class="pager-btn"
-                    aria-label="上一页"
-                >
-                    <span aria-hidden="true">←</span>
-                    <span class="hidden sm:inline">上一页</span>
-                </a>
+                <Button as="a" variant="back" title="上一页" href={pageHref(basePath, page - 1)} rel="prev" class="pager-step" />
             ) : (
-                <span class="pager-btn pager-disabled" aria-disabled="true">
-                    <span aria-hidden="true">←</span>
-                    <span class="hidden sm:inline">上一页</span>
-                </span>
+                <Button as="span" variant="back" title="上一页" class="pager-step pager-disabled" aria-disabled="true" />
             )}
 
             {/* Numbers – the window collapses on small screens */}
@@ -73,22 +64,10 @@ const hasNext = page < totalPages;
                 )}
             </ul>
 
-            {/* Next */}
             {hasNext ? (
-                <a
-                    href={pageHref(basePath, page + 1)}
-                    rel="next"
-                    class="pager-btn"
-                    aria-label="下一页"
-                >
-                    <span class="hidden sm:inline">下一页</span>
-                    <span aria-hidden="true">→</span>
-                </a>
+                <Button as="a" variant="ahead" title="下一页" href={pageHref(basePath, page + 1)} rel="next" class="pager-step" />
             ) : (
-                <span class="pager-btn pager-disabled" aria-disabled="true">
-                    <span class="hidden sm:inline">下一页</span>
-                    <span aria-hidden="true">→</span>
-                </span>
+                <Button as="span" variant="ahead" title="下一页" class="pager-step pager-disabled" aria-disabled="true" />
             )}
         </nav>
     )
@@ -111,7 +90,12 @@ const hasNext = page < totalPages;
         @apply border-accent bg-accent/10 text-accent font-semibold;
     }
 
-    .pager-disabled {
-        @apply opacity-40 cursor-not-allowed;
+    /* `Button` is a child component, so its root needs :global() here. */
+    nav :global(.pager-step) {
+        @apply h-9 px-3;
+    }
+
+    nav :global(.pager-disabled) {
+        @apply opacity-40 pointer-events-none;
     }
 </style>

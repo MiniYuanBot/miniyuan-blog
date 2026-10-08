@@ -193,7 +193,7 @@ socket() -> getaddrinfo() -> bind() -> listen() -> accept() [阻塞] -> recv() -
 +---------------------+
 ```
 
-> **ATNDP**:
+> [!note] ATNDP
 >
 > Always Think New, Dream Passionately.
 >

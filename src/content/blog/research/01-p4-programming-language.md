@@ -37,7 +37,7 @@ ASIC（Application-Specific Integrated Circuit，专用集成电路），是一�
 | 典型应用 | 传统数据中心、运营商核心网 | 云数据中心、SDN、网络功能虚拟化 |
 | 代表厂商/产品 | Broadcom Trident/Tomahawk、Cisco 传统 ASIC | Barefoot Tofino、Intel IPU、P4 可编程交换机 |
 
-![图 1：两种 ASIC](01-ASIC.png)
+![图 1：两种 ASIC](assets/01-p4-programming-language-01-asic.png)
 
 **注**：传统 Fixed-Function ASIC 是硬件决定协议，Programmable ASIC 是协议决定硬件。
 
@@ -66,7 +66,7 @@ P4 带来了**自顶向下**的设计范式：**This is how I want the network t
 
 **PISA（Protocol-Independent Switch Architecture，协议无关交换机架构）**是 P4 的**抽象执行模型**。一个典型的 PISA 架构包含三个阶段：
 
-![图 2：P4 流水线](02-forwarding-model.png)
+![图 2：P4 流水线](assets/01-p4-programming-language-02-forwarding-model.png)
 
 1. **Programmable Parser（可编程解析器）**：将输入比特流解析为协议头部。程序员声明需要识别的头部及其顺序。
 2. **Programmable Match-Action Pipeline（可编程匹配-动作流水线）**：对解析后的头部执行匹配和动作处理。程序员定义表和处理算法。

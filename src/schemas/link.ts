@@ -3,8 +3,8 @@ import { z } from 'astro/zod'
 export const LinkItemSchema = z.object({
     title: z.string(),
     description: z.string().optional(),
-    url: z.string().url(),
-    avatar: z.string().url().optional(),
+    url: z.url(),
+    avatar: z.url().optional(),
     target: z.enum(['_blank', '_self']).default('_blank'),
 });
 

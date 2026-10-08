@@ -134,7 +134,7 @@ $$
 $$
 这正是新范数 $\|\cdot\|_{\mathbf{M}}$ 的单位球。可逆线性变换将凸对称体映为凸对称体，因此保持范数结构。
 
-**应用**：常通过可逆变换将复杂范数转化为简单范数（如 $\|\cdot\|_\infty$）进行估计。例如[范数逼近引理](/note/26spring/computing-method/05-iterative-method-for-linear-system-1/#两个引理)中的构造。
+**应用**：常通过可逆变换将复杂范数转化为简单范数（如 $\|\cdot\|_\infty$）进行估计。例如[范数逼近引理](05-iterative-method-for-linear-system-1.md#两个引理)中的构造。
 
 ---
 
@@ -408,7 +408,7 @@ $$
 
 **注**：该性质表明，通过改变坐标系的度量，原矩阵的新范数等价于相似变换后新矩阵的原范数。
 
-**应用**：下一节课的[范数逼近引理](/note/26spring/computing-method/05-iterative-method-for-linear-system-1/#两个引理)。
+**应用**：下一节课的[范数逼近引理](05-iterative-method-for-linear-system-1.md#两个引理)。
 
 ### 谱半径
 

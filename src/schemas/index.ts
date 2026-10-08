@@ -1,5 +1,4 @@
-export { BlogPostSchema, type BlogPost } from './blog';
-export { NotePostSchema } from './note';
+export { PostSchema, type PostData } from './post';
 export { SiteConfigSchema, type SiteConfig } from './site';
 export { HeroConfigSchema, type HeroConfig } from './hero';
 export { EducationItemSchema, EducationConfigSchema, type EducationItem, type EducationConfig } from './education';

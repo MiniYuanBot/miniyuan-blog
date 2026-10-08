@@ -200,7 +200,7 @@ $$
 - $\mathbf{a}^{(L)}$ 为最终输出
 - $g_\ell: \mathbb{R}^{n_\ell} \to \mathbb{R}^{n_\ell}$ 是逐元素激活函数
 
-![图 1：神经网络示意图，其中有竖线的@@橙色圆圈@@代表 neurons，@@有向边@@代表 params](01-neural-network.jpg)
+![图 1：神经网络示意图，其中有竖线的@@橙色圆圈@@代表 neurons，@@有向边@@代表 params](assets/04-deep-learning-1-01-neural-network.jpg)
 
 **紧凑形式**：
 
@@ -222,7 +222,7 @@ $$
 
 1. **Sigmoid**：
 
-   ![图 2：Sigmoid 函数|w=70%](02-sigmoid.png)
+   ![图 2：Sigmoid 函数|w=70%](assets/04-deep-learning-1-02-sigmoid.png)
 
    $$
    \sigma(x)=\frac{1}{1+e^{-x}},\quad \sigma'(x)=\sigma(x)(1-\sigma(x))
@@ -233,7 +233,7 @@ $$
 
 2. **tanh**：
 
-   ![图 3：tanh 函数|w=70%](03-tanh.png)
+   ![图 3：tanh 函数|w=70%](assets/04-deep-learning-1-03-tanh.png)
 
    $$
    \tanh(x)=\frac{e^x-e^{-x}}{e^x+e^{-x}},\quad \tanh'(x)=1-\tanh^2(x)
@@ -244,7 +244,7 @@ $$
 
 3. **ReLU**：
 
-   ![图 4：ReLU 函数|w=70%](04-relu.png)
+   ![图 4：ReLU 函数|w=70%](assets/04-deep-learning-1-04-relu.png)
 
    $$
    \mathrm{ReLU}(x)=\max(0,x)
@@ -255,7 +255,7 @@ $$
 
 4. **Leaky ReLU**：
 
-   ![图 5：Leaky ReLU 函数|w=70%](05-leaky-relu.png)
+   ![图 5：Leaky ReLU 函数|w=70%](assets/04-deep-learning-1-05-leaky-relu.png)
 
    $$
    \mathrm{LeakyReLU}(x)=\max(\alpha x,\,x)\quad(\text{usually }\alpha=0.01)
@@ -266,7 +266,7 @@ $$
 
 5. **ELU**：
 
-   ![图 6：ELU 函数|w=70%](06-elu.png)
+   ![图 6：ELU 函数|w=70%](assets/04-deep-learning-1-06-elu.png)
 
    $$
    \mathrm{ELU}(x)=\begin{cases}x,&x\ge0,\\[4pt]\alpha(e^{x}-1),&x<0\end{cases}
@@ -277,7 +277,7 @@ $$
 
 6. **Maxout**：
 
-   ![图 7：Maxout 函数|w=70%](07-maxout.png)
+   ![图 7：Maxout 函数|w=70%](assets/04-deep-learning-1-07-maxout.png)
 
    $$
    \mathrm{Maxout}(x)=\max(w_1^\top x+b_1,\; w_2^\top x+b_2)
@@ -591,7 +591,7 @@ $$
    \text{Generalization Gap} = \mathbb{E}_{\text{test}}[\text{loss}] - \mathbb{E}_{\text{train}}[\text{loss}]
    $$
 
-![图 8：欠拟合与过拟合图示|w=100%](08-underfitting-and-overfitting.png)
+![图 8：欠拟合与过拟合图示|w=100%](assets/04-deep-learning-1-08-underfitting-and-overfitting.png)
 
 **注**：
 

@@ -3,31 +3,24 @@
  * Shared tag page for the `blog` and `note` collections.
  * Replaces the two near-identical `tags/<kind>/[tag].astro` pages.
  */
-import { getCollection } from "astro:content";
 import { siteConfig } from "@/config";
 import BaseLayout from "./BaseLayout.astro";
 import Section from "./Section.astro";
 import { Button, Card, ContentCard, Icon, Pagination } from "@/components/ui";
+import { getPosts, type Kind } from "@/utils/content";
 import { pageHref, paginate } from "@/utils/pagination";
 
 export interface Props {
-    kind: "blog" | "note";
+    kind: Kind;
     tag: string;
     page?: number;
 }
 
 const { kind, tag, page = 1 } = Astro.props;
 
-const label = kind === "blog" ? "blog" : "note";
+const label = kind;
 
-// Branch on the collection name rather than passing a union to `getCollection`,
-// so each call keeps its exact entry type.
-const all =
-    kind === "blog" ? await getCollection("blog") : await getCollection("note");
-
-const tagged = all
-    .filter((entry) => entry.data.tags?.includes(tag))
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const tagged = (await getPosts(kind)).filter((entry) => entry.data.tags?.includes(tag));
 
 const { items, totalItems, totalPages, hasPrev, hasNext, firstItem, lastItem } =
     paginate(tagged, page, siteConfig.postsPerPage);

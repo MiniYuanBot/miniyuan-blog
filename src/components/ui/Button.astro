@@ -21,6 +21,8 @@ const {
 } = Astro.props;
 
 const rel = target === "_blank" ? "noopener noreferrer" : undefined;
+// Link-only attributes; a disabled `<span>` button must not carry them.
+const linkAttrs = href ? { href, target, rel, "data-astro-prefetch": true } : {};
 ---
 
 <Component
@@ -30,10 +32,7 @@ const rel = target === "_blank" ? "noopener noreferrer" : undefined;
         variant === "pill" && "rounded-xl",
         className,
     ]}
-    href={href}
-    target={target}
-    rel={rel}
-    data-astro-prefetch
+    {...linkAttrs}
     {...props}
 >
     <slot name="before">

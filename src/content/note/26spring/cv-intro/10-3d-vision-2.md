@@ -118,7 +118,7 @@ $$
 
 其中 $f$ 为焦距，$B$ 为双目基线。视差越大，深度越小；视差越小，点越远。
 
-![图 1：双目图像视差到深度](01-stereo-geometry.png)
+![图 1：双目图像视差到深度](assets/10-3d-vision-2-01-stereo-geometry.png)
 
 ### Epipolar Geometry
 

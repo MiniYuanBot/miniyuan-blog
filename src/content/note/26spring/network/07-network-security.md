@@ -22,7 +22,8 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 | **被动攻击** | 截获、流量分析 | 仅观察分析 PDU，不干扰信息流，**难以检测** | 数据加密 |
 | **主动攻击** | 篡改、恶意程序、DoS/DDoS | 干扰、破坏或伪造通信，**可检测** | 加密 + 鉴别 |
 
-> **DDoS（Distributed Denial of Service）**：成百上千站点集中攻击单一目标，又称网络带宽攻击或连通性攻击。
+> [!note] DDoS（Distributed Denial of Service）
+> 成百上千站点集中攻击单一目标，又称网络带宽攻击或连通性攻击。
 
 ### 安全目标
 

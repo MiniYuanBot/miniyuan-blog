@@ -6,15 +6,15 @@
  * by hand; they only ever differed in the collection, the route prefix and the
  * copy. Pagination is driven by `siteConfig.postsPerPage`.
  */
-import { getCollection } from "astro:content";
 import { siteConfig } from "@/config";
 import BaseLayout from "./BaseLayout.astro";
 import Section from "./Section.astro";
 import { Button, Card, ContentCard, Icon, Pagination } from "@/components/ui";
+import { getPosts, type Kind } from "@/utils/content";
 import { pageHref, paginate } from "@/utils/pagination";
 
 export interface Props {
-    kind: "blog" | "note";
+    kind: Kind;
     page?: number;
 }
 
@@ -33,12 +33,7 @@ const copy = {
     },
 }[kind];
 
-// Branch on the collection name rather than passing a union to `getCollection`,
-// so each call keeps its exact entry type.
-const all =
-    kind === "blog" ? await getCollection("blog") : await getCollection("note");
-
-const entries = all.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const entries = await getPosts(kind);
 
 const { items, totalItems, totalPages, hasPrev, hasNext, firstItem, lastItem } =
     paginate(entries, page, siteConfig.postsPerPage);

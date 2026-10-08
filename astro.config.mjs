@@ -9,6 +9,8 @@ import remarkMath from 'remark-math';
 import remarkContentImage from './src/plugins/remark-content-image.js';
 import remarkImageCaption from './src/plugins/remark-image-caption.js';
 import remarkPlantuml from './src/plugins/remark-plantuml.js';
+import remarkObsidian from './src/plugins/remark-obsidian.js';
+import contentAssets from './src/integrations/content-assets.js';
 
 // https://astro.build/config
 export default defineConfig({
@@ -32,6 +34,8 @@ export default defineConfig({
 	integrations: [
 		mdx(),
 		sitemap(),
+		// Attachments kept next to the notes (Obsidian `assets/` folders).
+		contentAssets(),
 		unocss({
 			// Inject Tailwind-style CSS reset
 			injectReset: '@unocss/reset/tailwind.css',
@@ -58,6 +62,10 @@ export default defineConfig({
 		processor: unified({
 			remarkPlugins: [
 				remarkMath,
+				// Obsidian syntax (callouts, wikilinks, embeds, relative note
+				// links, ==highlight==, %%comment%%, mermaid). Runs before the
+				// image plugins so `![[x.png]]` embeds get captions too.
+				remarkObsidian,
 				// Resolve short image names + normalise caption metadata, then turn
 				// captioned images into <figure> markup. Order matters:
 				// `remarkContentImage` must run before `remarkImageCaption`.

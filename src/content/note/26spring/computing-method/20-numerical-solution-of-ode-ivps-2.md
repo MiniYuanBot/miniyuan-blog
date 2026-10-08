@@ -48,7 +48,7 @@ $$
 
 **系数推导**：
 
-类似 [改进 Euler](../19-numerical-solution-of-ode-ivps-1#误差分析-2) 中的推导过程，
+类似 [改进 Euler](19-numerical-solution-of-ode-ivps-1.md#误差分析-2) 中的推导过程，
 记 $\tilde{k}_1 = hf(x_n, y(x_n)),\;\tilde{k}_2 = hf(x_n+\alpha h, y(x_n)+\beta \tilde{k}_1)$，则：
 $$
 \begin{aligned}

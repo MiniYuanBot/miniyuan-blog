@@ -1,0 +1,23 @@
+---
+import ListingPage from "@/components/layouts/ListingPage.astro";
+import { siteConfig } from "@/config";
+import { getPosts, KINDS, type Kind } from "@/utils/content";
+import { laterPageParams } from "@/utils/pagination";
+
+export async function getStaticPaths() {
+    const paths = await Promise.all(
+        KINDS.map(async (kind) =>
+            laterPageParams((await getPosts(kind)).length, siteConfig.postsPerPage).map((entry) => ({
+                params: { kind, page: entry.params.page },
+                props: entry.props,
+            })),
+        ),
+    );
+    return paths.flat();
+}
+
+const kind = Astro.params.kind as Kind;
+const { page } = Astro.props;
+---
+
+<ListingPage {kind} {page} />

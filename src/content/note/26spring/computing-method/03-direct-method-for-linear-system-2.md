@@ -190,7 +190,7 @@ $$
 
 实际操作时应按照下图所示的红橙黄绿蓝顺序依次求解。也即先由上式求出 $u^1$，再由下式求出 $l_1$，再由上式求出 $u^2$，以此类推。
 
-![图1：LU 分解求解顺序](01-lu-ordinary-order.png)
+![图1：LU 分解求解顺序](assets/03-direct-method-for-linear-system-2-01-lu-ordinary-order.png)
 
 ### LU 分解代码
 
@@ -328,7 +328,7 @@ for k in range(n - 1): # 递归的第 k 步，最后一步不用计算
          A[i, j] = A[i, j] - A[i, k] * A[k, j]
 ```
 
-![图2：递归 LU 分解求解顺序](02-lu-recursive-order.png)
+![图2：递归 LU 分解求解顺序](assets/03-direct-method-for-linear-system-2-02-lu-recursive-order.png)
 
 **向量化的递归算法**：
 
@@ -388,7 +388,7 @@ a_{ij} \Rightarrow \bar{a}_{i-j+q+1,j}
 $$
 其中 $\bar{A} \in \mathbb{R}^{(p+q+1) \times n}$
 
-![图3：下带宽 p=1、上带宽 q=2 的6×6矩阵](03-band-matrix.png)
+![图3：下带宽 p=1、上带宽 q=2 的6×6矩阵](assets/03-direct-method-for-linear-system-2-03-band-matrix.png)
 
 ### 数学基础：带状矩阵 LU 分解的稀疏性
 
@@ -563,7 +563,7 @@ $$
 
 实际操作时应按照下图所示的红橙黄绿顺序依次求解。也即先由上式求出 $a_{11}$，再由下式求出 $a_1$（$a^1$），再由上式求出 $a_{22}$，以此类推。
 
-![图4：Cholesky 分解求解顺序](04-cholesky-ordinary-order.png)
+![图4：Cholesky 分解求解顺序](assets/03-direct-method-for-linear-system-2-04-cholesky-ordinary-order.png)
 
 ### Cholesky 分解代码
 
@@ -643,7 +643,7 @@ for k in range(n):
          A[i, j] = A[i, j] - A[i, k] * A[j, k] # 前面已经除了，故不需再除
 ```
 
-![图5：递归 Cholesky 分解求解顺序](05-cholesky-recursive-order.png)
+![图5：递归 Cholesky 分解求解顺序](assets/03-direct-method-for-linear-system-2-05-cholesky-recursive-order.png)
 
 **注**：利用了对称性，只需计算下三角部分，存储空间和运算量都减半。
 

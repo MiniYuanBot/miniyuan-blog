@@ -36,3 +36,7 @@ temp/
 
 .vscode/
 .vercel
+
+# deploy settings (server address, key path) and the upload archive
+deploy.config.json
+dist-upload.tar.gz

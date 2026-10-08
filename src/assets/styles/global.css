@@ -298,3 +298,81 @@ span.katex-display {
 		box-shadow: none !important;
 	}
 }
+
+/* ========== Obsidian syntax (src/plugins/remark-obsidian.js) ========== */
+.prose .callout {
+	--callout: 217 91% 60%;
+	margin: 1.25em 0;
+	padding: 0.75em 1em;
+	border-left: 4px solid hsl(var(--callout));
+	border-radius: 0.5rem;
+	background: hsl(var(--callout) / 0.08);
+}
+.prose .callout-abstract,
+.prose .callout-todo { --callout: 188 86% 43%; }
+.prose .callout-info { --callout: 217 91% 60%; }
+.prose .callout-tip,
+.prose .callout-success { --callout: 152 60% 40%; }
+.prose .callout-question,
+.prose .callout-warning { --callout: 32 95% 50%; }
+.prose .callout-failure,
+.prose .callout-danger,
+.prose .callout-bug { --callout: 0 80% 58%; }
+.prose .callout-example { --callout: 262 70% 62%; }
+.prose .callout-quote { --callout: 215 16% 55%; }
+
+.prose .callout-title {
+	margin: 0;
+	font-weight: 600;
+	color: hsl(var(--callout));
+}
+.prose summary.callout-title {
+	cursor: pointer;
+	list-style: none;
+}
+.prose summary.callout-title::-webkit-details-marker {
+	display: none;
+}
+.prose summary.callout-title::after {
+	content: '›';
+	display: inline-block;
+	margin-left: 0.5em;
+	transition: transform 0.15s;
+}
+.prose details.callout[open] > summary.callout-title::after {
+	transform: rotate(90deg);
+}
+.prose .callout-content {
+	margin-top: 0.5em;
+}
+.prose .callout-content > :first-child {
+	margin-top: 0;
+}
+.prose .callout-content > :last-child {
+	margin-bottom: 0;
+}
+
+.prose mark {
+	padding: 0 0.15em;
+	border-radius: 0.2em;
+	background: hsl(50 100% 60% / 0.45);
+	color: inherit;
+}
+
+.prose pre.mermaid {
+	display: flex;
+	justify-content: center;
+	margin: 1.5em 0;
+	background: transparent;
+	color: transparent; /* hide the source until it is rendered */
+	overflow-x: auto;
+}
+.prose pre.mermaid[data-processed] {
+	color: inherit;
+}
+
+/* Footnotes (GFM) — Obsidian notes cite sources with them. */
+.prose .footnotes {
+	font-size: 0.875em;
+	color: hsl(var(--muted-foreground));
+}

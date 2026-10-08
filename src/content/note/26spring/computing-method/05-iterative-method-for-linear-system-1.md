@@ -325,8 +325,8 @@ $$
 $$
 
 接下来利用上一节课的补充内容：
-[向量范数的可逆变换](/note/26spring/computing-method/04-direct-method-for-linear-system-3/#向量范数的可逆变换)
-以及 [矩阵范数的相似变换](/note/26spring/computing-method/04-direct-method-for-linear-system-3/#矩阵范数的相似变换)，
+[向量范数的可逆变换](04-direct-method-for-linear-system-3.md#向量范数的可逆变换)
+以及 [矩阵范数的相似变换](04-direct-method-for-linear-system-3.md#矩阵范数的相似变换)，
 构造一个诱导范数，使其值恰好等于**相似变换后**矩阵的行和范数。
 
 定义向量范数：
@@ -347,7 +347,7 @@ $$
 = \rho(\mathbf{A}) + \varepsilon
 $$
 
-从而完成证明（构造）。当然左侧的不等式也可以由[上节课的有关内容](/note/26spring/computing-method/04-direct-method-for-linear-system-3/#谱半径)得到。
+从而完成证明（构造）。当然左侧的不等式也可以由[上节课的有关内容](04-direct-method-for-linear-system-3.md#谱半径)得到。
 
 **注**：由于矩阵范数的选取依赖于 $\varepsilon$，故不能令 $\varepsilon \to 0$，也即不一定存在一个范数使得 $\|\mathbf{A}\| = \rho(\mathbf{A})$
 

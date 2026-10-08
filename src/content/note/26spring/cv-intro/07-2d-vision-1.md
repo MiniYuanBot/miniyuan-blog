@@ -29,7 +29,7 @@ heroImageDark: '@/assets/images/dark/dark-01.png'
 - **Cost**：计算量、参数量、内存占用和推理延迟。
 
 <!-- 注意计算量与参数量正相关 -->
-![图 1：神经网络示意图，其中有竖线的@@橙色圆圈@@代表 neurons，@@有向边@@代表 params。neurons 对应了@@内存占用@@，params 对应了@@参数量@@](01-neural-network.jpg)
+![图 1：神经网络示意图，其中有竖线的@@橙色圆圈@@代表 neurons，@@有向边@@代表 params。neurons 对应了@@内存占用@@，params 对应了@@参数量@@](assets/07-2d-vision-1-01-neural-network.jpg)
 
 ### From AlexNet to VGG
 
@@ -74,15 +74,15 @@ f_\ell \ge j_\ell
 $$
 代数化简得只需满足 $k_\ell \ge s_\ell$，上式即自动满足。
 
-![图 2：感受野的递推公式 1，Conv 层示例，虚线框代表 kernel|w=100%](02-receptive-field-1.png)
+![图 2：感受野的递推公式 1，Conv 层示例，虚线框代表 kernel|w=100%](assets/07-2d-vision-1-02-receptive-field-1.png)
 
 <!-- no-merge -->
 
-![图 3：感受野的递推公式 2，计算 f3，实线框代表 field|w=100%](03-receptive-field-2.png)
+![图 3：感受野的递推公式 2，计算 f3，实线框代表 field|w=100%](assets/07-2d-vision-1-03-receptive-field-2.png)
 
 <!-- no-merge -->
 
-![图 4：感受野的递推公式 3，计算 f4，实线框代表 field|w=100%](04-receptive-field-3.png)
+![图 4：感受野的递推公式 3，计算 f4，实线框代表 field|w=100%](assets/07-2d-vision-1-04-receptive-field-3.png)
 
 **smaller kernel & deeper net 的好处**：
 
@@ -103,7 +103,7 @@ $$
 ### From VGG to ResNet
 
 ResNet 相比 VGG 网络深度有了显著的提升，主要是因为使用了 **Residual Block**。
-有关内容见前述笔记 [Residual Link](../06-deep-learning-3#residual-link)。
+有关内容见前述笔记 [Residual Link](06-deep-learning-3.md#Residual%20Link)。
 
 同时 ResNet 还引入了 **bottleneck**（瓶颈层）。
 Bottleneck 的核心是先提炼关键信息，只在关键信息上做昂贵的大卷积核运算，从而**减少参数量**。
@@ -119,7 +119,7 @@ Bottleneck 的核心是先提炼关键信息，只在关键信息上做昂贵的
 - Basic Block：$2 (3^2 \times 256^2) \approx 1.18 \text{M}$
 - Bottleneck：$1^2 \times 256 \times 64 + 3^2 \times 64^2 + 1^2 \times 64 \times 256 \approx 70 \text{K}$
 
-![图 5：Bottleneck](05-bottleneck.png)
+![图 5：Bottleneck](assets/07-2d-vision-1-05-bottleneck.png)
 
 ### Beyond ResNet
 
@@ -152,7 +152,7 @@ ResNet 对于 CNN 的开发已基本完善。不过后续还有诸多变体。
 
     当通道数 $N$ 较大时，计算量约为标准卷积的 $1/N$，精度损失却很小。
 
-![图 6：深度可分离卷积|credit: [[Howard A. G., et al. (2017). MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications.|https://doi.org/10.48550/arXiv.1704.04861]]](06-mobilenet.png)
+![图 6：深度可分离卷积|credit: [[Howard A. G., et al. (2017). MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications.|https://doi.org/10.48550/arXiv.1704.04861]]](assets/07-2d-vision-1-06-mobilenet.png)
 
 - **NAS**（Neural Architecture Search）：使用学习算法自动搜索网络结构。
 
@@ -257,7 +257,7 @@ ResNet 对于 CNN 的开发已基本完善。不过后续还有诸多变体。
     Downsampling 时记录每个 pooling window 中最大值的位置索引；
     Upsampling 时，将每个输入值放回原来的位置，其余位置置 $0$。
 
-![图 7：Max Unpooling|credit: PKU Intro to CV Slides](07-max-unpooling.png)
+![图 7：Max Unpooling|credit: PKU Intro to CV Slides](assets/07-2d-vision-1-07-max-unpooling.png)
 
 ### Learnable Upsampling
 
@@ -328,19 +328,19 @@ $$
 - 图中下方蓝色的是执行了 Stretching、Surrounding padding 和 Additional padding 后的图像。
 - 图中上方是使用等价 convolution 后，也即 Transposed Convolution 后得到的上采样图像。
 
-![图 8：h'_in=2, h'_out=4, k=3, s=1, p=0](08-no-padding-no-stride-transposed.gif)
+![图 8：h'_in=2, h'_out=4, k=3, s=1, p=0](assets/07-2d-vision-1-08-no-padding-no-stride-transposed.gif)
 
-![图 9：same padding, h'_in=5, h'_out=5, k=3, s=1, p=(k-1)/2](09-same-padding-no-stride-transposed.gif)
+![图 9：same padding, h'_in=5, h'_out=5, k=3, s=1, p=(k-1)/2](assets/07-2d-vision-1-09-same-padding-no-stride-transposed.gif)
 
-![图 10：full padding, h'_in=7, h'_out=5, k=3, s=1, p=k-1](10-full-padding-no-stride-transposed.gif)
+![图 10：full padding, h'_in=7, h'_out=5, k=3, s=1, p=k-1](assets/07-2d-vision-1-10-full-padding-no-stride-transposed.gif)
 
 <!-- no-merge -->
 
-![图 11：h'_in=2, h'_out=5, k=3, s=2, p=0](11-no-padding-with-stride-transposed.gif)
+![图 11：h'_in=2, h'_out=5, k=3, s=2, p=0](assets/07-2d-vision-1-11-no-padding-with-stride-transposed.gif)
 
-![图 12：h'_in=3, h'_out=5, k=3, s=2, p=1](12-with-padding-with-stride-transposed.gif)
+![图 12：h'_in=3, h'_out=5, k=3, s=2, p=1](assets/07-2d-vision-1-12-with-padding-with-stride-transposed.gif)
 
-![图 13：h'_in=3, h'_out=6, k=3, s=2, p=1](13-with-padding-with-strides-with-addition-transposed.gif)
+![图 13：h'_in=3, h'_out=6, k=3, s=2, p=1](assets/07-2d-vision-1-13-with-padding-with-strides-with-addition-transposed.gif)
 
 **注**：这只是**概念上等价**的示意方法。实际软件实现不会真的插入大量零再做乘法，因为那样会产生大量无效的零乘运算，效率极低。
 
@@ -353,15 +353,15 @@ $$
 
 转置卷积的一个已知缺陷是：当 kernel 尺寸 $k$ 不能被 stride $s$ 整除时，kernel 在输出空间上的重叠区域不均匀，导致叠加后累积激活强度不一致，产生周期性的**棋盘格伪影**。
 
-![图 14：一维棋盘格伪影|w=100%](14-1d-checkerboard-artifacts.png)
+![图 14：一维棋盘格伪影|w=100%](assets/07-2d-vision-1-14-1d-checkerboard-artifacts.png)
 
 <!-- no-merge -->
 
-![图 15：stride 整除 kernel 时没有伪影|w=100%](15-1d-no-checkerboard-artifacts.png)
+![图 15：stride 整除 kernel 时没有伪影|w=100%](assets/07-2d-vision-1-15-1d-no-checkerboard-artifacts.png)
 
 <!-- no-merge -->
 
-![图 16：二维棋盘格伪影|w=100%](16-2d-checkerboard-artifacts.png)
+![图 16：二维棋盘格伪影|w=100%](assets/07-2d-vision-1-16-2d-checkerboard-artifacts.png)
 
 **替代方案**：
 
@@ -385,7 +385,7 @@ UNet 在 Auto-Encoder 框架中加入 **Skip Link**，把 Encoder 中对应分�
 
 注意此处的 Skip Link 执行的是 **Concatenation** 而非 Addition。
 
-![图 17：UNet 架构|w=100%|credit: [[Ronneberger O., et al. U-Net: Convolutional Networks for Biomedical Image Segmentation|https://doi.org/10.48550/arXiv.1505.04597]]](17-UNet.png)
+![图 17：UNet 架构|w=100%|credit: [[Ronneberger O., et al. U-Net: Convolutional Networks for Biomedical Image Segmentation|https://doi.org/10.48550/arXiv.1505.04597]]](assets/07-2d-vision-1-17-unet.png)
 
 ### Evaluation Metrics
 
