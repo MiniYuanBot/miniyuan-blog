@@ -61,12 +61,12 @@
     "questions.md": "2026-10-10"
   },
   "files": {
-    "01-what-operating-systems-do.md": "86b55fcac02d0c41fb8025bf2c198ac6f6d2f04ea82fbbf2964310f1bba26f24",
-    "02-os-overview-and-interrupts.md": "4f135a4c730197569e17a97cd1455a4dca828444e67e89c2781818ee9e0f3d45",
-    "03-interrupts-and-system-calls.md": "e5c863ef93938ebda3c057e700d84d98f40c55df799600bd1d4f8615138a3c9e",
-    "04-process-model.md": "dbf1c46c977d78acbc9812e42cf1e4e47d5cccd63662f17f7df29efbeb51460e",
-    "05-process-control-and-threads.md": "ff7aee024b79ba02ff41fb89c042fa8d945d570d4707f40406e45453e8ddff05",
-    "06-processor-scheduling.md": "9da65a2cf28e757c9b652d9e1667c9214591fd324b6bb3545330ca4d5f31e0ba",
+    "01-what-operating-systems-do.md": "5e1e7a7785fadc7a71bb641e79ef6cef5cdafc9042b5a7baef9d0d036a500e5a",
+    "02-os-overview-and-interrupts.md": "15097110f5b7d43d67eb023e23c8ce0eb5baa3bce5aac2bd0698b46a1cfbb373",
+    "03-interrupts-and-system-calls.md": "295611618554a77fd0dca40b9935221d8514b2b81bcc4575054434bfa7e08650",
+    "04-process-model.md": "2033396611745e7a8241f6091b51de212d2c301b44d71c273bbf031ed22636b0",
+    "05-process-control-and-threads.md": "ac02587c12ae317ca5696a16ad27b64ac6eaba6e18296421455a04a3c2891d62",
+    "06-processor-scheduling.md": "afeeb79c1861874a04dbe2dd1c3389ac3ecea0edf697d5ab79d97e30b061be93",
     "assets/l02-interrupt-exception-events.png": "6f424ed57ec13f5bc7140e4c289b1a6bd6df4e187d6bc77934d533b900e962f6",
     "assets/l02-multiprogramming-utilization.png": "e63c4fda25666b9d2d13194bcedff6cc9f200e0370ccd194955b21696d238f27",
     "assets/l02-offline-and-spooling.png": "a707b31d63f1e2637f331c36a91e42a5e67130a01c53eb24fe3528d455e3fa9a",

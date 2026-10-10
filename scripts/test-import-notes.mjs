@@ -143,3 +143,109 @@ test('natural anchors match the site for duplicate headings, inline code and mat
   for (const [, encoded] of code.matchAll(/href="#([^"]+)"/g)) assert.ok(ids.has(decodeURIComponent(encoded)), encoded);
   assert.ok(ids.has('相同标题-3'));
 });
+
+test('omits source callouts and citation footnotes, including inline markers', async (t) => {
+  const { root, put, config, dest } = fixture(t);
+  put('L01/index.md', '# L01 测试讲义\n\n导读[^intro]。\n\n> [!info]- 来源\n> - [课件](../../input/L01.pdf)\n> - ![审计图片](missing.png)\n\n[^intro]: L01.pdf：PDF p.1');
+  put('L01/chapters/01-first.md', [
+    '# 01 第一章',
+    '',
+    '正文[^s1p59]与第二处[^s1p59]，转写稿[^s2b13]，未定义的来源[^s9p99]。',
+    '',
+    '行尾引用   [^s1p59] [^s2b13]',
+    '',
+    '显式换行 [^s1p59]  ',
+    '下一行',
+    '',
+    '普通脚注[^explanation]。',
+    '',
+    '> [!info]- 来源',
+    '> - L02.pdf：PDF p.59–65',
+    '> - L02.docx：DOCX body 491–564',
+    '',
+    '> [!note] 补充解释：示例 FSM 与数据通路的 MIPS 来源',
+    '> 这段说明应保留。',
+    '',
+    '[^s1p59]: L02.pdf-PDF p.59',
+    '[^s2b13]: L02.docx-DOCX body 491-525',
+    '    附加来源说明。',
+    '[^explanation]: 有意义的补充解释。',
+    '[^unused]: L02.pdf-PDF p.65',
+    '',
+    '行内示例：`[^s1p59]`；转义示例：\\[^s1p59]。',
+    '',
+    '```md',
+    '> [!info]- 来源',
+    '> - L02.pdf：PDF p.59',
+    '[^s1p59]: L02.pdf-PDF p.59',
+    '代码中的标记[^s1p59]',
+    '```',
+  ].join('\n'));
+  put('questions.md', '# 思考题\n\n题目[^source]。\n\n> [!info]+ Sources\n> - L01.pdf\n\n[^source]: L01.pdf-PDF p.2');
+  applyNotesImport(planNotesImport(config, { root }));
+  const result = readFileSync(join(dest, '01-intro.md'), 'utf8');
+  assert.match(result, /导读。/);
+  assert.match(result, /正文与第二处，转写稿，未定义的来源。/);
+  assert.match(result, /^行尾引用$/m);
+  assert.match(result, /显式换行  \n下一行/);
+  assert.match(result, /MIPS 来源\n> 这段说明应保留/);
+  assert.match(result, /\[\^l01-section-1-explanation\]: 有意义的补充解释/);
+  assert.doesNotMatch(result, /\[\^l01-section-1-(?:s1p59|s2b13|unused)\]|附加来源说明|missing.png|input\/L01.pdf/);
+  assert.match(result, /`\[\^s1p59\]`；转义示例：\\\[\^s1p59\]/);
+  assert.match(result, /```md\n> \[!info\]- 来源\n> - L02.pdf：PDF p.59\n\[\^s1p59\]: L02.pdf-PDF p.59\n代码中的标记\[\^s1p59\]\n```/);
+  const rendered = await (await createMarkdownProcessor({ syntaxHighlight: false })).render(parseFrontmatter(result).content);
+  assert.doesNotMatch(rendered.code, /href="#user-content-fn-l01-section-1-s/);
+  const questions = readFileSync(join(dest, 'questions.md'), 'utf8');
+  assert.match(questions, /题目。/);
+  assert.doesNotMatch(questions, /Sources|\[\^/);
+  assert.equal(planNotesImport(config, { root }).writes.length, 0);
+});
+
+test('omits uncertainty sections with children while preserving following sections and code examples', (t) => {
+  const { root, put, config, dest } = fixture(t);
+  const index = '# L01 测试讲义\n\n导读保留。\n\n## 不确定事项\n\n未核实内容。\n\n### 待核实细节\n\n![不用解析的图](missing.png)\n\n## 本讲小结\n\n小结保留。';
+  const chapter = [
+    '# 第一章',
+    '',
+    '正文保留；“不确定事项”只是这里的一段文字。',
+    '',
+    '## **不确定事项**',
+    '',
+    '章节审计信息。',
+    '',
+    '### 内部子节',
+    '',
+    '[不用解析的链接](missing.md)',
+    '',
+    '## 保留章节',
+    '',
+    '后续内容。',
+    '',
+    '```md',
+    '## 不确定事项',
+    '代码示例保持原样。',
+    '```',
+    '',
+    '### 不确定事项：',
+    '',
+    '结尾审计信息。',
+  ].join('\n');
+  put('L01/index.md', index);
+  put('L01/chapters/01-first.md', chapter);
+  put('questions.md', '# 思考题\n\n## 第一组\n\n题目保留。\n\n### 不确定事项\n\n题目审计信息。\n\n#### 详细记录\n\n子节审计信息。\n\n## 第二组\n\n下一组题目保留。');
+  applyNotesImport(planNotesImport(config, { root }));
+  const result = readFileSync(join(dest, '01-intro.md'), 'utf8');
+  assert.match(result, /导读保留。/);
+  assert.match(result, /“不确定事项”只是这里的一段文字/);
+  assert.match(result, /### 保留章节\n\n后续内容。/);
+  assert.match(result, /## 本讲小结\n\n小结保留。/);
+  assert.match(result, /```md\n## 不确定事项\n代码示例保持原样。\n```/);
+  assert.doesNotMatch(result, /未核实内容|待核实细节|章节审计信息|内部子节|结尾审计信息|missing\.(?:png|md)/);
+  const questions = readFileSync(join(dest, 'questions.md'), 'utf8');
+  assert.match(questions, /题目保留。/);
+  assert.match(questions, /## 第二组\n\n下一组题目保留。/);
+  assert.doesNotMatch(questions, /不确定事项|审计信息|详细记录/);
+  assert.equal(readFileSync(join(root, 'source/L01/index.md'), 'utf8'), index);
+  assert.equal(readFileSync(join(root, 'source/L01/chapters/01-first.md'), 'utf8'), chapter);
+  assert.equal(planNotesImport(config, { root }).writes.length, 0);
+});

@@ -43,10 +43,10 @@
     "04-branch-prediction-and-multiple-issue.md": "2026-10-10"
   },
   "files": {
-    "01-computer-architecture-intro.md": "9ec789540cf03a5436da5826e2f1328aa7990732a745b799f22dc31f18910ae5",
-    "02-performance-and-risc-v.md": "5f30b5c123fe28ea5c66227ea8199f04ad95efb7fc37ea0466ebb8794dc1446c",
-    "03-risc-v-alu-and-datapath.md": "98ad71fab80406c335f3c4b4c32d4ec27d0e4d661b6ac488b57736e5d18eb71f",
-    "04-branch-prediction-and-multiple-issue.md": "ce1c2ef8e3965546f0c59ac0f02785d12db42be4e2cbeacb6eba64727e6e2faa",
+    "01-computer-architecture-intro.md": "ee8bab1dcbdbc8810ce0cc4e35785f2e8539010c665397a708911fce2aa19c8b",
+    "02-performance-and-risc-v.md": "8b704a474de34c8aa7444516dbdd967ad6656538798ca36865b2122bf31833ae",
+    "03-risc-v-alu-and-datapath.md": "9728b92e53ebe14f55738aa85b16bb7f461981316bd37e4da305ac388f84e654",
+    "04-branch-prediction-and-multiple-issue.md": "95cbe2b8899c3f3c5744d2bdf5dc1c710dbb2cccafafcbe6897c8a1d9e734363",
     "assets/l01-coffee-lake-die.png": "43ca97713100f66d05637a6f4e59b44c8918a56f48150b58160259374fd076d1",
     "assets/l01-computer-system-stack.png": "ec1da28b1822d8ce2d45ce48b37bd9d19b8b9ca318464714e1ac62d5a4ae5be7",
     "assets/l01-ecc-rber-uber.png": "4ede8e95580ce6188e03dccfdcf49960688faf6f3ca3e5ce00048ca50e0ebd11",

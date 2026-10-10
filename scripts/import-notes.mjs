@@ -25,6 +25,68 @@ const textOf = (node) => node.children ? node.children.map(textOf).join('') : no
 const kebab = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || `asset-${hash(text).slice(0, 8)}`;
 const decode = (text) => { try { return decodeURIComponent(text); } catch { return text; } };
 const stripChapterNumber = (text) => text.replace(/^\d+[ \t]+/, '');
+const SOURCE_FOOTNOTE_ID = /^s\d+[pb]\d+(?:[-_]\d+)?$/i;
+
+/** Strip note-buddy's editorial metadata before resolving headings and links. */
+function stripImportMetadata(content) {
+  const tree = parser.parse(content);
+  const sourceFootnotes = new Set();
+  const ranges = [];
+  const remove = (node, block = false) => {
+    let end = node.position.end.offset;
+    if (block) while (content[end] === '\n') end += 1;
+    ranges.push([node.position.start.offset, end]);
+  };
+  const isSourceFootnote = (id) => SOURCE_FOOTNOTE_ID.test(id) || sourceFootnotes.has(id.toLowerCase());
+  const removeReference = (start, end) => {
+    const newline = content.indexOf('\n', end);
+    const tail = content.slice(end, newline === -1 ? content.length : newline).replace(/(?<!\\)\[\^([^\]\n]+)\]/g, (raw, id) => isSourceFootnote(id) ? '' : raw);
+    // Spaces before a citation must not turn into a trailing Markdown break.
+    // Preserve deliberate hard breaks written after the citation itself.
+    if (/^[ \t]*$/.test(tail)) while (start > 0 && /[ \t]/.test(content[start - 1])) start -= 1;
+    ranges.push([start, end]);
+  };
+  for (const [index, node] of tree.children.entries()) {
+    if (node.type !== 'heading' || !/^不确定事项\s*[:：]?$/.test(textOf(node).trim())) continue;
+    const next = tree.children.slice(index + 1).find((child) => child.type === 'heading' && child.depth <= node.depth);
+    ranges.push([node.position.start.offset, next?.position.start.offset ?? content.length]);
+  }
+  visit(tree, (node) => {
+    if (node.type === 'blockquote' && node.children[0]?.type === 'paragraph') {
+      const title = textOf(node.children[0]).split('\n')[0].trim();
+      if (/^\[![\w-]+\][+-]?\s*(?:(?:资料|引用|文献)?来源|出处|sources?)\s*[:：]?$/i.test(title)) remove(node, true);
+    }
+    if (node.type === 'footnoteDefinition') {
+      const raw = content.slice(node.position.start.offset, node.position.end.offset);
+      if (SOURCE_FOOTNOTE_ID.test(node.identifier) || /\.(?:pdf|docx|pptx?)\b/i.test(raw)) {
+        sourceFootnotes.add(node.identifier.toLowerCase());
+        remove(node, true);
+      }
+    }
+  });
+  visit(tree, (node) => {
+    if (node.type === 'footnoteReference' && sourceFootnotes.has(node.identifier.toLowerCase())) removeReference(node.position.start.offset, node.position.end.offset);
+    // Missing definitions parse as text. Strip generated source markers too,
+    // while leaving fenced code, inline code and escaped examples untouched.
+    if (node.type === 'text') {
+      const start = node.position.start.offset;
+      const raw = content.slice(start, node.position.end.offset);
+      for (const match of raw.matchAll(/(?<!\\)\[\^([^\]\n]+)\]/g)) {
+        if (isSourceFootnote(match[1])) removeReference(start + match.index, start + match.index + match[0].length);
+      }
+    }
+  });
+  ranges.sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const [start, end] of ranges) {
+    const last = merged.at(-1);
+    if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+    else merged.push([start, end]);
+  }
+  let result = content;
+  for (const [start, end] of merged.reverse()) result = result.slice(0, start) + result.slice(end);
+  return result;
+}
 
 function chapterNumber(node) {
   let first;
@@ -52,9 +114,10 @@ function walk(dir, prefix = '') {
 
 function readDocument(root, rel) {
   const { frontmatter, content } = parseFrontmatter(readFileSync(join(root, rel), 'utf8').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n'));
-  const tree = parser.parse(content);
+  const body = stripImportMetadata(content);
+  const tree = parser.parse(body);
   const h1 = tree.children.find((node) => node.type === 'heading' && node.depth === 1);
-  return { rel, data: frontmatter, body: content, tree, h1, title: String(frontmatter.title ?? (h1 && textOf(h1)) ?? basename(rel, '.md')) };
+  return { rel, data: frontmatter, body, tree, h1, title: String(frontmatter.title ?? (h1 && textOf(h1)) ?? basename(rel, '.md')) };
 }
 
 function assertSafeDestination(root, dest) {
