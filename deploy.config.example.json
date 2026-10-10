@@ -8,12 +8,5 @@
 	"liveLink": "dist",
 	"keepReleases": 5,
 
-	"postDeploy": "",
-
-	"importNotes": [
-		{
-			"from": "<path to note-buddy>/<course>/output",
-			"to": "src/content/note/<term>/<course>"
-		}
-	]
+	"postDeploy": ""
 }

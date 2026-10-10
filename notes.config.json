@@ -1,0 +1,38 @@
+{
+  "importNotes": [
+    {
+      "from": "../note-buddy/operating-system/output",
+      "to": "src/content/note/26autumn/operating-system",
+      "frontmatter": {
+        "author": "miniyuan",
+        "position": "Beijing",
+        "heroImageLight": "@/assets/images/light/light-01.png",
+        "heroImageDark": "@/assets/images/dark/dark-01.png"
+      },
+      "lectures": {
+        "L01": { "slug": "what-operating-systems-do" },
+        "L02": { "slug": "os-overview-and-interrupts" },
+        "L03": { "slug": "interrupts-and-system-calls" },
+        "L04": { "slug": "process-model" },
+        "L05": { "slug": "process-control-and-threads" },
+        "L06": { "slug": "processor-scheduling" }
+      }
+    },
+    {
+      "from": "../note-buddy/computer-organization-and-architecture/output",
+      "to": "src/content/note/26autumn/computer-organization-and-architecture",
+      "frontmatter": {
+        "author": "miniyuan",
+        "position": "Beijing",
+        "heroImageLight": "@/assets/images/light/light-01.png",
+        "heroImageDark": "@/assets/images/dark/dark-01.png"
+      },
+      "lectures": {
+        "L01": { "slug": "computer-architecture-intro" },
+        "L02": { "slug": "performance-and-risc-v" },
+        "L03": { "slug": "risc-v-alu-and-datapath" },
+        "L04": { "slug": "branch-prediction-and-multiple-issue" }
+      }
+    }
+  ]
+}

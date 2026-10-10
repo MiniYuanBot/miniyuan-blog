@@ -4,15 +4,15 @@
 
 ## 内容约定（与 note-buddy / Obsidian 统一）
 
-`src/content` 按 **Obsidian 仓库**的方式组织，note-buddy（class-skipper 生成）的
-`output/` 可以**原样复制**进来，不需要改任何文件名或链接：
+`src/content` 支持 Obsidian 语法。note-buddy（class-skipper 生成）的分章 `output/`
+通过 `scripts/import-notes.mjs` 转换后导入，每讲对应一篇文章：
 
 ```
-src/content/note/26autumn/computer-organization-and-architecture/   ← note-buddy 的 output/
-  index.md
-  L02/index.md
-  L02/chapters/02-cpi-and-iron-law.md
-  L02/assets/l02-iron-law.png
+src/content/note/26autumn/computer-organization-and-architecture/
+  01-computer-architecture-intro.md
+  02-performance-and-risc-v.md
+  assets/l02-iron-law.png
+  .note-import.json
 ```
 
 ### 命名
@@ -21,7 +21,7 @@ src/content/note/26autumn/computer-organization-and-architecture/   ← note-bud
 | --- | --- | --- |
 | 笔记文件 | 小写英文 kebab-case，两位序号开头 | `02-cpi-and-iron-law.md` |
 | 附件（图片等） | 放在笔记旁的 `assets/`，小写 kebab-case，以所属笔记/讲次开头 | `assets/l02-iron-law.png`、`assets/07-2d-vision-1-02-receptive-field-1.png` |
-| 目录 | 小写 kebab-case（note-buddy 的讲次目录 `L02/` 也可以，URL 会自动转小写） | `26spring/cv-intro/` |
+| 目录 | 小写 kebab-case，导入后的课程不再含 `Lxx/chapters/` | `26spring/cv-intro/` |
 | 标题 | 写在 frontmatter 的 `title`；正文开头的 `# 标题` 会自动去掉，避免重复 | |
 
 - **URL 全部是小写**：Astro 本来就把笔记 id 转小写，附件也按小写路径输出，
@@ -38,7 +38,69 @@ src/content/note/26autumn/computer-organization-and-architecture/   ← note-bud
 | `pubDate` | `date` / `created`，否则取该文件**第一次 git 提交**的时间，再否则取修改时间 |
 | `excerpt` | `description` / `summary`，否则为空 |
 
-class-skipper 现在会额外写出 `excerpt`（章节摘要）和 `tags`（课程名）。
+手写笔记仍使用上述缺省值。导入器会从每讲索引的 frontmatter 或一级标题提取文章标题，
+补齐摘要、课程标签和日期；作者、位置、封面等默认元信息在导入配置中设置。
+
+### 从 note-buddy 导入
+
+课程导入配置独立放在根目录的 `notes.config.json`，不需要填写服务器配置即可使用：
+
+```json
+{
+  "importNotes": [
+    {
+      "from": "../note-buddy/operating-system/output",
+      "to": "src/content/note/26autumn/operating-system",
+      "frontmatter": {
+        "author": "miniyuan",
+        "position": "Beijing",
+        "heroImageLight": "@/assets/images/light/light-01.png",
+        "heroImageDark": "@/assets/images/dark/dark-01.png"
+      },
+      "lectures": {
+        "L03": { "slug": "interrupts-and-system-calls", "pubDate": "2026-10-10" }
+      }
+    }
+  ]
+}
+```
+
+```bash
+pnpm import:notes --dry-run
+pnpm import:notes
+pnpm dev
+```
+
+`from` 和 `to` 相对于博客根目录；`to` 必须是 `src/content/note/<学期>/<课程>` 下的
+课程目录。`lectures.Lxx.slug` 是两位讲次编号之后的英文 kebab-case 文件名；未配置的
+新讲次使用 `07-lecture.md` 这样的名称，之后可以补上 slug 再导入。每讲配置还能覆盖
+`title`、`excerpt`、`pubDate`、`tags` 等元信息。日期优先采用显式配置或源文件元信息，
+缺省取源索引的修改日期；后续导入和改名保留首次导入的日期。
+
+转换规则：
+
+- 不生成任何 `index.md` 文章。每讲索引中的导读、小结、来源等内容会合入对应文章，
+  章节导航由网站目录代替；`questions.md` 等其他笔记保留为独立文章。
+- `Lxx/chapters/*.md` 按文件名中的数字顺序合并，每章一级标题去掉 `01 ` 这样的
+  数字前缀并转为二级标题，正文标题相应降一级。跨章节、跨讲次链接以及
+  `section:section-N` 改写为新文章或标题的自动锚点，不插入额外 HTML 锚点；重复
+  标题按合并后的顺序使用 `-1`、`-2` 等后缀。
+- 图片及站点支持的附件集中到课程的 `assets/`，名称统一为小写并带讲次前缀。可修正
+  章节误写的 `assets/x.png`；不会跨课程猜测同名图片。支持类型与现有附件插件一致。
+- 脚注和引用式链接按章节加前缀，避免合并后重名；代码块、公式与 callout 保留原文。
+- 全部课程先校验后写入，缺图、无效章节链接或重名附件会直接报错并保留原导入内容。
+
+导入器维护 `.note-import.json`，记录生成文件的归属和摘要。重复导入不会改写相同文件；
+源文件删除或更名后会清理旧的生成文件，并保留不属于导入器的手写文件。首次迁移旧的
+整目录副本时，只清理与源目录内容一致的文件。生成文件有手工修改时会报冲突，修改
+应写回源笔记或导入配置，再重新导入；源目录本身始终只读。
+
+`pnpm ship` 构建前调用同一导入器，`--skip-build` 则直接发布现有构建，不再导入。
+`pnpm build` 与 `pnpm dev` 使用已导入的笔记，不依赖本地存在 note-buddy，便于 CI
+构建。没有 `notes.config.json` 时兼容旧的 `deploy.config.json.importNotes`；也可用
+`pnpm import:notes --config <配置文件>` 指定配置。
+
+运行 `pnpm test:imports` 验证合并、元信息、链接、脚注、附件、重复导入和覆盖保护。
 
 ### 链接与 Obsidian 语法
 
@@ -118,7 +180,7 @@ pnpm ship --rollback   # 切回上一个版本
 服务器上每次发布一个目录 `<remoteDir>/releases/<时间>`，`<remoteDir>/<liveLink>`
 （默认 `dist`，即 nginx 原本指向的目录）改成指向它的软链接，所以上传过程中网站不会
 出现半新半旧的状态，也不需要改 nginx 配置。第一次运行时原有的 `dist/` 会保留为
-`releases/00000000-legacy`。`importNotes` 可以在构建前自动从 note-buddy 拷贝笔记。
+`releases/00000000-legacy`。构建前按 `notes.config.json` 自动转换并导入 note-buddy 笔记。
 
 ## 图片的图注语法
 

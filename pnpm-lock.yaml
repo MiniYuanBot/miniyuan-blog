@@ -66,6 +66,18 @@ importers:
       '@unocss/transformer-directives':
         specifier: ^66.10.0
         version: 66.10.0
+      remark-gfm:
+        specifier: 4.0.1
+        version: 4.0.1
+      remark-parse:
+        specifier: 11.0.0
+        version: 11.0.0
+      remark-rehype:
+        specifier: 11.1.2
+        version: 11.1.2
+      unified:
+        specifier: 11.0.5
+        version: 11.0.5
       unocss:
         specifier: ^66.10.0
         version: 66.10.0(@devframes/hub@0.9.12(crossws@0.4.12(srvx@1.0.3))(devframe@0.9.12(cac@7.0.0)(srvx@1.0.3)))(@unocss/astro@66.10.0(@devframes/hub@0.9.12(crossws@0.4.12(srvx@1.0.3))(devframe@0.9.12(cac@7.0.0)(srvx@1.0.3)))(cac@7.0.0)(crossws@0.4.12(srvx@1.0.3))(srvx@1.0.3)(vite@8.2.2(@types/node@24.13.2)(esbuild@0.28.2)(jiti@2.7.0)))(cac@7.0.0)(crossws@0.4.12(srvx@1.0.3))(rolldown@1.2.7)(rollup@4.62.0)(srvx@1.0.3)(vite@8.2.2(@types/node@24.13.2)(esbuild@0.28.2)(jiti@2.7.0))

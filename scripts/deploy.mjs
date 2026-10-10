@@ -24,8 +24,9 @@
  * directory is kept as the `00000000-legacy` release and replaced by a link.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
+import { importNotes as importCourseNotes, readImportConfig } from './import-notes.mjs';
 
 const ROOT = process.cwd();
 const args = new Set(process.argv.slice(2));
@@ -91,19 +92,9 @@ try {
 		process.exit(0);
 	}
 
-	// Optional: pull fresh notes from note-buddy before building.
-	for (const { from, to } of importNotes) {
-		if (!from || from.includes('<')) continue;
-		const src = resolve(expandHome(from));
-		const dest = resolve(ROOT, to);
-		step(`Importing notes ${src} -> ${to}`);
-		if (!DRY) {
-			mkdirSync(dest, { recursive: true });
-			cpSync(src, dest, { recursive: true, force: true });
-		}
-	}
-
 	if (!args.has('--skip-build')) {
+		step('Importing notes');
+		importCourseNotes(readImportConfig({ root: ROOT, fallback: importNotes }), { root: ROOT, dryRun: DRY });
 		step('Building');
 		run('pnpm', ['build'], { shell: process.platform === 'win32' });
 		step('Checking internal links');

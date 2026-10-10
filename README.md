@@ -9,8 +9,8 @@ miniyuan 的个人博客，地址是 [miniyuan.site](https://miniyuan.site)。�
 ## 特点
 
 - 笔记目录就是一个 Obsidian 仓库。callout、`[[双链]]`、`![[图片]]`、相对 `.md` 链接、
-  `==高亮==`、`%%注释%%`、Mermaid 在 Obsidian 里和网站上显示一致，note-buddy 生成的
-  笔记复制进来就能发布，不用改文件名或链接。
+  `==高亮==`、`%%注释%%`、Mermaid 在 Obsidian 里和网站上显示一致。note-buddy 生成的
+  分章笔记通过导入命令合并成每讲一篇，自动补齐元信息并整理图片和链接。
 - KaTeX 公式、PlantUML 图（构建时渲染成 SVG 并缓存）、带自动编号的图注。
 - 标签、分页、全站搜索、RSS、sitemap，以及跟随系统的深浅色主题。
 - 文章密码加密；也可以用 `draft: true` 将文章排除在发布内容之外。
@@ -47,8 +47,18 @@ tags: ['计算机组织与体系结构']
 文件名用小写英文加连字符（`02-cpi-and-iron-law.md`）。`title`、`pubDate` 可以省略，
 省略时分别取文件名和文件第一次提交到 git 的时间。
 
-从 note-buddy 导入时，把某门课的 `output/` 整个复制到
-`src/content/note/<学期>/<课程>/` 即可。
+从 note-buddy 导入时，在 `notes.config.json` 配置课程的 `output/` 路径、导入位置和
+各讲英文文件名，然后运行：
+
+```bash
+pnpm import:notes --dry-run  # 预览转换，检查图片与链接
+pnpm import:notes            # 每讲一篇、补齐 frontmatter、统一 assets/
+pnpm dev
+```
+
+例如 `L03/chapters/*.md` 会合并为 `03-interrupts-and-system-calls.md`，不再生成
+`index.md` 文章。源目录保持原样；导入规则和元信息写在配置中，生成文件应通过重新
+导入更新。配置方式见[开发文档](docs/DEVELOPMENT.md#从-note-buddy-导入)。
 
 ## 加密或暂不发布文章
 
@@ -77,7 +87,7 @@ BLOG_PASSWORD_PRIVATE=这里填写至少16个字符的独立密码
 
 ```bash
 cp deploy.config.example.json deploy.config.json   # 填写服务器地址和密钥路径
-pnpm ship              # 构建、检查链接、上传并切换到新版本
+pnpm ship              # 导入笔记、构建、检查链接、上传并切换到新版本
 pnpm ship --rollback   # 切回上一个版本
 ```
 
