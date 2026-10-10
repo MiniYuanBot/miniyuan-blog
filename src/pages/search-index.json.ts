@@ -1,4 +1,4 @@
-import { getCollection } from 'astro:content';
+import { getPublicPosts } from '@/utils/content';
 
 /**
  * Search index, generated once at build time.
@@ -48,8 +48,8 @@ function truncate(text: string): string {
 
 export async function GET() {
 	const [blogs, notes] = await Promise.all([
-		getCollection('blog'),
-		getCollection('note'),
+		getPublicPosts('blog'),
+		getPublicPosts('note'),
 	]);
 
 	const entries = [

@@ -13,6 +13,7 @@
     "check:assets": "node scripts/check-asset-links.mjs",
     "check:math": "node scripts/check-math.mjs",
     "check:hover": "node scripts/check-hover-gating.mjs",
+    "test:encryption": "node --test scripts/test-post-encryption.mjs",
     "ship": "node scripts/deploy.mjs"
   },
   "dependencies": {

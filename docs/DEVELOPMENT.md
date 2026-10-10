@@ -62,6 +62,49 @@ class-skipper 现在会额外写出 `excerpt`（章节摘要）和 `tags`（课�
 移入各目录的 `assets/`，站内绝对 URL 改为相对 `.md` 链接，文件名改为小写）。
 `public/images/` 现在只放首页等非文章图片。
 
+## 文章访问控制
+
+博客与笔记共用这两个可选 frontmatter 字段：
+
+| 字段 | 行为 |
+| --- | --- |
+| `draft: true` | 不生成文章页面，不进入列表、标签、搜索、RSS 或 sitemap |
+| `passwordEnv: BLOG_PASSWORD_PRIVATE` | 生成需要密码解密的页面，列表仅保留标题、日期和加密提示 |
+
+示例文章是 `src/content/blog/student-union-office/01-meeting20260328.md`。
+密码放在 `.env.local` 的 `BLOG_PASSWORD_PRIVATE` 中；可参考 `.env.example`。
+多篇文章可以使用同一个变量名共享密码，独立密码则使用不同的变量名。变量名不能以
+`PUBLIC_` 开头，密码不得少于 16 个字符。未配置密码、密码过短或仍为示例占位值时，
+构建会失败，不会退回明文发布。
+加密文章使用静态 Markdown（`.md`）；MDX 组件可能将数据写入公开的客户端 JS，因此不支持加密 `.mdx`。
+
+加密发生在构建阶段，浏览器收到 AES-256-GCM 密文和每篇独立生成的随机 salt / IV。
+密钥通过 PBKDF2-SHA-256（600,000 次）从密码派生；解密使用浏览器 Web Crypto API。
+密码和解密密钥不写入生成的 HTML 或客户端 JS，也不保存到 localStorage / sessionStorage。
+刷新页面或点击「重新锁定」后需再次输入密码。部署需要 HTTPS；本机 localhost 可直接预览。
+相关接口见 [Astro 服务端环境变量](https://docs.astro.build/en/reference/modules/astro-env/)和
+[Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API)。
+
+摘要与目录随正文一起加密。加密文章会从搜索索引、RSS、标签页和 sitemap 排除，并输出
+`noindex, nofollow`。标题、URL、发布时间仍然公开，适合希望访客知道文章存在的场景。
+希望连页面都不发布时，应使用 `draft: true`。
+
+引用的 `src/content` 附件会打包到密文中，解密后以浏览器内存中的 Blob URL 展示。
+构建结束时只复制被公开 HTML 引用的内容附件；仅用于加密文章、草稿或未被使用的附件
+不会复制到 `dist/`。与公开文章共享的附件仍然公开。`public/` 和外部链接不是私有存储，
+机密附件应放到文章旁的 `assets/`，且不要同时在公开文章中引用。
+本地 `astro dev` 的附件中间件用于预览，访问控制应以 `astro preview` 的生产构建为准。
+
+网站密文保护的是发布产物，不保护源仓库。Markdown、原始附件和 Git 历史仍是明文；
+私密原文需要保存在私有仓库中。已发布过的旧页面、浏览器缓存或第三方存档也不会因
+新一轮加密自动消失。更换密码后重新构建并发布，旧密文仍可被旧密码解密。
+
+```powershell
+pnpm test:encryption  # Web Crypto 互通、错误密码、篡改、随机 salt/IV、附件打包
+pnpm build
+pnpm preview
+```
+
 ## 发布到服务器
 
 ```bash

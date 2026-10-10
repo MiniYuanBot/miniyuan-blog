@@ -42,6 +42,7 @@ const basePath = `/${kind}`;
 
 const tagCounts: Record<string, number> = {};
 for (const entry of entries) {
+    if (entry.data.passwordEnv) continue;
     for (const tag of entry.data.tags ?? []) {
         tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
     }
@@ -77,6 +78,7 @@ const sidebarTags = uniqueTags.slice(0, sidebarTagMax);
                     {items.map((entry, index) => (
                         <ContentCard
                             kind={kind}
+                            locked={!!entry.data.passwordEnv}
                             title={entry.data.title}
                             pubDate={entry.data.pubDate}
                             excerpt={entry.data.excerpt}

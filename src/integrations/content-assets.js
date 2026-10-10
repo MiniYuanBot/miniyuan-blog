@@ -6,17 +6,22 @@
  * relative to `src/content` (see `attachmentUrl`); this integration makes those
  * URLs work: a middleware in `astro dev`, and a copy into `dist/` after a build.
  */
-import { copyFileSync, mkdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getContentIndex } from '../plugins/lib/content-index.js';
+import { ATTACHMENT_MIME, attachmentReferences } from '../utils/content-attachments.js';
 
-const MIME = {
-	png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
-	webp: 'image/webp', avif: 'image/avif', svg: 'image/svg+xml', bmp: 'image/bmp',
-	ico: 'image/x-icon', pdf: 'application/pdf', mp4: 'video/mp4', webm: 'video/webm',
-	mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg',
-};
+function publicAttachments(dir, attachments, used = new Set()) {
+	for (const entry of readdirSync(dir, { withFileTypes: true })) {
+		const file = join(dir, entry.name);
+		if (entry.isDirectory()) publicAttachments(file, attachments, used);
+		else if (entry.isFile() && entry.name.endsWith('.html')) {
+			for (const key of attachmentReferences(readFileSync(file, 'utf8'), attachments).values()) used.add(key);
+		}
+	}
+	return used;
+}
 
 export default function contentAssets() {
 	return {
@@ -35,19 +40,23 @@ export default function contentAssets() {
 
 					const { readFile } = await import('node:fs/promises');
 					const ext = file.split('.').pop().toLowerCase();
-					res.setHeader('Content-Type', MIME[ext] ?? 'application/octet-stream');
+					res.setHeader('Content-Type', ATTACHMENT_MIME[ext] ?? 'application/octet-stream');
 					res.end(await readFile(file));
 				});
 			},
 			'astro:build:done': ({ dir, logger }) => {
 				const out = fileURLToPath(dir);
 				const { attachments } = getContentIndex();
-				for (const [rel, file] of attachments) {
+				// Ciphertext contains no attachment URLs. Only files referenced by
+				// public HTML are published; protected-only and unused files stay local.
+				const used = publicAttachments(out, attachments);
+				for (const rel of used) {
+					const file = attachments.get(rel);
 					const target = join(out, ...rel.split('/'));
 					mkdirSync(dirname(target), { recursive: true });
 					copyFileSync(file, target);
 				}
-				logger.info(`copied ${attachments.size} content attachments`);
+				logger.info(`copied ${used.size} publicly referenced content attachments`);
 			},
 		},
 	};

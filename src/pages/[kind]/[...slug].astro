@@ -2,6 +2,7 @@
 import { render } from "astro:content";
 import { BlogPost } from "@/components/layouts";
 import { getPosts, KINDS, type Post } from "@/utils/content";
+import EncryptedContent from "@/components/ui/EncryptedContent.astro";
 
 export async function getStaticPaths() {
     const posts = (await Promise.all(KINDS.map(getPosts))).flat();
@@ -12,9 +13,23 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props as { post: Post };
+if (post.data.passwordEnv && post.filePath?.endsWith('.mdx')) {
+    throw new Error('Encrypted articles must use .md: MDX components may emit public JavaScript bundles.');
+}
 const { Content, headings } = await render(post);
+const locked = !!post.data.passwordEnv;
+const pageData = locked ? {
+    ...post.data,
+    excerpt: "本文需要输入密码后查看。",
+    author: undefined,
+} : post.data;
 ---
 
-<BlogPost {...post.data} headings={headings}>
-    <Content />
+<BlogPost {...pageData} headings={locked ? [] : headings} noindex={locked}>
+    {post.data.passwordEnv ? (
+        <EncryptedContent passwordEnv={post.data.passwordEnv} {headings}>
+            {post.data.excerpt && <p>{post.data.excerpt}</p>}
+            <Content />
+        </EncryptedContent>
+    ) : <Content />}
 </BlogPost>

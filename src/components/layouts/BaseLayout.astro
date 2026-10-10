@@ -8,16 +8,18 @@ interface Props {
 	/** Path of the previous/next page, for paginated listings. */
 	prev?: string;
 	next?: string;
+	noindex?: boolean;
+	showSidebar?: boolean;
 }
 
-const { title, description, prev, next } = Astro.props;
-const hasSidebar = Astro.slots.has("sidebar");
+const { title, description, prev, next, noindex } = Astro.props;
+const hasSidebar = Astro.props.showSidebar ?? Astro.slots.has("sidebar");
 ---
 
 <!doctype html>
 <html lang={siteConfig.lang}>
 	<head>
-		<BaseHead title={title} description={description} {prev} {next} />
+		<BaseHead title={title} description={description} {prev} {next} {noindex} />
 		<ThemeProvider />
 	</head>
 	<body class="flex flex-col bg-background text-foreground">

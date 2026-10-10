@@ -1,10 +1,10 @@
 ---
-import { getCollection } from "astro:content";
+import { getPublicPosts } from "@/utils/content";
 import { BaseLayout, Section } from "@/components/layouts";
 import { Card, Icon } from "@/components/ui";
 
-const posts = await getCollection("blog");
-const notes = await getCollection("note");
+const posts = await getPublicPosts("blog");
+const notes = await getPublicPosts("note");
 
 /** tag -> number of entries carrying it */
 function countTags(entries: { data: { tags?: string[] } }[]) {

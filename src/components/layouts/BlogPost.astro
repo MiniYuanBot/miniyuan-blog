@@ -10,7 +10,7 @@ import TOCList from "./TOCList.astro";
 
 import "katex/dist/katex.min.css";
 
-type Props = PostData & { headings?: MarkdownHeading[] };
+type Props = PostData & { headings?: MarkdownHeading[]; noindex?: boolean };
 
 const {
 	title,
@@ -19,10 +19,11 @@ const {
 	pubDate,
 	updatedDate,
 	headings = [],
+	noindex = false,
 } = Astro.props;
 ---
 
-<BaseLayout title={title} description={excerpt}>
+<BaseLayout title={title} description={excerpt} {noindex} showSidebar={headings.length > 0}>
 	<div slot="content">
 		<Card
 			hover={false}
@@ -90,12 +91,14 @@ const {
 	// Mermaid diagrams (```mermaid in Obsidian notes) are rendered in the
 	// browser. The library is only downloaded on pages that contain one, and
 	// diagrams are re-rendered when the theme toggles.
-	const blocks = [...document.querySelectorAll<HTMLElement>("pre.mermaid")];
-	if (blocks.length) {
-		for (const block of blocks) block.dataset.source = block.textContent ?? "";
-
-		const { default: mermaid } = await import("mermaid");
-		const render = async () => {
+	let rendering = false;
+	const renderDiagrams = async () => {
+		const blocks = [...document.querySelectorAll<HTMLElement>("pre.mermaid")];
+		if (!blocks.length || rendering) return;
+		rendering = true;
+		try {
+			for (const block of blocks) block.dataset.source ??= block.textContent ?? "";
+			const { default: mermaid } = await import("mermaid");
 			const dark = document.documentElement.classList.contains("dark");
 			mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default" });
 			for (const block of blocks) {
@@ -103,20 +106,22 @@ const {
 				block.textContent = block.dataset.source ?? "";
 			}
 			await mermaid.run({ nodes: blocks });
-		};
-
-		let dark = document.documentElement.classList.contains("dark");
-		await render();
-		new MutationObserver(() => {
-			const now = document.documentElement.classList.contains("dark");
-			if (now === dark) return;
-			dark = now;
-			render();
-		}).observe(document.documentElement, {
-			attributes: true,
-			attributeFilter: ["class"],
-		});
-	}
+		} finally {
+			rendering = false;
+		}
+	};
+	let dark = document.documentElement.classList.contains("dark");
+	void renderDiagrams();
+	document.addEventListener("post:unlocked", () => void renderDiagrams());
+	new MutationObserver(() => {
+		const now = document.documentElement.classList.contains("dark");
+		if (now === dark) return;
+		dark = now;
+		void renderDiagrams();
+	}).observe(document.documentElement, {
+		attributes: true,
+		attributeFilter: ["class"],
+	});
 </script>
 
 <style is:global>

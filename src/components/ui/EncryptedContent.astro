@@ -1,0 +1,158 @@
+---
+import { getSecret } from 'astro:env/server';
+import type { MarkdownHeading } from '@astrojs/markdown-remark';
+import { bundlePost, encryptPost } from '@/utils/post-encryption.js';
+
+interface Props {
+    passwordEnv: string;
+    headings: MarkdownHeading[];
+}
+
+const { passwordEnv, headings } = Astro.props;
+const password = getSecret(passwordEnv);
+if (!password) throw new Error(`Missing ${passwordEnv}: set it in .env.local or the build environment before publishing this encrypted article.`);
+const html = await Astro.slots.render('default');
+const payload = encryptPost(bundlePost(html, headings), password);
+---
+
+<div data-encrypted-post>
+    <div data-unlock-panel class="not-prose rounded-2xl border border-border bg-muted/40 p-5 sm:p-8 my-4">
+        <div class="flex items-center gap-3 mb-3">
+            <svg class="size-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+                <rect x="4" y="10" width="16" height="11" rx="3" />
+                <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+            </svg>
+            <h2 class="text-xl font-semibold">本文已加密</h2>
+        </div>
+        <p class="text-muted-foreground text-sm leading-relaxed mb-6">输入访问密码，即可阅读完整内容。</p>
+        <form data-unlock-form class="flex flex-col gap-3 max-w-md">
+            <label for="post-password" class="text-sm font-medium">访问密码</label>
+            <input id="post-password" name="password" type="password" required autocomplete="current-password" aria-describedby="unlock-status"
+                class="w-full min-w-0 rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground focus:outline-none focus:ring-2 focus:ring-accent" />
+            <label class="flex items-center gap-2 text-sm text-muted-foreground w-fit">
+                <input data-show-password type="checkbox" class="accent-accent" /> 显示密码
+            </label>
+            <button type="submit" class="rounded-xl bg-accent text-background px-5 py-3 font-medium cursor-pointer disabled:opacity-50 disabled:cursor-wait">解密阅读</button>
+            <p id="unlock-status" data-unlock-status role="status" aria-live="polite" class="min-h-6 text-sm text-muted-foreground"></p>
+        </form>
+        <noscript><p>请启用 JavaScript 后输入密码解密。</p></noscript>
+    </div>
+    <div data-unlocked-panel hidden>
+        <div class="not-prose flex items-center justify-between gap-4 border-b border-border pb-4 mb-6 print-hidden">
+            <span class="text-sm text-muted-foreground">已解密 · 仅本次页面有效</span>
+            <button data-lock-post type="button" class="text-sm border border-border rounded-lg px-3 py-2 cursor-pointer">重新锁定</button>
+        </div>
+        <nav data-unlocked-toc aria-label="文章目录" class="not-prose mb-6" hidden></nav>
+        <div data-decrypted-content></div>
+    </div>
+    <script type="application/json" data-encrypted-payload set:html={JSON.stringify(payload)} />
+</div>
+
+<script>
+    import { base64Bytes, decryptPost } from '@/utils/decrypt-post';
+
+    const root = document.querySelector<HTMLElement>('[data-encrypted-post]');
+    if (root) {
+        const form = root.querySelector<HTMLFormElement>('[data-unlock-form]')!;
+        const input = form.elements.namedItem('password') as HTMLInputElement;
+        const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+        const status = root.querySelector<HTMLElement>('[data-unlock-status]')!;
+        const panel = root.querySelector<HTMLElement>('[data-unlock-panel]')!;
+        const unlocked = root.querySelector<HTMLElement>('[data-unlocked-panel]')!;
+        const content = root.querySelector<HTMLElement>('[data-decrypted-content]')!;
+        const toc = root.querySelector<HTMLElement>('[data-unlocked-toc]')!;
+
+        root.querySelector('[data-show-password]')?.addEventListener('change', (event) => {
+            input.type = (event.target as HTMLInputElement).checked ? 'text' : 'password';
+        });
+        root.querySelector('[data-lock-post]')?.addEventListener('click', () => window.location.reload());
+
+        if (!window.crypto?.subtle) {
+            status.textContent = '请通过 HTTPS 或本机 localhost 打开页面，以使用解密功能。';
+            button.disabled = true;
+        }
+
+        let busy = false;
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            if (busy) return;
+            busy = true;
+            button.disabled = true;
+            button.textContent = '正在解密…';
+            status.textContent = '正在验证密码，请稍候…';
+            input.removeAttribute('aria-invalid');
+            try {
+                const payload = JSON.parse(root.querySelector('[data-encrypted-payload]')!.textContent!);
+                const decoded = await decryptPost(payload, input.value);
+                const fragment = document.createElement('template');
+                fragment.innerHTML = decoded.html;
+
+                // Attachments only become accessible as in-memory blob URLs after decryption.
+                const urls = new Map<string, string>();
+                for (const [url, asset] of Object.entries(decoded.assets)) {
+                    const fragment = new URL(url, window.location.href).hash;
+                    urls.set(url, URL.createObjectURL(new Blob([base64Bytes(asset.data)], { type: asset.type })) + fragment);
+                }
+                for (const node of fragment.content.querySelectorAll<HTMLElement>('*')) {
+                    for (const attr of ['src', 'href', 'poster', 'data-src']) {
+                        const value = node.getAttribute(attr);
+                        if (value && urls.has(value)) node.setAttribute(attr, urls.get(value)!);
+                    }
+                    const srcset = node.getAttribute('srcset');
+                    if (srcset) node.setAttribute('srcset', srcset.split(',').map((candidate) => {
+                        const parts = candidate.trim().split(/\s+/);
+                        parts[0] = urls.get(parts[0]) ?? parts[0];
+                        return parts.join(' ');
+                    }).join(', '));
+                }
+                content.replaceChildren(fragment.content);
+
+                const headings = decoded.headings.filter((heading) => heading.depth >= 2 && heading.depth <= 4);
+                if (headings.length) {
+                    const details = document.createElement('details');
+                    const summary = document.createElement('summary');
+                    summary.textContent = '文章目录';
+                    summary.className = 'cursor-pointer font-medium';
+                    details.append(summary);
+                    const list = document.createElement('ul');
+                    list.className = 'mt-3 space-y-2 text-sm';
+                    for (const heading of headings) {
+                        const item = document.createElement('li');
+                        item.style.paddingLeft = `${(heading.depth - 2) * 0.75}rem`;
+                        const link = document.createElement('a');
+                        link.href = `#${heading.slug}`;
+                        link.textContent = heading.text;
+                        item.append(link);
+                        list.append(item);
+                    }
+                    details.append(list);
+                    toc.replaceChildren(details);
+                    toc.hidden = false;
+                }
+
+                form.reset();
+                input.type = 'password';
+                panel.hidden = true;
+                unlocked.hidden = false;
+                root.dataset.unlocked = 'true';
+                document.dispatchEvent(new CustomEvent('post:unlocked'));
+                let target: HTMLElement | null = null;
+                try { target = document.getElementById(decodeURIComponent(window.location.hash.slice(1))); } catch { /* malformed fragment */ }
+                if (target) target.scrollIntoView();
+                else {
+                    content.tabIndex = -1;
+                    content.focus({ preventScroll: true });
+                }
+            } catch {
+                status.textContent = '密码不正确，或加密内容已损坏。请重试。';
+                input.setAttribute('aria-invalid', 'true');
+                input.focus();
+                input.select();
+            } finally {
+                busy = false;
+                button.disabled = false;
+                button.textContent = '解密阅读';
+            }
+        });
+    }
+</script>

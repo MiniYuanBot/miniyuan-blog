@@ -13,6 +13,7 @@ miniyuan 的个人博客，地址是 [miniyuan.site](https://miniyuan.site)。�
   笔记复制进来就能发布，不用改文件名或链接。
 - KaTeX 公式、PlantUML 图（构建时渲染成 SVG 并缓存）、带自动编号的图注。
 - 标签、分页、全站搜索、RSS、sitemap，以及跟随系统的深浅色主题。
+- 文章密码加密；也可以用 `draft: true` 将文章排除在发布内容之外。
 - 一条命令完成构建、检查和发布，出问题可以一条命令回滚。
 
 ## 快速开始
@@ -48,6 +49,29 @@ tags: ['计算机组织与体系结构']
 
 从 note-buddy 导入时，把某门课的 `output/` 整个复制到
 `src/content/note/<学期>/<课程>/` 即可。
+
+## 加密或暂不发布文章
+
+在文章 frontmatter 中加入环境变量名，密码单独放在根目录的 `.env.local`：
+
+```yaml
+passwordEnv: BLOG_PASSWORD_PRIVATE
+```
+
+```dotenv
+BLOG_PASSWORD_PRIVATE=这里填写至少16个字符的独立密码
+```
+
+`.env.local` 已被 Git 忽略；部署环境也可以通过同名环境变量提供密码。页面只公开标题和
+日期，摘要、正文、目录和 `src/content` 中引用的附件在浏览器输入密码后解密。
+加密文章不会出现在搜索索引、RSS、标签页或 sitemap 中。改密码后需要重新构建和发布。
+
+若希望文章完全不生成页面，在 frontmatter 中使用 `draft: true`。
+
+网站加密不会加密 Git 仓库中的 Markdown 和历史版本；公开仓库中的原文仍可被读取。
+共享给公开文章的附件，以及 `public/` 或第三方服务上的文件，也仍然公开。
+
+实现细节和验证命令见[开发文档](docs/DEVELOPMENT.md#文章访问控制)。
 
 ## 发布
 

@@ -11,6 +11,8 @@ import remarkImageCaption from './src/plugins/remark-image-caption.js';
 import remarkPlantuml from './src/plugins/remark-plantuml.js';
 import remarkObsidian from './src/plugins/remark-obsidian.js';
 import contentAssets from './src/integrations/content-assets.js';
+import { existsSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 // https://astro.build/config
 export default defineConfig({
@@ -33,7 +35,13 @@ export default defineConfig({
 
 	integrations: [
 		mdx(),
-		sitemap(),
+		sitemap({
+			// Locked articles advertise noindex and should also stay out of the sitemap.
+			filter: (page) => {
+				const file = fileURLToPath(new URL(`./dist${new URL(page).pathname}index.html`, import.meta.url));
+				return !existsSync(file) || !readFileSync(file, 'utf8').includes('name="robots" content="noindex, nofollow"');
+			},
+		}),
 		// Attachments kept next to the notes (Obsidian `assets/` folders).
 		contentAssets(),
 		unocss({

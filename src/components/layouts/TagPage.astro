@@ -7,7 +7,7 @@ import { siteConfig } from "@/config";
 import BaseLayout from "./BaseLayout.astro";
 import Section from "./Section.astro";
 import { Button, Card, ContentCard, Icon, Pagination } from "@/components/ui";
-import { getPosts, type Kind } from "@/utils/content";
+import { getPublicPosts, type Kind } from "@/utils/content";
 import { pageHref, paginate } from "@/utils/pagination";
 
 export interface Props {
@@ -20,7 +20,7 @@ const { kind, tag, page = 1 } = Astro.props;
 
 const label = kind;
 
-const tagged = (await getPosts(kind)).filter((entry) => entry.data.tags?.includes(tag));
+const tagged = (await getPublicPosts(kind)).filter((entry) => entry.data.tags?.includes(tag));
 
 const { items, totalItems, totalPages, hasPrev, hasNext, firstItem, lastItem } =
     paginate(tagged, page, siteConfig.postsPerPage);

@@ -15,6 +15,10 @@ export const PostSchema = (image: ImageFunction) => z.object({
     tags: z.array(z.string()).optional(),
     pubDate: DateSchema,
     updatedDate: OptionalDateSchema,
+    /** Exclude this entry from the generated site entirely. */
+    draft: z.boolean().default(false),
+    /** Name of a server-only environment variable, never the password itself. */
+    passwordEnv: z.string().regex(/^(?!PUBLIC_)[A-Z][A-Z0-9_]*$/).optional(),
     heroImageLight: image().optional(),
     heroImageDark: image().optional(),
 });
